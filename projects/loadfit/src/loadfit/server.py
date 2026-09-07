@@ -81,5 +81,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 def serve(host: str, port: int) -> None:
     httpd = ThreadingHTTPServer((host, port), Handler)
-    print(f"LoadFit planner at http://{host}:{port}")
+    print(f"LoadFit planner at http://{host}:{port}", flush=True)
     httpd.serve_forever()

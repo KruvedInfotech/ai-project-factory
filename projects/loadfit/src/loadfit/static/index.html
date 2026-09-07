@@ -80,9 +80,11 @@
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .checks { display: flex; gap: 16px; margin: 12px 0; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
     th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
-    td input { width: 100%; padding: 4px; }
+    th:nth-child(1), td:nth-child(1) { width: 28%; }
+    th:nth-child(6), td:nth-child(6) { width: 12%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     button {
       border: 2px solid var(--ink);
