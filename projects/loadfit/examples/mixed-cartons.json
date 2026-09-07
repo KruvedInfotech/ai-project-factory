@@ -1,0 +1,10 @@
+{
+  "container": { "preset": "truck_14ft" },
+  "allow_rotation": true,
+  "this_side_up": true,
+  "boxes": [
+    { "sku": "A-CARTON", "length_mm": 600, "width_mm": 400, "height_mm": 350, "weight_kg": 14, "quantity": 10 },
+    { "sku": "B-CUBE", "length_mm": 400, "width_mm": 400, "height_mm": 400, "weight_kg": 9, "quantity": 8 },
+    { "sku": "C-FLAT", "length_mm": 800, "width_mm": 500, "height_mm": 200, "weight_kg": 11, "quantity": 6 }
+  ]
+}

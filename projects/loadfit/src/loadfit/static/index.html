@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LoadFit — carton planner</title>
+  <style>
+    :root {
+      --ink: #221c16;
+      --paper: #efe6d6;
+      --board: #d8c9ae;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(34, 28, 22, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(34, 28, 22, 0.04), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(34,28,22,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 46ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button, textarea {
+      font: inherit;
+      color: inherit;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checks { display: flex; gap: 16px; margin: 12px 0; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 28%; }
+    th:nth-child(6), td:nth-child(6) { width: 12%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 460px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 30% 20%, rgba(224,161,6,0.12), transparent 40%),
+        #2a241d;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>LoadFit</h1>
+      <p>Plan a carton load for a van, truck, or container. Pieces stay inside the box, do not overlap, and only stack when they have a floor.</p>
+    </div>
+    <div class="stamp">Dock copy · not a live TMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Shipment</h2>
+      <label for="preset">Cargo box</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="maxWeight">Payload cap (kg)</label>
+          <input id="maxWeight" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="checks">
+        <label><input id="rotate" type="checkbox" checked /> Rotate on floor</label>
+        <label><input id="upright" type="checkbox" checked /> Keep this side up</label>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>L</th><th>W</th><th>H</th><th>kg</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add carton</button>
+        <button type="button" id="pack">Pack load</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Load map</h2>
+      <div class="stats">
+        <div class="stat" id="statPacked"><span>Packed</span><b>—</b></div>
+        <div class="stat" id="statCube"><span>Cube</span><b>—</b></div>
+        <div class="stat" id="statWeight"><span>Weight</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="620" aria-label="Isometric cargo view"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#e0a106", "#d97b46", "#6f8f72", "#c45c4a", "#7a90b4", "#b08968", "#d6c25b"];
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const maxWeight = document.getElementById("maxWeight");
+    const error = document.getElementById("error");
+
+    function addRow(box = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = ["sku","length_mm","width_mm","height_mm","weight_kg","quantity"].map((key, i) => {
+        const val = box[key] ?? (i === 0 ? "" : i === 5 ? 1 : "");
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      rows.appendChild(tr);
+    }
+
+    function readBoxes() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          sku: get("sku").trim(),
+          length_mm: Number(get("length_mm")),
+          width_mm: Number(get("width_mm")),
+          height_mm: Number(get("height_mm")),
+          weight_kg: Number(get("weight_kg")),
+          quantity: Number(get("quantity") || 1),
+        };
+      }).filter(b => b.sku);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.length_mm}×${p.width_mm}×${p.height_mm} mm`;
+        opt.dataset.weight = p.max_weight_kg;
+        preset.appendChild(opt);
+      });
+      preset.value = "truck_14ft";
+      maxWeight.value = preset.selectedOptions[0].dataset.weight;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ sku: "A-CARTON", length_mm: 600, width_mm: 400, height_mm: 350, weight_kg: 14, quantity: 10 });
+      addRow({ sku: "B-CUBE", length_mm: 400, width_mm: 400, height_mm: 400, weight_kg: 9, quantity: 8 });
+      addRow({ sku: "C-FLAT", length_mm: 800, width_mm: 500, height_mm: 200, weight_kg: 11, quantity: 6 });
+    }
+
+    preset.addEventListener("change", () => {
+      maxWeight.value = preset.selectedOptions[0].dataset.weight;
+    });
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.boxes || []).forEach(addRow);
+      if (data.container?.preset) preset.value = data.container.preset;
+      maxWeight.value = data.container?.max_weight_kg || preset.selectedOptions[0].dataset.weight;
+      document.getElementById("rotate").checked = data.allow_rotation !== false;
+      document.getElementById("upright").checked = data.this_side_up !== false;
+    });
+
+    document.getElementById("pack").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        container: { preset: preset.value, max_weight_kg: Number(maxWeight.value) },
+        allow_rotation: document.getElementById("rotate").checked,
+        this_side_up: document.getElementById("upright").checked,
+        boxes: readBoxes(),
+      };
+      const res = await fetch("/api/pack", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Pack failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statPacked", String(data.packed_count), "good");
+      set("statCube", Math.round(data.volume_utilization * 100) + "%");
+      set("statWeight", Math.round(data.weight_utilization * 100) + "%");
+      set("statLeft", String(data.unpacked_count), data.unpacked_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.unpacked || [])
+        .map(u => `${u.quantity}× ${u.sku} left behind`)
+        .join(" · ");
+    }
+
+    function iso(x, y, z, o) {
+      return [o.ox + (x - y) * o.s * 0.86, o.oy + (x + y) * o.s * 0.42 - z * o.s];
+    }
+
+    function drawBox(ctx, p, color, o) {
+      const pts = (dx, dy, dz) => iso(p.x + dx, p.y + dy, p.z + dz, o);
+      const a = pts(0,0,p.height_mm), b = pts(p.length_mm,0,p.height_mm);
+      const c = pts(p.length_mm,p.width_mm,p.height_mm), d = pts(0,p.width_mm,p.height_mm);
+      const e = pts(0,0,0), f = pts(p.length_mm,0,0);
+      const g = pts(p.length_mm,p.width_mm,0);
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...c); ctx.lineTo(...d); ctx.closePath();
+      ctx.fillStyle = color; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...d); ctx.lineTo(...a); ctx.lineTo(...e); ctx.lineTo(iso(p.x, p.y + p.width_mm, 0, o)[0], iso(p.x, p.y + p.width_mm, 0, o)[1]); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.72); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...f); ctx.lineTo(...e); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.86); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#221c16";
+      const label = iso(p.x + p.length_mm/2, p.y + p.width_mm/2, p.z + p.height_mm, o);
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillText(p.sku, label[0] - 18, label[1] + 4);
+    }
+
+    function shade(hex, amt) {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.round(((n >> 16) & 255) * amt);
+      const g = Math.round(((n >> 8) & 255) * amt);
+      const b = Math.round((n & 255) * amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const c = data.container;
+      const s = Math.min(canvas.width, canvas.height) / (c.length_mm + c.width_mm) * 1.15;
+      const o = { s, ox: canvas.width * 0.52, oy: canvas.height * 0.62 };
+      ctx.strokeStyle = "rgba(224,161,6,0.55)";
+      ctx.lineWidth = 1.5;
+      const corners = [
+        [0,0,0],[c.length_mm,0,0],[c.length_mm,c.width_mm,0],[0,c.width_mm,0],
+        [0,0,c.height_mm],[c.length_mm,0,c.height_mm],[c.length_mm,c.width_mm,c.height_mm],[0,c.width_mm,c.height_mm]
+      ].map(([x,y,z]) => iso(x,y,z,o));
+      const edge = (i,j) => { ctx.beginPath(); ctx.moveTo(...corners[i]); ctx.lineTo(...corners[j]); ctx.stroke(); };
+      [0,1,2,3,0].forEach((i, n, arr) => { if (n) edge(arr[n-1], i); });
+      edge(0,4); edge(1,5); edge(2,6); edge(3,7);
+      [4,5,6,7,4].forEach((i, n, arr) => { if (n) edge(arr[n-1], i); });
+      ctx.strokeStyle = "#1a1612";
+      const bySku = {};
+      let n = 0;
+      for (const p of data.placements) {
+        if (!(p.sku in bySku)) bySku[p.sku] = colors[n++ % colors.length];
+        drawBox(ctx, p, bySku[p.sku], o);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
