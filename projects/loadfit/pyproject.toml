@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loadfit"
+version = "0.1.0"
+description = "3D carton packer for vans, trucks, and shipping containers."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "bin-packing", "freight", "warehouse"]
+dependencies = []
+
+[project.scripts]
+loadfit = "loadfit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+loadfit = ["static/*"]

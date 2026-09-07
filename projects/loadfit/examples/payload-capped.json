@@ -1,0 +1,8 @@
+{
+  "container": { "preset": "van_407", "max_weight_kg": 40 },
+  "allow_rotation": true,
+  "this_side_up": true,
+  "boxes": [
+    { "sku": "HEAVY", "length_mm": 500, "width_mm": 400, "height_mm": 400, "weight_kg": 18, "quantity": 4 }
+  ]
+}
