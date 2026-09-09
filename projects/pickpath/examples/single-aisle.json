@@ -1,0 +1,9 @@
+{
+  "warehouse": { "preset": "mini_4x8" },
+  "strategy": "s_shape",
+  "picks": [
+    { "sku": "SKU-A", "aisle": 3, "bay": 2, "side": "L", "qty": 1 },
+    { "sku": "SKU-B", "aisle": 3, "bay": 4, "side": "R", "qty": 1 },
+    { "sku": "SKU-C", "aisle": 3, "bay": 7, "side": "L", "qty": 2 }
+  ]
+}

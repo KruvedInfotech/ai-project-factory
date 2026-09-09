@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### PickPath — warehouse pick-path planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-09-09 |
+| **Intended repo** | `https://github.com/KruvedInfotech/pickpath` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/pickpath`](projects/pickpath/) |
+| **What it is** | Single-block picker router. S-shape, return, and nearest + 2-opt, plus a floor map. |
+
+**How it works (short):** each pick is an aisle/bay/side. Walking stays on aisle centers and the front or rear cross-aisle. **S-shape** traverses pick aisles end-to-end; **return** always comes back to the front; **nearest** greedily visits leftover stops then 2-opts the tour. **Auto** keeps the shortest of the three.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/pickpath
+PYTHONPATH=src python3 -m pickpath presets
+PYTHONPATH=src python3 -m pickpath route examples/grocery-wave.json
+PYTHONPATH=src python3 -m pickpath serve --host 127.0.0.1 --port 8766
+```
+
+Open `http://127.0.0.1:8766`, then **Route wave**. Full detail is in the [PickPath README](projects/pickpath/README.md).

@@ -1,0 +1,12 @@
+{
+  "warehouse": { "preset": "bulk_8x12" },
+  "strategy": "auto",
+  "picks": [
+    { "sku": "CASE-A", "aisle": 2, "bay": 3, "side": "L", "qty": 4 },
+    { "sku": "CASE-B", "aisle": 2, "bay": 4, "side": "L", "qty": 4 },
+    { "sku": "CASE-C", "aisle": 2, "bay": 5, "side": "R", "qty": 2 },
+    { "sku": "CASE-D", "aisle": 3, "bay": 3, "side": "L", "qty": 6 },
+    { "sku": "CASE-E", "aisle": 3, "bay": 4, "side": "R", "qty": 3 },
+    { "sku": "CASE-F", "aisle": 3, "bay": 11, "side": "L", "qty": 1 }
+  ]
+}
