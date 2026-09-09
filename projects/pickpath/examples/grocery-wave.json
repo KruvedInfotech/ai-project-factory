@@ -1,0 +1,19 @@
+{
+  "warehouse": { "preset": "grocery_6x20" },
+  "strategy": "auto",
+  "picks": [
+    { "sku": "MILK-1L", "aisle": 1, "bay": 3, "side": "L", "qty": 2 },
+    { "sku": "YOG-P", "aisle": 1, "bay": 14, "side": "R", "qty": 4 },
+    { "sku": "BREAD", "aisle": 2, "bay": 2, "side": "L", "qty": 1 },
+    { "sku": "CEREAL", "aisle": 2, "bay": 11, "side": "L", "qty": 2 },
+    { "sku": "OATS", "aisle": 2, "bay": 19, "side": "R", "qty": 1 },
+    { "sku": "RICE-5", "aisle": 3, "bay": 8, "side": "L", "qty": 3 },
+    { "sku": "DAL-1", "aisle": 3, "bay": 9, "side": "R", "qty": 2 },
+    { "sku": "OIL-1L", "aisle": 4, "bay": 1, "side": "L", "qty": 2 },
+    { "sku": "ATTA", "aisle": 4, "bay": 16, "side": "L", "qty": 1 },
+    { "sku": "TEA-500", "aisle": 5, "bay": 6, "side": "R", "qty": 6 },
+    { "sku": "COFFEE", "aisle": 5, "bay": 7, "side": "R", "qty": 2 },
+    { "sku": "SOAP", "aisle": 6, "bay": 4, "side": "L", "qty": 8 },
+    { "sku": "SHAMPOO", "aisle": 6, "bay": 18, "side": "R", "qty": 3 }
+  ]
+}

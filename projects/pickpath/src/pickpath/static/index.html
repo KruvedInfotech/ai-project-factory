@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PickPath — warehouse pick planner</title>
+  <style>
+    :root {
+      --ink: #e8edf2;
+      --muted: #9aa8b5;
+      --paper: #1b242c;
+      --panel: #24303a;
+      --line: rgba(232, 237, 242, 0.12);
+      --mark: #f0c400;
+      --ok: #3dba8a;
+      --bad: #e06b4f;
+      --path: #7ad7ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 80% -10%, rgba(240,196,0,0.08), transparent 42%),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--mark);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; color: var(--muted); }
+    .stamp {
+      border: 2px solid var(--mark);
+      color: var(--mark);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+      color: var(--mark);
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; color: var(--muted); }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #1b242c;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 34%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--mark);
+      background: var(--mark);
+      color: #1b242c;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+    button:hover { filter: brightness(1.06); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #1b242c;
+    }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--bad); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 520px;
+      border: 1px solid var(--line);
+      background: #151c22;
+    }
+    .compare {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .compare b { color: var(--path); }
+    .skipped { margin-top: 12px; color: var(--bad); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--bad); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PickPath</h1>
+      <p>Plan a picker walk for a rectangular warehouse. Paths stay in aisles and cross-aisles. Auto picks the shortest of S-shape, return, and nearest + 2-opt.</p>
+    </div>
+    <div class="stamp">Wave sheet · not a WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Pick wave</h2>
+      <label for="preset">Warehouse</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">auto (shortest)</option>
+            <option value="s_shape">s-shape</option>
+            <option value="return">return</option>
+            <option value="nearest">nearest + 2-opt</option>
+          </select>
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>Aisle</th><th>Bay</th><th>Side</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add line</button>
+        <button type="button" id="route">Route wave</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Floor map</h2>
+      <div class="stats">
+        <div class="stat" id="statStops"><span>Stops</span><b>—</b></div>
+        <div class="stat" id="statWalk"><span>Walk</span><b>—</b></div>
+        <div class="stat" id="statTime"><span>Total time</span><b>—</b></div>
+        <div class="stat" id="statSkip"><span>Skipped</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="720" aria-label="Warehouse floor map"></canvas>
+      <div class="compare" id="compare"></div>
+      <div class="skipped" id="skipped"></div>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const error = document.getElementById("error");
+
+    function addRow(pick = {}) {
+      const tr = document.createElement("tr");
+      const cells = [
+        ["sku", pick.sku || ""],
+        ["aisle", pick.aisle ?? ""],
+        ["bay", pick.bay ?? ""],
+        ["side", pick.side || "L"],
+        ["qty", pick.qty ?? 1],
+      ];
+      tr.innerHTML = cells.map(([k, v]) => `<td><input data-k="${k}" value="${v}" /></td>`).join("");
+      rows.appendChild(tr);
+    }
+
+    function readPicks() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          sku: get("sku").trim(),
+          aisle: Number(get("aisle")),
+          bay: Number(get("bay")),
+          side: (get("side") || "L").toUpperCase(),
+          qty: Number(get("qty") || 1),
+        };
+      }).filter(p => p.sku);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.aisle_count}×${p.bays_per_aisle}`;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_6x20";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ sku: "MILK-1L", aisle: 1, bay: 3, side: "L", qty: 2 });
+      addRow({ sku: "BREAD", aisle: 2, bay: 2, side: "L", qty: 1 });
+      addRow({ sku: "RICE-5", aisle: 3, bay: 8, side: "L", qty: 3 });
+      addRow({ sku: "TEA-500", aisle: 5, bay: 6, side: "R", qty: 6 });
+    }
+
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.picks || []).forEach(addRow);
+      if (data.warehouse?.preset) preset.value = data.warehouse.preset;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("route").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        warehouse: { preset: preset.value },
+        strategy: strategy.value,
+        picks: readPicks(),
+      };
+      const res = await fetch("/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Route failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statStops", String(data.routed_count), "good");
+      set("statWalk", data.distance_m.toFixed(1) + " m");
+      set("statTime", data.total_min.toFixed(1) + " min");
+      set("statSkip", String(data.skipped_count), data.skipped_count ? "bad" : "good");
+      const cmp = data.comparison || {};
+      document.getElementById("compare").innerHTML = Object.keys(cmp).map(name => {
+        const mark = name === data.chosen_strategy ? " ←" : "";
+        return `<span>${name.replaceAll("_", "-")}: <b>${cmp[name].toFixed(1)} m</b>${mark}</span>`;
+      }).join("");
+      document.getElementById("skipped").textContent = (data.skipped || [])
+        .map(u => `${u.sku}: ${u.reason}`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      const w = data.warehouse;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const left = w.left_edge;
+      const width = w.floor_width_m;
+      const depth = w.aisle_length_m;
+      const pad = 48;
+      const scale = Math.min((canvas.width - pad * 2) / width, (canvas.height - pad * 2) / (depth + 2));
+      const ox = pad - left * scale;
+      const oy = canvas.height - pad;
+      const X = x => ox + x * scale;
+      const Y = y => oy - y * scale;
+
+      ctx.fillStyle = "#1a2229";
+      ctx.fillRect(X(left), Y(depth), width * scale, depth * scale);
+
+      for (let a = 1; a <= w.aisle_count; a++) {
+        const cx = (a - 1) * w.aisle_pitch_m;
+        const walkL = cx - w.aisle_width_m / 2;
+        const rack = w.rack_depth_m;
+        ctx.fillStyle = "#2c241c";
+        ctx.fillRect(X(walkL - rack), Y(depth), rack * scale, depth * scale);
+        ctx.fillRect(X(cx + w.aisle_width_m / 2), Y(depth), rack * scale, depth * scale);
+        ctx.fillStyle = "#24313b";
+        ctx.fillRect(X(walkL), Y(depth), w.aisle_width_m * scale, depth * scale);
+        ctx.fillStyle = "#f0c400";
+        ctx.font = "12px ui-monospace, monospace";
+        ctx.fillText(String(a), X(cx) - 4, Y(depth) - 8);
+      }
+
+      ctx.strokeStyle = "rgba(240,196,0,0.45)";
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(X(left), Y(0));
+      ctx.lineTo(X(left + width), Y(0));
+      if (w.has_rear) {
+        ctx.moveTo(X(left), Y(depth));
+        ctx.lineTo(X(left + width), Y(depth));
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const path = data.path || [];
+      if (path.length > 1) {
+        ctx.strokeStyle = "#7ad7ff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(X(path[0].x), Y(path[0].y));
+        for (let i = 1; i < path.length; i++) ctx.lineTo(X(path[i].x), Y(path[i].y));
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+
+      ctx.fillStyle = "#f0c400";
+      ctx.beginPath();
+      ctx.arc(X(path[0] ? path[0].x : 0), Y(0), 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#e8edf2";
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.fillText("DEPOT", X(path[0] ? path[0].x : 0) + 8, Y(0) + 12);
+
+      for (const stop of data.stops || []) {
+        ctx.fillStyle = "#3dba8a";
+        ctx.beginPath();
+        ctx.arc(X(stop.x), Y(stop.y), 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#151c22";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(String(stop.seq), X(stop.x), Y(stop.y) + 4);
+        ctx.textAlign = "left";
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

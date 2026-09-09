@@ -1,0 +1,9 @@
+{
+  "warehouse": { "preset": "mini_4x8" },
+  "strategy": "auto",
+  "picks": [
+    { "sku": "OK-1", "aisle": 1, "bay": 2, "side": "L", "qty": 1 },
+    { "sku": "OK-2", "aisle": 2, "bay": 6, "side": "R", "qty": 1 },
+    { "sku": "GHOST", "aisle": 9, "bay": 1, "side": "L", "qty": 1 }
+  ]
+}
