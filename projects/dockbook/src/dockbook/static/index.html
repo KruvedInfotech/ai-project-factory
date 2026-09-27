@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DockBook — yard board</title>
+  <style>
+    :root {
+      --ink: #14202c;
+      --paper: #dce3ea;
+      --board: #0e1620;
+      --amber: #e0a106;
+      --steel: #6d7f93;
+      --ok: #3d8f6e;
+      --rust: #c24a28;
+      --line: rgba(20, 32, 44, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(14, 22, 32, 0.08), transparent 160px),
+        repeating-linear-gradient(90deg, transparent 0 55px, rgba(20,32,44,0.05) 55px 56px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 50ch; }
+    .stamp {
+      border: 2px solid var(--amber);
+      color: var(--ink);
+      background: rgba(224, 161, 6, 0.16);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 460px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f7fafc;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f7fafc;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(224,161,6,0.16), transparent 36%),
+        var(--board);
+    }
+    .leftover { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>DockBook</h1>
+      <p>Book inbound and outbound trailers onto dock doors. Windows, reefer rules, and turnaround gaps are enforced. Overlaps never share a door.</p>
+    </div>
+    <div class="stamp">Yard board · not a WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Day plan</h2>
+      <label for="preset">Yard</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="turnaround">Turnaround (min)</label>
+          <input id="turnaround" type="number" min="0" step="5" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto (prefer door, else earliest)</option>
+            <option value="earliest">Earliest feasible start</option>
+            <option value="preferred">Preferred door only</option>
+            <option value="spread">Spread across doors</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+        <div>
+          <label for="hours">Hours (read-only)</label>
+          <input id="hours" type="text" readonly />
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>Carrier</th><th>Dir</th><th>Reef</th><th>m</th><th>Min</th><th>From</th><th>To</th><th>Door</th><th>Pri</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add trailer</button>
+        <button type="button" id="book">Book dock</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Door board</h2>
+      <div class="stats">
+        <div class="stat" id="statBooked"><span>Booked</span><b>—</b></div>
+        <div class="stat" id="statFill"><span>Door fill</span><b>—</b></div>
+        <div class="stat" id="statDoors"><span>Doors used</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left in yard</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1200" height="560" aria-label="Dock door Gantt"></canvas>
+      <div class="leftover" id="leftover"></div>
+    </section>
+  </main>
+  <script>
+    const colors = {
+      inbound: "#6ea8d4",
+      outbound: "#e0a106",
+      reefer: "#7ec8a3",
+    };
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const turnaround = document.getElementById("turnaround");
+    const strategy = document.getElementById("strategy");
+    const hours = document.getElementById("hours");
+    const error = document.getElementById("error");
+    let presets = [];
+
+    function addRow(t = {}) {
+      const tr = document.createElement("tr");
+      const dir = t.direction || "inbound";
+      const reef = t.reefer ? "yes" : "no";
+      tr.innerHTML = `
+        <td><input data-k="id" value="${t.id || ""}" /></td>
+        <td><input data-k="carrier" value="${t.carrier || ""}" /></td>
+        <td><select data-k="direction"><option value="inbound">in</option><option value="outbound">out</option></select></td>
+        <td><select data-k="reefer"><option value="no">dry</option><option value="yes">reef</option></select></td>
+        <td><input data-k="length_m" value="${t.length_m ?? 13.6}" /></td>
+        <td><input data-k="duration_min" value="${t.duration_min ?? 60}" /></td>
+        <td><input data-k="window_start" value="${t.window_start || "08:00"}" /></td>
+        <td><input data-k="window_end" value="${t.window_end || "12:00"}" /></td>
+        <td><input data-k="prefer_door" value="${t.prefer_door || ""}" /></td>
+        <td><input data-k="priority" value="${t.priority ?? 2}" /></td>
+      `;
+      tr.querySelector('[data-k="direction"]').value = dir;
+      tr.querySelector('[data-k="reefer"]').value = reef;
+      rows.appendChild(tr);
+    }
+
+    function readTrailers() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          id: get("id").trim(),
+          carrier: get("carrier").trim(),
+          direction: get("direction"),
+          reefer: get("reefer") === "yes",
+          length_m: Number(get("length_m")),
+          duration_min: Number(get("duration_min")),
+          window_start: get("window_start").trim(),
+          window_end: get("window_end").trim(),
+          prefer_door: get("prefer_door").trim() || null,
+          priority: Number(get("priority") || 2),
+        };
+      }).filter(t => t.id);
+    }
+
+    function applyPresetMeta(id) {
+      const yard = presets.find(p => p.id === id);
+      if (!yard) return;
+      turnaround.value = yard.turnaround_min;
+      hours.value = `${yard.open}–${yard.close} · ${yard.doors.length} doors`;
+    }
+
+    async function boot() {
+      presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        preset.appendChild(opt);
+      });
+      preset.value = "fmcg_4";
+      applyPresetMeta(preset.value);
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "IN-104", carrier: "BlueLine", direction: "inbound", length_m: 13.6, duration_min: 75, window_start: "07:00", window_end: "11:00" });
+      addRow({ id: "IN-218", carrier: "Coastal", direction: "inbound", length_m: 12, duration_min: 60, window_start: "08:00", window_end: "12:00" });
+      addRow({ id: "OUT-77", carrier: "Metro", direction: "outbound", length_m: 13.6, duration_min: 90, window_start: "09:00", window_end: "14:00" });
+    }
+
+    preset.addEventListener("change", () => applyPresetMeta(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.trailers || []).forEach(addRow);
+      if (data.yard?.preset) preset.value = data.yard.preset;
+      applyPresetMeta(preset.value);
+      if (data.yard?.turnaround_min != null) turnaround.value = data.yard.turnaround_min;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("book").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        yard: { preset: preset.value, turnaround_min: Number(turnaround.value) },
+        strategy: strategy.value,
+        trailers: readTrailers(),
+      };
+      const res = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Book failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      const used = (data.doors || []).filter(d => d.booked_min > 0).length;
+      set("statBooked", String(data.booked_count), "good");
+      set("statFill", Math.round((data.utilization || 0) * 100) + "%");
+      set("statDoors", `${used}/${(data.doors || []).length}`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("leftover").textContent = (data.leftover || [])
+        .map(u => `${u.id}: ${u.reason}`)
+        .join(" · ");
+    }
+
+    function parseMin(hhmm) {
+      if (hhmm === "24:00") return 1440;
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const yard = data.yard;
+      const doors = yard.doors;
+      const open = parseMin(yard.open);
+      const close = parseMin(yard.close);
+      const span = Math.max(1, close - open);
+      const left = 90;
+      const top = 36;
+      const right = canvas.width - 24;
+      const bottom = canvas.height - 36;
+      const rowH = (bottom - top) / Math.max(doors.length, 1);
+
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(left, top, right - left, bottom - top);
+      ctx.strokeStyle = "rgba(224,161,6,0.28)";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillStyle = "#d7dee6";
+      const ticks = 8;
+      for (let i = 0; i <= ticks; i++) {
+        const t = open + (span * i) / ticks;
+        const x = left + ((t - open) / span) * (right - left);
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        const hh = String(Math.floor(t / 60) % 24).padStart(2, "0");
+        const mm = String(Math.floor(t % 60)).padStart(2, "0");
+        ctx.fillText(t >= 1440 ? "24:00" : `${hh}:${mm}`, x - 16, bottom + 18);
+      }
+
+      doors.forEach((door, i) => {
+        const y = top + i * rowH;
+        ctx.fillStyle = "#9eb0c2";
+        ctx.font = "13px ui-monospace, monospace";
+        ctx.fillText(door.id, 16, y + rowH * 0.55);
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.beginPath(); ctx.moveTo(left, y + rowH); ctx.lineTo(right, y + rowH); ctx.stroke();
+      });
+
+      for (const b of data.bookings || []) {
+        const doorIndex = doors.findIndex(d => d.id === b.door_id);
+        if (doorIndex < 0) continue;
+        const x0 = left + ((parseMin(b.start) - open) / span) * (right - left);
+        const x1 = left + ((parseMin(b.end) - open) / span) * (right - left);
+        const y = top + doorIndex * rowH + 8;
+        const h = rowH - 16;
+        const fill = b.reefer ? colors.reefer : colors[b.direction] || colors.inbound;
+        ctx.fillStyle = fill;
+        ctx.fillRect(x0, y, Math.max(6, x1 - x0), h);
+        ctx.strokeStyle = "#0e1620";
+        ctx.strokeRect(x0, y, Math.max(6, x1 - x0), h);
+        ctx.fillStyle = "#14202c";
+        ctx.font = "11px ui-monospace, monospace";
+        if (x1 - x0 > 52) ctx.fillText(b.id, x0 + 6, y + h * 0.62);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

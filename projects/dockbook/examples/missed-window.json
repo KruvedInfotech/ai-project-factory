@@ -1,0 +1,44 @@
+{
+  "yard": { "preset": "mini_2", "turnaround_min": 10 },
+  "strategy": "preferred",
+  "trailers": [
+    {
+      "id": "KEEP-A",
+      "carrier": "Local",
+      "direction": "inbound",
+      "length_m": 10.0,
+      "duration_min": 60,
+      "window_start": "08:00",
+      "window_end": "11:00",
+      "prefer_door": "A"
+    },
+    {
+      "id": "KEEP-B",
+      "carrier": "Local",
+      "direction": "outbound",
+      "length_m": 10.0,
+      "duration_min": 60,
+      "window_start": "08:00",
+      "window_end": "11:00",
+      "prefer_door": "B"
+    },
+    {
+      "id": "LATE",
+      "carrier": "NightOwl",
+      "direction": "inbound",
+      "length_m": 10.0,
+      "duration_min": 90,
+      "window_start": "15:00",
+      "window_end": "18:00"
+    },
+    {
+      "id": "LONG-HAUL",
+      "carrier": "Mega",
+      "direction": "inbound",
+      "length_m": 18.0,
+      "duration_min": 45,
+      "window_start": "09:00",
+      "window_end": "12:00"
+    }
+  ]
+}

@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### DockBook — dock-door appointment booker
+
+| | |
+| --- | --- |
+| **Date** | 2026-09-27 |
+| **Intended repo** | `https://github.com/KruvedInfotech/dockbook` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/dockbook`](projects/dockbook/) |
+| **What it is** | Yard planner for inbound/outbound trailers. Window + reefer + turnaround rules, leftover list, Gantt door board. |
+
+**How it works (short):** trailers are sorted by priority, then by how tight the window is. Each one takes the earliest matching door that stays inside the window, does not overlap, and leaves the turnaround gap. **Auto** honors a preferred door when it is feasible. Reefers only use reefer-capable doors.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/dockbook
+PYTHONPATH=src python3 -m dockbook presets
+PYTHONPATH=src python3 -m dockbook book examples/morning-inbound.json
+PYTHONPATH=src python3 -m dockbook serve --host 127.0.0.1 --port 8767
+```
+
+Open `http://127.0.0.1:8767`, then **Book dock**. Full detail is in the [DockBook README](projects/dockbook/README.md).

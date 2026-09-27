@@ -1,0 +1,61 @@
+{
+  "yard": { "preset": "crossdock_8" },
+  "strategy": "spread",
+  "trailers": [
+    {
+      "id": "OUT-01",
+      "carrier": "Metro",
+      "direction": "outbound",
+      "length_m": 16.0,
+      "duration_min": 50,
+      "window_start": "04:00",
+      "window_end": "08:00"
+    },
+    {
+      "id": "OUT-02",
+      "carrier": "Metro",
+      "direction": "outbound",
+      "length_m": 13.6,
+      "duration_min": 50,
+      "window_start": "04:00",
+      "window_end": "08:00"
+    },
+    {
+      "id": "OUT-03",
+      "carrier": "Hilltop",
+      "direction": "outbound",
+      "length_m": 16.0,
+      "duration_min": 40,
+      "window_start": "04:30",
+      "window_end": "08:00"
+    },
+    {
+      "id": "OUT-04",
+      "carrier": "Coastal",
+      "direction": "outbound",
+      "reefer": true,
+      "length_m": 13.6,
+      "duration_min": 45,
+      "window_start": "05:00",
+      "window_end": "09:00"
+    },
+    {
+      "id": "IN-01",
+      "carrier": "BlueLine",
+      "direction": "inbound",
+      "length_m": 16.0,
+      "duration_min": 70,
+      "window_start": "06:00",
+      "window_end": "10:00"
+    },
+    {
+      "id": "IN-02",
+      "carrier": "BlueLine",
+      "direction": "inbound",
+      "length_m": 13.6,
+      "duration_min": 60,
+      "window_start": "06:30",
+      "window_end": "10:00"
+    }
+  ]
+}
