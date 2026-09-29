@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wavecut"
+version = "0.1.0"
+description = "Warehouse wave release planner for outbound orders."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "warehouse", "wave", "outbound", "cutoff"]
+dependencies = []
+
+[project.scripts]
+wavecut = "wavecut.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wavecut = ["static/*"]

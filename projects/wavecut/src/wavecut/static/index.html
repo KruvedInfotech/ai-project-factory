@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WaveCut — wave board</title>
+  <style>
+    :root {
+      --ink: #1a2430;
+      --paper: #d8e4dc;
+      --board: #102018;
+      --amber: #d9a441;
+      --ok: #2f7d5b;
+      --rust: #b33b2b;
+      --line: rgba(26, 36, 48, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(16, 32, 24, 0.10), transparent 170px),
+        repeating-linear-gradient(90deg, transparent 0 52px, rgba(26,36,48,0.05) 52px 53px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--ok);
+      color: var(--ink);
+      background: rgba(47, 125, 91, 0.14);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 470px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f4faf6;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f4faf6;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 440px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(217,164,65,0.16), transparent 36%),
+        var(--board);
+    }
+    .leftover { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>WaveCut</h1>
+      <p>Cut outbound orders into timed pick waves. Cutoff, cube, line, and pick-minute caps are enforced. A wave only keeps an order if picking can finish before the ship cutoff.</p>
+    </div>
+    <div class="stamp">Wave board · not a WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave plan</h2>
+      <label for="preset">Shift</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="waveMin">Wave length (min)</label>
+          <input id="waveMin" type="number" min="15" step="15" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto (cutoff, then zone affinity)</option>
+            <option value="cutoff">Soonest cutoff first</option>
+            <option value="zone">Batch by pick zone</option>
+            <option value="cube">Largest cube first</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+        <div>
+          <label for="hours">Hours (read-only)</label>
+          <input id="hours" type="text" readonly />
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>Chan</th><th>Zone</th><th>Ln</th><th>m³</th><th>Pick</th><th>Cut</th><th>Pri</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add order</button>
+        <button type="button" id="cut">Cut waves</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Wave board</h2>
+      <div class="stats">
+        <div class="stat" id="statAssigned"><span>Assigned</span><b>—</b></div>
+        <div class="stat" id="statFill"><span>Pick fill</span><b>—</b></div>
+        <div class="stat" id="statWaves"><span>Waves used</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Missed cutoff</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1200" height="580" aria-label="Wave Gantt"></canvas>
+      <div class="leftover" id="leftover"></div>
+    </section>
+  </main>
+  <script>
+    const colors = {
+      ambient: "#d9a441",
+      chill: "#6ec4c1",
+      freezer: "#7ea0d6",
+      bulk: "#c9846a",
+    };
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const waveMin = document.getElementById("waveMin");
+    const strategy = document.getElementById("strategy");
+    const hours = document.getElementById("hours");
+    const error = document.getElementById("error");
+    let presets = [];
+
+    function addRow(o = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${o.id || ""}" /></td>
+        <td>
+          <select data-k="channel">
+            <option value="store">store</option>
+            <option value="ecom">ecom</option>
+            <option value="wholesale">whsl</option>
+            <option value="other">other</option>
+          </select>
+        </td>
+        <td>
+          <select data-k="zone">
+            <option value="ambient">amb</option>
+            <option value="chill">chill</option>
+            <option value="freezer">frz</option>
+            <option value="bulk">bulk</option>
+          </select>
+        </td>
+        <td><input data-k="lines" value="${o.lines ?? 4}" /></td>
+        <td><input data-k="cube_m3" value="${o.cube_m3 ?? 0.4}" /></td>
+        <td><input data-k="pick_min" value="${o.pick_min ?? 16}" /></td>
+        <td><input data-k="cutoff" value="${o.cutoff || "10:00"}" /></td>
+        <td><input data-k="priority" value="${o.priority ?? 2}" /></td>
+      `;
+      tr.querySelector('[data-k="channel"]').value = o.channel || "store";
+      tr.querySelector('[data-k="zone"]').value = o.zone || "ambient";
+      rows.appendChild(tr);
+    }
+
+    function readOrders() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          id: get("id").trim(),
+          channel: get("channel"),
+          zone: get("zone"),
+          lines: Number(get("lines")),
+          units: Number(get("lines")),
+          cube_m3: Number(get("cube_m3")),
+          pick_min: Number(get("pick_min")),
+          cutoff: get("cutoff").trim(),
+          priority: Number(get("priority") || 2),
+        };
+      }).filter(o => o.id);
+    }
+
+    function applyPresetMeta(id) {
+      const shift = presets.find(p => p.id === id);
+      if (!shift) return;
+      waveMin.value = shift.wave_min;
+      hours.value = `${shift.open}–${shift.close} · ${shift.wave_count} waves`;
+    }
+
+    async function boot() {
+      presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_am";
+      applyPresetMeta(preset.value);
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "SO-101", channel: "store", zone: "ambient", lines: 6, cube_m3: 0.4, pick_min: 18, cutoff: "07:00", priority: 1 });
+      addRow({ id: "SO-103", channel: "store", zone: "chill", lines: 5, cube_m3: 0.3, pick_min: 16, cutoff: "07:00", priority: 1 });
+      addRow({ id: "SO-104", channel: "store", zone: "ambient", lines: 10, cube_m3: 0.8, pick_min: 28, cutoff: "08:00" });
+    }
+
+    preset.addEventListener("change", () => applyPresetMeta(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.orders || []).forEach(addRow);
+      if (data.shift?.preset) preset.value = data.shift.preset;
+      applyPresetMeta(preset.value);
+      if (data.shift?.wave_min != null) waveMin.value = data.shift.wave_min;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("cut").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        shift: { preset: preset.value, wave_min: Number(waveMin.value) },
+        strategy: strategy.value,
+        orders: readOrders(),
+      };
+      const res = await fetch("/api/cut", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Cut failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      const used = (data.waves || []).filter(w => w.order_count > 0).length;
+      set("statAssigned", String(data.assigned_count), "good");
+      set("statFill", Math.round((data.utilization || 0) * 100) + "%");
+      set("statWaves", `${used}/${(data.waves || []).length}`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("leftover").textContent = (data.leftover || [])
+        .map(u => `${u.id}: ${u.reason}`)
+        .join(" · ");
+    }
+
+    function parseMin(hhmm) {
+      if (hhmm === "24:00") return 1440;
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const shift = data.shift;
+      const waves = (data.waves || []).filter(w => w.order_count > 0);
+      const display = waves.length ? waves : (data.waves || []).slice(0, 4);
+      const open = parseMin(shift.open);
+      const close = parseMin(shift.close);
+      const span = Math.max(1, close - open);
+      const left = 90;
+      const top = 36;
+      const right = canvas.width - 24;
+      const bottom = canvas.height - 36;
+      const rowH = (bottom - top) / Math.max(display.length, 1);
+
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(left, top, right - left, bottom - top);
+      ctx.strokeStyle = "rgba(217,164,65,0.28)";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillStyle = "#d7dee6";
+      const ticks = 8;
+      for (let i = 0; i <= ticks; i++) {
+        const t = open + (span * i) / ticks;
+        const x = left + ((t - open) / span) * (right - left);
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke();
+        const hh = String(Math.floor(t / 60) % 24).padStart(2, "0");
+        const mm = String(Math.floor(t % 60)).padStart(2, "0");
+        ctx.fillText(t >= 1440 ? "24:00" : `${hh}:${mm}`, x - 16, bottom + 18);
+      }
+
+      display.forEach((wave, i) => {
+        const y = top + i * rowH;
+        ctx.fillStyle = "#9eb0c2";
+        ctx.font = "13px ui-monospace, monospace";
+        ctx.fillText(wave.id, 16, y + rowH * 0.55);
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.beginPath(); ctx.moveTo(left, y + rowH); ctx.lineTo(right, y + rowH); ctx.stroke();
+
+        const x0 = left + ((parseMin(wave.start) - open) / span) * (right - left);
+        const x1 = left + ((parseMin(wave.end) - open) / span) * (right - left);
+        const slotW = Math.max(8, x1 - x0);
+        const inner = wave.orders || [];
+        const gap = 4;
+        const chipH = Math.max(16, (rowH - 16 - gap * Math.max(inner.length - 1, 0)) / Math.max(inner.length, 1));
+        inner.forEach((order, n) => {
+          const cy = y + 8 + n * (chipH + gap);
+          ctx.fillStyle = colors[order.zone] || colors.ambient;
+          ctx.fillRect(x0, cy, slotW, chipH);
+          ctx.strokeStyle = "#102018";
+          ctx.strokeRect(x0, cy, slotW, chipH);
+          ctx.fillStyle = "#14202c";
+          ctx.font = "11px ui-monospace, monospace";
+          if (slotW > 56 && chipH > 12) ctx.fillText(order.id, x0 + 6, cy + chipH * 0.68);
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

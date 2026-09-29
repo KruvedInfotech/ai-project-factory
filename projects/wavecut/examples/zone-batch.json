@@ -1,0 +1,83 @@
+{
+  "shift": { "preset": "wholesale_pm" },
+  "strategy": "zone",
+  "orders": [
+    {
+      "id": "WS-A1",
+      "channel": "wholesale",
+      "zone": "ambient",
+      "lines": 18,
+      "units": 180,
+      "cube_m3": 2.40,
+      "pick_min": 40,
+      "cutoff": "16:00",
+      "priority": 2
+    },
+    {
+      "id": "WS-C1",
+      "channel": "wholesale",
+      "zone": "chill",
+      "lines": 12,
+      "units": 96,
+      "cube_m3": 1.60,
+      "pick_min": 32,
+      "cutoff": "15:00",
+      "priority": 1
+    },
+    {
+      "id": "WS-A2",
+      "channel": "wholesale",
+      "zone": "ambient",
+      "lines": 14,
+      "units": 140,
+      "cube_m3": 1.90,
+      "pick_min": 36,
+      "cutoff": "17:00",
+      "priority": 2
+    },
+    {
+      "id": "WS-C2",
+      "channel": "wholesale",
+      "zone": "chill",
+      "lines": 10,
+      "units": 80,
+      "cube_m3": 1.20,
+      "pick_min": 28,
+      "cutoff": "16:30",
+      "priority": 2
+    },
+    {
+      "id": "WS-A3",
+      "channel": "wholesale",
+      "zone": "ambient",
+      "lines": 16,
+      "units": 160,
+      "cube_m3": 2.10,
+      "pick_min": 38,
+      "cutoff": "18:00",
+      "priority": 2
+    },
+    {
+      "id": "WS-C3",
+      "channel": "wholesale",
+      "zone": "chill",
+      "lines": 9,
+      "units": 54,
+      "cube_m3": 0.90,
+      "pick_min": 22,
+      "cutoff": "18:00",
+      "priority": 2
+    },
+    {
+      "id": "WS-A4",
+      "channel": "wholesale",
+      "zone": "ambient",
+      "lines": 11,
+      "units": 88,
+      "cube_m3": 1.40,
+      "pick_min": 30,
+      "cutoff": "19:00",
+      "priority": 3
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "shift": { "preset": "grocery_am" },
+  "strategy": "auto",
+  "orders": [
+    {
+      "id": "SO-101",
+      "channel": "store",
+      "zone": "ambient",
+      "lines": 6,
+      "units": 48,
+      "cube_m3": 0.40,
+      "pick_min": 18,
+      "cutoff": "07:00",
+      "priority": 1
+    },
+    {
+      "id": "SO-102",
+      "channel": "store",
+      "zone": "ambient",
+      "lines": 8,
+      "units": 64,
+      "cube_m3": 0.60,
+      "pick_min": 22,
+      "cutoff": "07:30",
+      "priority": 2
+    },
+    {
+      "id": "SO-103",
+      "channel": "store",
+      "zone": "chill",
+      "lines": 5,
+      "units": 30,
+      "cube_m3": 0.30,
+      "pick_min": 16,
+      "cutoff": "07:00",
+      "priority": 1
+    },
+    {
+      "id": "SO-104",
+      "channel": "store",
+      "zone": "ambient",
+      "lines": 10,
+      "units": 80,
+      "cube_m3": 0.80,
+      "pick_min": 28,
+      "cutoff": "08:00",
+      "priority": 2
+    },
+    {
+      "id": "SO-105",
+      "channel": "store",
+      "zone": "freezer",
+      "lines": 4,
+      "units": 16,
+      "cube_m3": 0.20,
+      "pick_min": 14,
+      "cutoff": "08:30",
+      "priority": 2
+    },
+    {
+      "id": "SO-106",
+      "channel": "store",
+      "zone": "ambient",
+      "lines": 7,
+      "units": 42,
+      "cube_m3": 0.50,
+      "pick_min": 20,
+      "cutoff": "09:00",
+      "priority": 2
+    },
+    {
+      "id": "SO-107",
+      "channel": "store",
+      "zone": "chill",
+      "lines": 6,
+      "units": 36,
+      "cube_m3": 0.35,
+      "pick_min": 17,
+      "cutoff": "09:30",
+      "priority": 2
+    },
+    {
+      "id": "SO-108",
+      "channel": "store",
+      "zone": "ambient",
+      "lines": 9,
+      "units": 54,
+      "cube_m3": 0.70,
+      "pick_min": 24,
+      "cutoff": "10:00",
+      "priority": 3
+    }
+  ]
+}
