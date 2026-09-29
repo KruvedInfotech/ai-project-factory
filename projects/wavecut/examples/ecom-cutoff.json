@@ -1,0 +1,94 @@
+{
+  "shift": { "preset": "ecom_day" },
+  "strategy": "cutoff",
+  "orders": [
+    {
+      "id": "EC-201",
+      "channel": "ecom",
+      "zone": "ambient",
+      "lines": 3,
+      "units": 5,
+      "cube_m3": 0.08,
+      "pick_min": 12,
+      "cutoff": "10:00",
+      "priority": 1
+    },
+    {
+      "id": "EC-202",
+      "channel": "ecom",
+      "zone": "ambient",
+      "lines": 2,
+      "units": 2,
+      "cube_m3": 0.04,
+      "pick_min": 8,
+      "cutoff": "11:00",
+      "priority": 2
+    },
+    {
+      "id": "EC-203",
+      "channel": "ecom",
+      "zone": "chill",
+      "lines": 4,
+      "units": 8,
+      "cube_m3": 0.12,
+      "pick_min": 15,
+      "cutoff": "10:30",
+      "priority": 1
+    },
+    {
+      "id": "EC-204",
+      "channel": "ecom",
+      "zone": "ambient",
+      "lines": 6,
+      "units": 12,
+      "cube_m3": 0.22,
+      "pick_min": 20,
+      "cutoff": "14:00",
+      "priority": 2
+    },
+    {
+      "id": "EC-205",
+      "channel": "ecom",
+      "zone": "freezer",
+      "lines": 2,
+      "units": 2,
+      "cube_m3": 0.06,
+      "pick_min": 10,
+      "cutoff": "12:00",
+      "priority": 2
+    },
+    {
+      "id": "EC-206",
+      "channel": "ecom",
+      "zone": "ambient",
+      "lines": 5,
+      "units": 9,
+      "cube_m3": 0.18,
+      "pick_min": 16,
+      "cutoff": "16:00",
+      "priority": 3
+    },
+    {
+      "id": "EC-207",
+      "channel": "ecom",
+      "zone": "bulk",
+      "lines": 1,
+      "units": 1,
+      "cube_m3": 0.55,
+      "pick_min": 14,
+      "cutoff": "15:00",
+      "priority": 2
+    },
+    {
+      "id": "EC-208",
+      "channel": "ecom",
+      "zone": "ambient",
+      "lines": 3,
+      "units": 4,
+      "cube_m3": 0.09,
+      "pick_min": 11,
+      "cutoff": "18:00",
+      "priority": 3
+    }
+  ]
+}

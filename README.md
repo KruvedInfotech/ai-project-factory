@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### WaveCut — warehouse wave planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-09-29 |
+| **Intended repo** | `https://github.com/KruvedInfotech/wavecut` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/wavecut`](projects/wavecut/) |
+| **What it is** | Outbound wave cutter. Cutoff + cube + pick-minute caps, leftover list, Gantt wave board. |
+
+**How it works (short):** the shift is sliced into fixed wave slots. Orders are sorted by priority, then by cutoff, zone, or cube. Each order takes the earliest matching wave that still finishes picking before the ship cutoff and stays inside the caps. **Auto** keeps zone affinity when that is feasible. Zone-pure shifts never mix ambient with chill.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/wavecut
+PYTHONPATH=src python3 -m wavecut presets
+PYTHONPATH=src python3 -m wavecut cut examples/morning-stores.json
+PYTHONPATH=src python3 -m wavecut serve --host 127.0.0.1 --port 8768
+```
+
+Open `http://127.0.0.1:8768`, then **Cut waves**. Full detail is in the [WaveCut README](projects/wavecut/README.md).
