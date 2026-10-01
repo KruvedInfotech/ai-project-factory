@@ -1,0 +1,71 @@
+{
+  "warehouse": { "preset": "ecom_4" },
+  "strategy": "demand",
+  "faces": [
+    {
+      "id": "E1-PAC",
+      "sku": "PAC-100",
+      "aisle": 1,
+      "bay": 2,
+      "min_qty": 20,
+      "max_qty": 80,
+      "on_hand": 28,
+      "case_qty": 8
+    },
+    {
+      "id": "E1-BAG",
+      "sku": "BAG-50",
+      "aisle": 1,
+      "bay": 8,
+      "min_qty": 16,
+      "max_qty": 64,
+      "on_hand": 40,
+      "case_qty": 8
+    },
+    {
+      "id": "E2-CUP",
+      "sku": "CUP-20",
+      "aisle": 2,
+      "bay": 4,
+      "min_qty": 24,
+      "max_qty": 72,
+      "on_hand": 30,
+      "case_qty": 6
+    },
+    {
+      "id": "E3-PEN",
+      "sku": "PEN-10",
+      "aisle": 3,
+      "bay": 1,
+      "min_qty": 40,
+      "max_qty": 160,
+      "on_hand": 12,
+      "case_qty": 20,
+      "priority": 1
+    },
+    {
+      "id": "E4-PAD",
+      "sku": "PAD-A5",
+      "aisle": 4,
+      "bay": 9,
+      "min_qty": 18,
+      "max_qty": 54,
+      "on_hand": 54,
+      "case_qty": 6
+    }
+  ],
+  "reserve": [
+    { "id": "R-PAC", "sku": "PAC-100", "aisle": 6, "cases": 8 },
+    { "id": "R-BAG", "sku": "BAG-50", "aisle": 6, "cases": 4 },
+    { "id": "R-CUP", "sku": "CUP-20", "aisle": 7, "cases": 10 },
+    { "id": "R-PEN-A", "sku": "PEN-10", "aisle": 8, "cases": 3 },
+    { "id": "R-PEN-B", "sku": "PEN-10", "aisle": 3, "cases": 4 },
+    { "id": "R-PAD", "sku": "PAD-A5", "aisle": 7, "cases": 2 }
+  ],
+  "demand": [
+    { "sku": "PAC-100", "units": 22 },
+    { "sku": "BAG-50", "units": 8 },
+    { "sku": "CUP-20", "units": 20 },
+    { "sku": "PEN-10", "units": 6 }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "warehouse": { "preset": "mini_3" },
+  "strategy": "auto",
+  "faces": [
+    {
+      "id": "KEEP",
+      "sku": "KEEP-SKU",
+      "aisle": 1,
+      "bay": 1,
+      "min_qty": 10,
+      "max_qty": 40,
+      "on_hand": 32,
+      "case_qty": 8
+    },
+    {
+      "id": "OK",
+      "sku": "OK-SKU",
+      "aisle": 1,
+      "bay": 2,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 6,
+      "case_qty": 6,
+      "priority": 1
+    },
+    {
+      "id": "SHORT",
+      "sku": "SHORT-SKU",
+      "aisle": 2,
+      "bay": 1,
+      "min_qty": 24,
+      "max_qty": 48,
+      "on_hand": 4,
+      "case_qty": 8
+    },
+    {
+      "id": "NONE",
+      "sku": "NONE-SKU",
+      "aisle": 2,
+      "bay": 3,
+      "min_qty": 10,
+      "max_qty": 30,
+      "on_hand": 2,
+      "case_qty": 5
+    },
+    {
+      "id": "BLOCK",
+      "sku": "BLOCK-SKU",
+      "aisle": 3,
+      "bay": 2,
+      "min_qty": 20,
+      "max_qty": 24,
+      "on_hand": 22,
+      "case_qty": 8
+    }
+  ],
+  "reserve": [
+    { "id": "R-OK", "sku": "OK-SKU", "aisle": 8, "cases": 8 },
+    { "id": "R-SHORT", "sku": "SHORT-SKU", "aisle": 7, "cases": 1 },
+    { "id": "R-KEEP", "sku": "KEEP-SKU", "aisle": 8, "cases": 2 }
+  ],
+  "demand": [
+    { "sku": "BLOCK-SKU", "units": 10 },
+    { "sku": "SHORT-SKU", "units": 8 }
+  ]
+}

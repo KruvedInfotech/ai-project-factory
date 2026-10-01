@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FaceFill — replenishment board</title>
+  <style>
+    :root {
+      --ink: #1c1a16;
+      --paper: #ece3d2;
+      --board: #2a261f;
+      --amber: #d9a441;
+      --ok: #3a7a58;
+      --rust: #b3401a;
+      --teal: #3d7a78;
+      --line: rgba(28, 26, 22, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 38, 31, 0.08), transparent 170px),
+        repeating-linear-gradient(90deg, transparent 0 48px, rgba(28,26,22,0.04) 48px 49px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--teal);
+      color: var(--ink);
+      background: rgba(61, 122, 120, 0.14);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 500px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.7);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .map {
+      overflow: auto;
+      border: 1px solid var(--ink);
+      background: var(--board);
+      padding: 12px;
+    }
+    .aisles {
+      display: flex;
+      gap: 10px;
+      min-height: 280px;
+    }
+    .aisle {
+      flex: 1;
+      min-width: 72px;
+    }
+    .aisle h3 {
+      margin: 0 0 8px;
+      color: #efe6d6;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+    .bay {
+      min-height: 44px;
+      margin-bottom: 6px;
+      padding: 6px;
+      border: 1px solid rgba(239, 230, 214, 0.2);
+      background: rgba(239, 230, 214, 0.08);
+      color: #efe6d6;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .bay.empty { opacity: 0.35; }
+    .bay.healthy { background: rgba(58, 122, 88, 0.72); color: #f4fff6; }
+    .bay.at-risk, .bay.short { background: rgba(217, 164, 65, 0.82); color: #1c1a16; }
+    .bay.blocked, .bay.no-reserve, .bay.outside, .bay.capped { background: rgba(179, 64, 26, 0.86); }
+    .bay.replenished { background: rgba(61, 122, 120, 0.88); }
+    .bay b { display: block; font-size: 12px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 10px 0 0;
+      font-size: 12px;
+    }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      vertical-align: -1px;
+      border: 1px solid var(--ink);
+    }
+    .legend .healthy::before { background: #3a7a58; }
+    .legend .risk::before { background: #d9a441; }
+    .legend .bad::before { background: #b3401a; }
+    .legend .fill::before { background: #3d7a78; }
+    .tasks { margin-top: 14px; font-size: 13px; }
+    .tasks div { margin: 4px 0; font-family: ui-monospace, monospace; }
+    .leftover { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>FaceFill</h1>
+      <p>Plan pick-face replenishment from reserve. Faces already below min, or that the next wave will drain below min, take a drop up to max — nearest pallet first, labor and task caps enforced.</p>
+    </div>
+    <div class="stamp">Face board · not a WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Replen plan</h2>
+      <label for="preset">Warehouse</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="10" step="5" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto (below min, then aisle)</option>
+            <option value="urgent">Lowest fill first</option>
+            <option value="demand">Largest wave demand first</option>
+            <option value="cluster">Walk aisle by aisle</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+        <div>
+          <label for="layout">Layout (read-only)</label>
+          <input id="layout" type="text" readonly />
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Face</th><th>SKU</th><th>A</th><th>B</th><th>OH</th><th>Min</th><th>Max</th><th>Case</th><th>Dem</th><th>Pri</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add face</button>
+        <button type="button" id="fill">Fill faces</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Face board</h2>
+      <div class="stats">
+        <div class="stat" id="statTasks"><span>Tasks</span><b>—</b></div>
+        <div class="stat" id="statCases"><span>Cases</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Leftover</span><b>—</b></div>
+      </div>
+      <div class="map" id="map" aria-label="Aisle heat map"></div>
+      <div class="legend">
+        <span class="healthy">Healthy after wave</span>
+        <span class="risk">At risk / short</span>
+        <span class="fill">Replenished</span>
+        <span class="bad">Blocked or leftover</span>
+      </div>
+      <div class="tasks" id="tasks"></div>
+      <div class="leftover" id="leftover"></div>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const strategy = document.getElementById("strategy");
+    const layout = document.getElementById("layout");
+    const error = document.getElementById("error");
+    let presets = [];
+    let reserve = [];
+
+    function addRow(o = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${o.id || ""}" /></td>
+        <td><input data-k="sku" value="${o.sku || ""}" /></td>
+        <td><input data-k="aisle" value="${o.aisle ?? 1}" /></td>
+        <td><input data-k="bay" value="${o.bay ?? 1}" /></td>
+        <td><input data-k="on_hand" value="${o.on_hand ?? 12}" /></td>
+        <td><input data-k="min_qty" value="${o.min_qty ?? 12}" /></td>
+        <td><input data-k="max_qty" value="${o.max_qty ?? 48}" /></td>
+        <td><input data-k="case_qty" value="${o.case_qty ?? 6}" /></td>
+        <td><input data-k="demand" value="${o.demand ?? 0}" /></td>
+        <td><input data-k="priority" value="${o.priority ?? 2}" /></td>
+      `;
+      rows.appendChild(tr);
+    }
+
+    function num(tr, k) { return Number(tr.querySelector(`[data-k="${k}"]`).value); }
+    function text(tr, k) { return tr.querySelector(`[data-k="${k}"]`).value.trim(); }
+
+    function readFaces() {
+      return [...rows.querySelectorAll("tr")].map(tr => ({
+        id: text(tr, "id"),
+        sku: text(tr, "sku"),
+        aisle: num(tr, "aisle"),
+        bay: num(tr, "bay"),
+        on_hand: num(tr, "on_hand"),
+        min_qty: num(tr, "min_qty"),
+        max_qty: num(tr, "max_qty"),
+        case_qty: num(tr, "case_qty"),
+        demand: num(tr, "demand"),
+        priority: num(tr, "priority") || 2,
+      })).filter(o => o.id && o.sku);
+    }
+
+    function applyPresetMeta(id) {
+      const house = presets.find(p => p.id === id);
+      if (!house) return;
+      labor.value = house.max_labor_min;
+      layout.value = `${house.aisle_count}×${house.bays_per_aisle} · ${house.max_tasks} tasks`;
+    }
+
+    async function boot() {
+      presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_6";
+      applyPresetMeta(preset.value);
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "A1-03", sku: "MILK-1L", aisle: 1, bay: 3, on_hand: 12, min_qty: 24, max_qty: 96, case_qty: 12, demand: 36 });
+      addRow({ id: "A2-05", sku: "OIL-1L", aisle: 2, bay: 5, on_hand: 8, min_qty: 12, max_qty: 48, case_qty: 6, demand: 12 });
+      addRow({ id: "A3-01", sku: "SOAP-BAR", aisle: 3, bay: 1, on_hand: 90, min_qty: 30, max_qty: 120, case_qty: 10, demand: 20 });
+      reserve = [
+        { id: "R-MILK", sku: "MILK-1L", aisle: 12, cases: 10 },
+        { id: "R-OIL", sku: "OIL-1L", aisle: 10, cases: 8 },
+        { id: "R-SOAP", sku: "SOAP-BAR", aisle: 11, cases: 4 },
+      ];
+    }
+
+    preset.addEventListener("change", () => applyPresetMeta(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      const demand = {};
+      (data.demand || []).forEach(d => { demand[d.sku] = (demand[d.sku] || 0) + d.units; });
+      (data.faces || []).forEach(face => addRow({ ...face, demand: demand[face.sku] || 0 }));
+      reserve = data.reserve || [];
+      if (data.warehouse?.preset) preset.value = data.warehouse.preset;
+      applyPresetMeta(preset.value);
+      if (data.warehouse?.max_labor_min != null) labor.value = data.warehouse.max_labor_min;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("fill").onclick = async () => {
+      error.textContent = "";
+      const faces = readFaces();
+      const body = {
+        warehouse: { preset: preset.value, max_labor_min: Number(labor.value) },
+        strategy: strategy.value,
+        faces: faces.map(({ demand, ...face }) => face),
+        reserve,
+        demand: faces.filter(f => f.demand > 0).map(f => ({ sku: f.sku, units: f.demand })),
+      };
+      const res = await fetch("/api/fill", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Fill failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statTasks", String(data.task_count), "good");
+      set("statCases", String(data.case_count));
+      set("statLabor", `${data.labor_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("tasks").innerHTML = (data.tasks || [])
+        .map(t => `<div>${t.face_id} ${t.sku} · ${t.cases} cs → ${t.after_qty} · ${t.trigger}</div>`)
+        .join("");
+      document.getElementById("leftover").textContent = (data.leftover || [])
+        .map(u => `${u.id}: ${u.reason}`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const house = data.warehouse;
+      const bySlot = {};
+      (data.faces || []).forEach(state => {
+        bySlot[`${state.face.aisle}-${state.face.bay}`] = state;
+      });
+      const root = document.getElementById("map");
+      root.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "aisles";
+      for (let aisle = 1; aisle <= house.aisle_count; aisle++) {
+        const col = document.createElement("div");
+        col.className = "aisle";
+        col.innerHTML = `<h3>A${aisle}</h3>`;
+        for (let bay = 1; bay <= house.bays_per_aisle; bay++) {
+          const cell = document.createElement("div");
+          const state = bySlot[`${aisle}-${bay}`];
+          cell.className = "bay " + (state ? state.status : "empty");
+          if (state) {
+            cell.innerHTML = `<b>${state.face.id}</b>${state.face.on_hand}→${state.after_qty}`;
+          } else {
+            cell.textContent = `B${bay}`;
+          }
+          col.appendChild(cell);
+        }
+        wrap.appendChild(col);
+      }
+      root.appendChild(wrap);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

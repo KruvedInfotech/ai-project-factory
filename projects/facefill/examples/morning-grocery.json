@@ -1,0 +1,106 @@
+{
+  "warehouse": { "preset": "grocery_6" },
+  "strategy": "auto",
+  "faces": [
+    {
+      "id": "A1-03",
+      "sku": "MILK-1L",
+      "aisle": 1,
+      "bay": 3,
+      "min_qty": 24,
+      "max_qty": 96,
+      "on_hand": 12,
+      "case_qty": 12,
+      "priority": 1
+    },
+    {
+      "id": "A1-06",
+      "sku": "TEA-500",
+      "aisle": 1,
+      "bay": 6,
+      "min_qty": 20,
+      "max_qty": 80,
+      "on_hand": 40,
+      "case_qty": 10
+    },
+    {
+      "id": "A2-02",
+      "sku": "RICE-5KG",
+      "aisle": 2,
+      "bay": 2,
+      "min_qty": 16,
+      "max_qty": 64,
+      "on_hand": 16,
+      "case_qty": 8
+    },
+    {
+      "id": "A2-05",
+      "sku": "OIL-1L",
+      "aisle": 2,
+      "bay": 5,
+      "min_qty": 12,
+      "max_qty": 48,
+      "on_hand": 8,
+      "case_qty": 6,
+      "priority": 1
+    },
+    {
+      "id": "A3-01",
+      "sku": "SOAP-BAR",
+      "aisle": 3,
+      "bay": 1,
+      "min_qty": 30,
+      "max_qty": 120,
+      "on_hand": 90,
+      "case_qty": 10
+    },
+    {
+      "id": "A3-04",
+      "sku": "FLOUR-1KG",
+      "aisle": 3,
+      "bay": 4,
+      "min_qty": 18,
+      "max_qty": 72,
+      "on_hand": 20,
+      "case_qty": 6
+    },
+    {
+      "id": "A4-02",
+      "sku": "SUGAR-1KG",
+      "aisle": 4,
+      "bay": 2,
+      "min_qty": 24,
+      "max_qty": 96,
+      "on_hand": 48,
+      "case_qty": 12
+    },
+    {
+      "id": "A5-07",
+      "sku": "SALT-1KG",
+      "aisle": 5,
+      "bay": 7,
+      "min_qty": 10,
+      "max_qty": 40,
+      "on_hand": 6,
+      "case_qty": 4
+    }
+  ],
+  "reserve": [
+    { "id": "R-MILK-A", "sku": "MILK-1L", "aisle": 12, "cases": 10 },
+    { "id": "R-TEA", "sku": "TEA-500", "aisle": 11, "cases": 6 },
+    { "id": "R-RICE", "sku": "RICE-5KG", "aisle": 12, "cases": 4 },
+    { "id": "R-OIL", "sku": "OIL-1L", "aisle": 10, "cases": 8 },
+    { "id": "R-SOAP", "sku": "SOAP-BAR", "aisle": 11, "cases": 4 },
+    { "id": "R-FLOUR", "sku": "FLOUR-1KG", "aisle": 9, "cases": 12 },
+    { "id": "R-SUGAR", "sku": "SUGAR-1KG", "aisle": 10, "cases": 5 },
+    { "id": "R-SALT", "sku": "SALT-1KG", "aisle": 14, "cases": 10 }
+  ],
+  "demand": [
+    { "sku": "MILK-1L", "units": 36 },
+    { "sku": "TEA-500", "units": 30 },
+    { "sku": "OIL-1L", "units": 12 },
+    { "sku": "SOAP-BAR", "units": 20 },
+    { "sku": "FLOUR-1KG", "units": 24 },
+    { "sku": "SUGAR-1KG", "units": 12 }
+  ]
+}
