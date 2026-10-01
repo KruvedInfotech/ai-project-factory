@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### FaceFill — pick-face replenishment planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-01 |
+| **Intended repo** | `https://github.com/KruvedInfotech/facefill` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/facefill`](projects/facefill/) |
+| **What it is** | Forward-pick replenishment. Min/max drops from nearest reserve, labor cap, aisle heat map. |
+
+**How it works (short):** faces already below min, or that the next wave will drain below min, take a drop toward max. FaceFill pulls the nearest reserve pallet first, never overfills the face, and stops when the task or labor cap is full. **Auto** does below-min faces first, then walks aisle by aisle.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/facefill
+PYTHONPATH=src python3 -m facefill presets
+PYTHONPATH=src python3 -m facefill fill examples/morning-grocery.json
+PYTHONPATH=src python3 -m facefill serve --host 127.0.0.1 --port 8769
+```
+
+Open `http://127.0.0.1:8769`, then **Fill faces**. Full detail is in the [FaceFill README](projects/facefill/README.md).

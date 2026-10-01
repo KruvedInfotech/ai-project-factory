@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "facefill"
+version = "0.1.0"
+description = "Pick-face replenishment planner for warehouse forward-pick areas."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "replenishment", "logistics", "pick-face"]
+dependencies = []
+
+[project.scripts]
+facefill = "facefill.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+facefill = ["static/*"]

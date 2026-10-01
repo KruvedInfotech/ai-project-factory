@@ -1,0 +1,65 @@
+{
+  "warehouse": { "preset": "mini_3", "max_labor_min": 22 },
+  "strategy": "cluster",
+  "faces": [
+    {
+      "id": "A1-B1",
+      "sku": "SKU-A1B1",
+      "aisle": 1,
+      "bay": 1,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 8,
+      "case_qty": 4
+    },
+    {
+      "id": "A1-B3",
+      "sku": "SKU-A1B3",
+      "aisle": 1,
+      "bay": 3,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 6,
+      "case_qty": 4
+    },
+    {
+      "id": "A1-B4",
+      "sku": "SKU-A1B4",
+      "aisle": 1,
+      "bay": 4,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 10,
+      "case_qty": 4
+    },
+    {
+      "id": "A2-B2",
+      "sku": "SKU-A2B2",
+      "aisle": 2,
+      "bay": 2,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 4,
+      "case_qty": 4
+    },
+    {
+      "id": "A3-B1",
+      "sku": "SKU-A3B1",
+      "aisle": 3,
+      "bay": 1,
+      "min_qty": 12,
+      "max_qty": 36,
+      "on_hand": 1,
+      "case_qty": 4,
+      "priority": 1
+    }
+  ],
+  "reserve": [
+    { "id": "R-1", "sku": "SKU-A1B1", "aisle": 9, "cases": 10 },
+    { "id": "R-2", "sku": "SKU-A1B3", "aisle": 9, "cases": 10 },
+    { "id": "R-3", "sku": "SKU-A1B4", "aisle": 9, "cases": 10 },
+    { "id": "R-4", "sku": "SKU-A2B2", "aisle": 9, "cases": 10 },
+    { "id": "R-5", "sku": "SKU-A3B1", "aisle": 9, "cases": 10 }
+  ],
+  "demand": []
+}
