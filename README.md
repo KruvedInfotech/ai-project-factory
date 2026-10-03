@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### SlotRank — velocity slotting planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-03 |
+| **Intended repo** | `https://github.com/KruvedInfotech/slotrank` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/slotrank`](projects/slotrank/) |
+| **What it is** | Forward-pick slotting. ABC velocity, golden zone, affinity, heavy-to-floor, weekend move wave. |
+
+**How it works (short):** SKUs are classed A/B/C by pick share. SlotRank gives A the golden rectangle (near the depot), asks C to leave it, and keeps a face that is already good enough. Heavy SKUs only sit on floor bays. The weekend wave takes the highest-benefit moves until the labor cap.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/slotrank
+PYTHONPATH=src python3 -m slotrank presets
+PYTHONPATH=src python3 -m slotrank slot examples/mis-slotted-grocery.json
+PYTHONPATH=src python3 -m slotrank serve --host 127.0.0.1 --port 8770
+```
+
+Open `http://127.0.0.1:8770`, then **Rank slots**. Full detail is in the [SlotRank README](projects/slotrank/README.md).

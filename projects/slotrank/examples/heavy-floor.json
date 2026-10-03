@@ -1,0 +1,12 @@
+{
+  "warehouse": { "preset": "grocery_6" },
+  "strategy": "heavy",
+  "skus": [
+    { "sku": "OIL-15L", "picks": 80, "cube": 20, "weight_kg": 16, "slot_type": "case", "heavy": true, "current": "A2-06" },
+    { "sku": "RICE-25KG", "picks": 60, "cube": 22, "weight_kg": 25, "slot_type": "case", "heavy": true, "current": "A3-05" },
+    { "sku": "WATER-CS", "picks": 50, "cube": 18, "weight_kg": 18, "slot_type": "case", "heavy": true, "current": "A4-04" },
+    { "sku": "MILK-1L", "picks": 300, "cube": 16, "weight_kg": 12, "slot_type": "case", "heavy": false, "current": "A5-08" },
+    { "sku": "BREAD", "picks": 220, "cube": 12, "weight_kg": 5, "slot_type": "case", "heavy": false, "current": "A6-07" },
+    { "sku": "TEA-500", "picks": 20, "cube": 4, "weight_kg": 1, "slot_type": "case", "heavy": false, "current": "A1-02" }
+  ]
+}

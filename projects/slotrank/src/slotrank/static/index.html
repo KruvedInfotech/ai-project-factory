@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SlotRank — slotting board</title>
+  <style>
+    :root {
+      --ink: #1b1914;
+      --paper: #ebe4d4;
+      --board: #2c241b;
+      --amber: #d4a017;
+      --ok: #3a7a58;
+      --rust: #b3401a;
+      --teal: #3d6f78;
+      --line: rgba(27, 25, 20, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(44, 36, 27, 0.08), transparent 170px),
+        repeating-linear-gradient(90deg, transparent 0 48px, rgba(27,25,20,0.04) 48px 49px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--amber);
+      color: var(--ink);
+      background: rgba(212, 160, 23, 0.16);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 520px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.7);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 22%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .map {
+      overflow: auto;
+      border: 1px solid var(--ink);
+      background: var(--board);
+      padding: 12px;
+    }
+    .aisles {
+      display: flex;
+      gap: 10px;
+      min-height: 280px;
+    }
+    .aisle {
+      flex: 1;
+      min-width: 78px;
+    }
+    .aisle h3 {
+      margin: 0 0 8px;
+      color: #efe6d6;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+    .bay {
+      min-height: 46px;
+      margin-bottom: 6px;
+      padding: 6px;
+      border: 1px solid rgba(239, 230, 214, 0.2);
+      background: rgba(239, 230, 214, 0.08);
+      color: #efe6d6;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .bay.empty { opacity: 0.35; }
+    .bay.A { background: rgba(179, 64, 26, 0.88); }
+    .bay.B { background: rgba(61, 111, 120, 0.88); }
+    .bay.C { background: rgba(106, 96, 80, 0.78); }
+    .bay.keep { box-shadow: inset 0 0 0 2px rgba(58, 122, 88, 0.9); }
+    .bay.move { box-shadow: inset 0 0 0 2px rgba(212, 160, 23, 0.95); }
+    .bay.later { box-shadow: inset 0 0 0 2px rgba(179, 64, 26, 0.7); opacity: 0.85; }
+    .bay.golden { outline: 2px solid var(--amber); outline-offset: -2px; }
+    .bay b { display: block; font-size: 12px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 10px 0 0;
+      font-size: 12px;
+    }
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      vertical-align: -1px;
+      border: 1px solid var(--ink);
+    }
+    .legend .a::before { background: #b3401a; }
+    .legend .b::before { background: #3d6f78; }
+    .legend .c::before { background: #6a6050; }
+    .legend .gold::before { background: #d4a017; }
+    .tasks { margin-top: 14px; font-size: 13px; }
+    .tasks div { margin: 4px 0; font-family: ui-monospace, monospace; }
+    .leftover { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SlotRank</h1>
+      <p>Rank pick-face homes by velocity. A movers claim the golden zone, C items give it back, and this weekend’s move wave stops at the labor cap.</p>
+    </div>
+    <div class="stamp">Slot board · not a WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Slot plan</h2>
+      <label for="preset">Warehouse</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="5" step="5" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto (heavy, then affinity)</option>
+            <option value="velocity">Velocity only</option>
+            <option value="affinity">Cluster families</option>
+            <option value="heavy">Heavy to the floor</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+        <div>
+          <label for="layout">Layout (read-only)</label>
+          <input id="layout" type="text" readonly />
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>Picks</th><th>Cube</th><th>kg</th><th>Type</th><th>Fam</th><th>Now</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add SKU</button>
+        <button type="button" id="rank">Rank slots</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Slot board</h2>
+      <div class="stats">
+        <div class="stat" id="statGold"><span>A in golden</span><b>—</b></div>
+        <div class="stat" id="statTravel"><span>Travel</span><b>—</b></div>
+        <div class="stat" id="statMoves"><span>Moves now</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Leftover</span><b>—</b></div>
+      </div>
+      <div class="map" id="map" aria-label="Aisle slot map"></div>
+      <div class="legend">
+        <span class="a">A mover</span>
+        <span class="b">B</span>
+        <span class="c">C</span>
+        <span class="gold">Golden zone</span>
+      </div>
+      <div class="tasks" id="tasks"></div>
+      <div class="leftover" id="leftover"></div>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const strategy = document.getElementById("strategy");
+    const layout = document.getElementById("layout");
+    const error = document.getElementById("error");
+    let presets = [];
+    let warehouseExtras = {};
+
+    function addRow(o = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="sku" value="${o.sku || ""}" /></td>
+        <td><input data-k="picks" value="${o.picks ?? 10}" /></td>
+        <td><input data-k="cube" value="${o.cube ?? 8}" /></td>
+        <td><input data-k="weight_kg" value="${o.weight_kg ?? 2}" /></td>
+        <td><input data-k="slot_type" value="${o.slot_type || "case"}" /></td>
+        <td><input data-k="family" value="${o.family || ""}" /></td>
+        <td><input data-k="current" value="${o.current || ""}" /></td>
+      `;
+      rows.appendChild(tr);
+    }
+
+    function num(tr, k) { return Number(tr.querySelector(`[data-k="${k}"]`).value); }
+    function text(tr, k) { return tr.querySelector(`[data-k="${k}"]`).value.trim(); }
+
+    function readSkus() {
+      return [...rows.querySelectorAll("tr")].map(tr => ({
+        sku: text(tr, "sku"),
+        picks: num(tr, "picks"),
+        cube: num(tr, "cube"),
+        weight_kg: num(tr, "weight_kg"),
+        slot_type: text(tr, "slot_type") || "case",
+        family: text(tr, "family"),
+        current: text(tr, "current"),
+      })).filter(o => o.sku);
+    }
+
+    function applyPresetMeta(id) {
+      const house = presets.find(p => p.id === id);
+      if (!house) return;
+      labor.value = house.max_labor_min;
+      layout.value = `${house.aisle_count}×${house.bays_per_aisle} · gold A1–A${house.golden_aisles}/B${house.golden_bays}`;
+    }
+
+    async function boot() {
+      presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_6";
+      applyPresetMeta(preset.value);
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ sku: "MILK-1L", picks: 480, cube: 18, weight_kg: 12, slot_type: "case", family: "dairy", current: "A6-08" });
+      addRow({ sku: "BREAD-WHT", picks: 360, cube: 16, weight_kg: 6, slot_type: "case", family: "bakery", current: "A5-07" });
+      addRow({ sku: "SPICE-MIX", picks: 12, cube: 4, weight_kg: 2, slot_type: "case", family: "dry", current: "A1-02" });
+    }
+
+    preset.addEventListener("change", () => {
+      warehouseExtras = {};
+      applyPresetMeta(preset.value);
+    });
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.skus || []).forEach(addRow);
+      warehouseExtras = { ...(data.warehouse || {}) };
+      delete warehouseExtras.preset;
+      if (data.warehouse?.preset) preset.value = data.warehouse.preset;
+      applyPresetMeta(preset.value);
+      if (data.warehouse?.max_labor_min != null) labor.value = data.warehouse.max_labor_min;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("rank").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        warehouse: { ...warehouseExtras, preset: preset.value, max_labor_min: Number(labor.value) },
+        strategy: strategy.value,
+        skus: readSkus(),
+      };
+      const res = await fetch("/api/slot", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Slot failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function pct(value) {
+      return Math.round((value || 0) * 100) + "%";
+    }
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statGold", `${pct(data.a_golden_before)}→${pct(data.a_golden_after)}`, data.a_golden_after >= data.a_golden_before ? "good" : "bad");
+      set("statTravel", `${data.travel_before.toFixed(1)}→${data.travel_after.toFixed(1)}`, data.travel_after <= data.travel_before ? "good" : "");
+      set("statMoves", String(data.move_count), "good");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("tasks").innerHTML = (data.moves || [])
+        .map(m => `<div>${m.sku} ${m.abc} · ${m.from_id} → ${m.to_id} · ${m.wave} · ${m.labor_min}m</div>`)
+        .join("");
+      document.getElementById("leftover").textContent = (data.leftover || [])
+        .map(u => `${u.id}: ${u.reason}`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const house = data.warehouse;
+      const bySlot = {};
+      (data.locations || []).forEach(state => {
+        bySlot[`${state.aisle}-${state.bay}`] = state;
+      });
+      const root = document.getElementById("map");
+      root.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "aisles";
+      for (let aisle = 1; aisle <= house.aisle_count; aisle++) {
+        const col = document.createElement("div");
+        col.className = "aisle";
+        col.innerHTML = `<h3>A${aisle}</h3>`;
+        for (let bay = 1; bay <= house.bays_per_aisle; bay++) {
+          const cell = document.createElement("div");
+          const state = bySlot[`${aisle}-${bay}`];
+          const abc = state && state.abc ? state.abc : "empty";
+          const status = state ? state.status : "empty";
+          cell.className = "bay " + abc + " " + status + (state && state.golden ? " golden" : "");
+          if (state && state.sku) {
+            cell.innerHTML = `<b>${state.sku}</b>${state.id} · ${state.abc}`;
+          } else {
+            cell.textContent = state ? state.id : `B${bay}`;
+          }
+          col.appendChild(cell);
+        }
+        wrap.appendChild(col);
+      }
+      root.appendChild(wrap);
+    }
+
+    boot();
+  </script>
+</body>
+</html>
