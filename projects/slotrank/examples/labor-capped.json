@@ -1,0 +1,18 @@
+{
+  "warehouse": {
+    "preset": "mini_3",
+    "max_moves": 6,
+    "max_labor_min": 14,
+    "minutes_per_move": 5,
+    "aisle_change_min": 2
+  },
+  "strategy": "velocity",
+  "skus": [
+    { "sku": "MILK-1L", "picks": 200, "cube": 10, "weight_kg": 8, "slot_type": "case", "current": "A3-04" },
+    { "sku": "BREAD", "picks": 160, "cube": 8, "weight_kg": 4, "slot_type": "case", "current": "A3-03" },
+    { "sku": "EGGS", "picks": 140, "cube": 8, "weight_kg": 5, "slot_type": "case", "current": "A3-02" },
+    { "sku": "JUICE", "picks": 40, "cube": 10, "weight_kg": 6, "slot_type": "case", "current": "A2-04" },
+    { "sku": "SPICE", "picks": 6, "cube": 3, "weight_kg": 1, "slot_type": "case", "current": "A1-01" },
+    { "sku": "CANDLE", "picks": 4, "cube": 3, "weight_kg": 1, "slot_type": "case", "current": "A1-02" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "warehouse": { "preset": "grocery_6" },
+  "strategy": "auto",
+  "skus": [
+    { "sku": "MILK-1L", "picks": 480, "cube": 18, "weight_kg": 12, "slot_type": "case", "family": "dairy", "current": "A6-08" },
+    { "sku": "BREAD-WHT", "picks": 360, "cube": 16, "weight_kg": 6, "slot_type": "case", "family": "bakery", "current": "A5-07" },
+    { "sku": "EGGS-12", "picks": 300, "cube": 14, "weight_kg": 8, "slot_type": "case", "family": "dairy", "current": "A6-03" },
+    { "sku": "BANANA", "picks": 220, "cube": 12, "weight_kg": 7, "slot_type": "case", "family": "produce", "current": "A5-02" },
+    { "sku": "YOGURT", "picks": 180, "cube": 15, "weight_kg": 9, "slot_type": "case", "family": "dairy", "current": "A4-08" },
+    { "sku": "JUICE-1L", "picks": 90, "cube": 16, "weight_kg": 10, "slot_type": "case", "family": "beverage", "current": "A3-06" },
+    { "sku": "RICE-1KG", "picks": 70, "cube": 10, "weight_kg": 8, "slot_type": "case", "family": "dry", "current": "A3-01" },
+    { "sku": "FLOUR", "picks": 40, "cube": 12, "weight_kg": 11, "slot_type": "case", "family": "dry", "current": "A2-08" },
+    { "sku": "SPICE-MIX", "picks": 12, "cube": 4, "weight_kg": 2, "slot_type": "case", "family": "dry", "current": "A1-02" },
+    { "sku": "CANDLE", "picks": 8, "cube": 6, "weight_kg": 1, "slot_type": "case", "family": "gm", "current": "A1-03" },
+    { "sku": "GIFT-WRAP", "picks": 5, "cube": 8, "weight_kg": 1, "slot_type": "case", "family": "gm", "current": "A1-01" },
+    { "sku": "NAPKIN", "picks": 4, "cube": 5, "weight_kg": 1, "slot_type": "case", "family": "gm", "current": "A1-04" }
+  ]
+}

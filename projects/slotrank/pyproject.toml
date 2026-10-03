@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slotrank"
+version = "0.1.0"
+description = "Velocity-based warehouse slotting planner for pick faces."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "slotting", "abc", "golden-zone", "logistics"]
+dependencies = []
+
+[project.scripts]
+slotrank = "slotrank.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+slotrank = ["static/*"]
