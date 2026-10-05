@@ -1,0 +1,12 @@
+{
+  "yard": { "preset": "mini_3" },
+  "strategy": "auto",
+  "receipts": [
+    { "id": "IN-DRY", "sku": "SKU-A", "pallets": 4, "eta": "08:00", "door": "D1", "temp": "dry" },
+    { "id": "IN-LATE", "sku": "SKU-B", "pallets": 2, "eta": "15:30", "door": "C1", "temp": "reefer" }
+  ],
+  "orders": [
+    { "id": "OUT-COLD", "sku": "SKU-A", "pallets": 4, "cutoff": "12:00", "door": "C1", "temp": "reefer", "priority": 1 },
+    { "id": "OUT-EARLY", "sku": "SKU-B", "pallets": 2, "cutoff": "12:00", "door": "C1", "temp": "reefer" }
+  ]
+}

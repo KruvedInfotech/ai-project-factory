@@ -1,0 +1,17 @@
+{
+  "yard": { "preset": "fmcg_6" },
+  "strategy": "auto",
+  "receipts": [
+    { "id": "IN-MILK", "sku": "MILK-1L", "pallets": 8, "eta": "06:00", "door": "D1", "temp": "dry" },
+    { "id": "IN-BREAD", "sku": "BREAD-WHT", "pallets": 6, "eta": "06:30", "door": "D1", "temp": "dry" },
+    { "id": "IN-YOG", "sku": "YOGURT", "pallets": 4, "eta": "07:00", "door": "C1", "temp": "reefer" },
+    { "id": "IN-JUICE", "sku": "JUICE-1L", "pallets": 3, "eta": "08:00", "door": "D2", "temp": "dry" }
+  ],
+  "orders": [
+    { "id": "OUT-A1", "sku": "MILK-1L", "pallets": 5, "cutoff": "10:00", "door": "D1", "temp": "dry", "priority": 1, "route": "store-north" },
+    { "id": "OUT-A2", "sku": "BREAD-WHT", "pallets": 6, "cutoff": "10:30", "door": "D1", "temp": "dry", "route": "store-north" },
+    { "id": "OUT-B1", "sku": "YOGURT", "pallets": 4, "cutoff": "11:00", "door": "C1", "temp": "reefer", "priority": 1, "route": "store-cold" },
+    { "id": "OUT-B2", "sku": "JUICE-1L", "pallets": 3, "cutoff": "12:00", "door": "D2", "temp": "dry", "route": "store-south" },
+    { "id": "OUT-A3", "sku": "MILK-1L", "pallets": 3, "cutoff": "14:00", "door": "D2", "temp": "dry", "route": "store-south" }
+  ]
+}

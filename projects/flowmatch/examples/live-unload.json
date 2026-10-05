@@ -1,0 +1,10 @@
+{
+  "yard": { "preset": "mini_3" },
+  "strategy": "auto",
+  "receipts": [
+    { "id": "IN-1", "sku": "SKU-A", "pallets": 2, "eta": "08:30", "door": "D1", "temp": "dry" }
+  ],
+  "orders": [
+    { "id": "OUT-1", "sku": "SKU-A", "pallets": 2, "cutoff": "11:00", "door": "D1", "temp": "dry", "priority": 1 }
+  ]
+}

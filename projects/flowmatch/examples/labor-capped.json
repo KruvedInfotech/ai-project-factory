@@ -1,0 +1,19 @@
+{
+  "yard": {
+    "preset": "mini_3",
+    "max_labor_min": 14,
+    "minutes_per_match": 6,
+    "lane_change_min": 3
+  },
+  "strategy": "lane",
+  "receipts": [
+    { "id": "IN-A", "sku": "SKU-A", "pallets": 2, "eta": "08:00", "door": "D1", "temp": "dry" },
+    { "id": "IN-B", "sku": "SKU-B", "pallets": 2, "eta": "08:10", "door": "D2", "temp": "dry" },
+    { "id": "IN-C", "sku": "SKU-C", "pallets": 2, "eta": "08:20", "door": "D1", "temp": "dry" }
+  ],
+  "orders": [
+    { "id": "OUT-A", "sku": "SKU-A", "pallets": 2, "cutoff": "12:00", "door": "D2", "temp": "dry", "priority": 1 },
+    { "id": "OUT-B", "sku": "SKU-B", "pallets": 2, "cutoff": "12:30", "door": "D1", "temp": "dry" },
+    { "id": "OUT-C", "sku": "SKU-C", "pallets": 2, "cutoff": "13:00", "door": "D2", "temp": "dry" }
+  ]
+}
