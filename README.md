@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### FlowMatch — cross-dock flow matcher
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-05 |
+| **Intended repo** | `https://github.com/KruvedInfotech/flowmatch` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/flowmatch`](projects/flowmatch/) |
+| **What it is** | Inbound-to-outbound matcher. Live unload when doors line up, else a staging lane, leftover list, flow board. |
+
+**How it works (short):** outbound is sorted by priority and cutoff. FlowMatch takes the earliest receipt of that SKU and temperature that still makes the clock. Same-door freight goes live (unload then load). The rest claims a matching staging lane. The wave stops at the labor or match cap.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/flowmatch
+PYTHONPATH=src python3 -m flowmatch presets
+PYTHONPATH=src python3 -m flowmatch match examples/grocery-same-day.json
+PYTHONPATH=src python3 -m flowmatch serve --host 127.0.0.1 --port 8771
+```
+
+Open `http://127.0.0.1:8771`, then **Match flow**. Full detail is in the [FlowMatch README](projects/flowmatch/README.md).
