@@ -1,0 +1,36 @@
+{
+  "yard": { "preset": "mini_6" },
+  "strategy": "auto",
+  "trailers": [
+    {
+      "id": "RF-1",
+      "kind": "inbound",
+      "temp": "reefer",
+      "length_ft": 53,
+      "eta": "08:10",
+      "door": "D3",
+      "dwell_h": 0,
+      "priority": 1
+    },
+    {
+      "id": "RF-2",
+      "kind": "inbound",
+      "temp": "reefer",
+      "length_ft": 53,
+      "eta": "08:20",
+      "door": "D3",
+      "dwell_h": 0,
+      "priority": 1
+    },
+    {
+      "id": "RF-3",
+      "kind": "inbound",
+      "temp": "reefer",
+      "length_ft": 53,
+      "eta": "08:30",
+      "door": "D3",
+      "dwell_h": 0,
+      "priority": 2
+    }
+  ]
+}

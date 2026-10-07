@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### YardPark — yard trailer parking
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-07 |
+| **Intended repo** | `https://github.com/KruvedInfotech/yardpark` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/yardpark`](projects/yardpark/) |
+| **What it is** | Yard stall assignment and hostler pull sequence. Door-adjacent parking, reefer plugs, labor cap, yard map. |
+
+**How it works (short):** trailers are sorted by strategy (priority, door, dwell, or outbound-first). YardPark claims a stall that fits length and temperature, prefers the assigned door, and saves plug stalls for reefers. Units with a door and appointment enter the pull list until labor or the clock runs out.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/yardpark
+PYTHONPATH=src python3 -m yardpark presets
+PYTHONPATH=src python3 -m yardpark park examples/inbound-wave.json
+PYTHONPATH=src python3 -m yardpark serve --host 127.0.0.1 --port 8772
+```
+
+Open `http://127.0.0.1:8772`, then **Park yard**. Full detail is in the [YardPark README](projects/yardpark/README.md).

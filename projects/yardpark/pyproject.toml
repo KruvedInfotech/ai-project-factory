@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yardpark"
+version = "0.1.0"
+description = "Yard trailer parking and pull-to-door sequencer."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "yard", "yms", "trailer", "logistics"]
+dependencies = []
+
+[project.scripts]
+yardpark = "yardpark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+yardpark = ["static/*"]

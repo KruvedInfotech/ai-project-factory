@@ -1,0 +1,50 @@
+{
+  "yard": { "preset": "mini_6", "max_labor_min": 14 },
+  "strategy": "auto",
+  "trailers": [
+    {
+      "id": "OUT-A",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:00",
+      "door": "D1",
+      "dwell_h": 2,
+      "priority": 1,
+      "appointment": "09:00"
+    },
+    {
+      "id": "OUT-B",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:00",
+      "door": "D1",
+      "dwell_h": 2,
+      "priority": 1,
+      "appointment": "10:00"
+    },
+    {
+      "id": "OUT-C",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:00",
+      "door": "D2",
+      "dwell_h": 1,
+      "priority": 2,
+      "appointment": "11:00"
+    },
+    {
+      "id": "OUT-D",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:00",
+      "door": "D2",
+      "dwell_h": 1,
+      "priority": 2,
+      "appointment": "12:00"
+    }
+  ]
+}
