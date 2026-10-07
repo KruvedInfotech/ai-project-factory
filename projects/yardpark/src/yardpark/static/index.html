@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YardPark — yard board</title>
+  <style>
+    :root {
+      --ink: #1b1c18;
+      --paper: #d8d4c4;
+      --asphalt: #2a2c28;
+      --amber: #e0a106;
+      --ok: #3d7a4a;
+      --rust: #b3401a;
+      --ice: #5b8a92;
+      --power: #c9a227;
+      --line: rgba(27, 28, 24, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 44, 40, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(27,28,24,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 56ch; }
+    .stamp {
+      border: 2px solid var(--amber);
+      color: var(--ink);
+      background: rgba(224, 161, 6, 0.16);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 560px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f3f1e6;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f3f1e6;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .yard {
+      background: var(--asphalt);
+      color: #efe8d4;
+      padding: 14px;
+      min-height: 280px;
+    }
+    .yard-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      margin-bottom: 10px;
+    }
+    .row-label {
+      width: 28px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(239, 232, 212, 0.7);
+    }
+    .stall {
+      flex: 1;
+      min-height: 72px;
+      border: 1px dashed rgba(239, 232, 212, 0.28);
+      padding: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background: rgba(255,255,255,0.03);
+    }
+    .stall.dry { box-shadow: inset 4px 0 0 #8a8a72; }
+    .stall.reefer { box-shadow: inset 4px 0 0 var(--ice); }
+    .stall.power { box-shadow: inset 4px 0 0 var(--power); }
+    .stall.taken {
+      background: rgba(224, 161, 6, 0.22);
+      border-style: solid;
+      color: #fff6d8;
+    }
+    .stall .id { opacity: 0.7; }
+    .stall .unit { display: block; font-size: 13px; font-weight: 700; margin-top: 6px; }
+    .lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .note, .unpacked { margin-top: 12px; font-family: ui-monospace, monospace; font-size: 13px; }
+    .unpacked { color: var(--rust); }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .lists { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>YardPark</h1>
+      <p>Park trailers on a yard and sequence the hostler pulls. Reefers need a plug, 53-foot units skip pup stalls, and labor stops when the clock is full.</p>
+    </div>
+    <div class="stamp">Yard copy · not a live YMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Trailers</h2>
+      <label for="preset">Yard</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="door">Door</option>
+            <option value="dwell">Dwell</option>
+            <option value="pull">Pull</option>
+          </select>
+        </div>
+      </div>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>Kind</th><th>Temp</th><th>Ft</th><th>ETA</th>
+            <th>Door</th><th>Dwell</th><th>Pri</th><th>Appt</th><th>Pwr</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add trailer</button>
+        <button type="button" id="park">Park yard</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Yard map</h2>
+      <div class="stats">
+        <div class="stat" id="statParked"><span>Parked</span><b>—</b></div>
+        <div class="stat" id="statPulls"><span>Pulls</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left out</span><b>—</b></div>
+      </div>
+      <div class="yard" id="yard" aria-label="Yard parking map"></div>
+      <div class="lists">
+        <div>
+          <h3>Pull sequence</h3>
+          <div class="note" id="pulls">Park a plan to sequence hostler moves.</div>
+        </div>
+        <div>
+          <h3>Holds & leftovers</h3>
+          <div class="unpacked" id="leftover"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const strategy = document.getElementById("strategy");
+    const error = document.getElementById("error");
+    const presetsById = {};
+
+    function addRow(item = {}) {
+      const tr = document.createElement("tr");
+      const kind = item.kind || "inbound";
+      const temp = item.temp || "dry";
+      tr.innerHTML = `
+        <td><input data-k="id" value="${item.id || ""}" /></td>
+        <td>
+          <select data-k="kind">
+            <option value="inbound"${kind === "inbound" ? " selected" : ""}>in</option>
+            <option value="outbound"${kind === "outbound" ? " selected" : ""}>out</option>
+            <option value="empty"${kind === "empty" ? " selected" : ""}>mt</option>
+          </select>
+        </td>
+        <td>
+          <select data-k="temp">
+            <option value="dry"${temp === "dry" ? " selected" : ""}>dry</option>
+            <option value="reefer"${temp === "reefer" ? " selected" : ""}>reefer</option>
+          </select>
+        </td>
+        <td><input data-k="length_ft" value="${item.length_ft ?? 53}" /></td>
+        <td><input data-k="eta" value="${item.eta || "08:00"}" /></td>
+        <td><input data-k="door" value="${item.door || ""}" /></td>
+        <td><input data-k="dwell_h" value="${item.dwell_h ?? 0}" /></td>
+        <td><input data-k="priority" value="${item.priority ?? 2}" /></td>
+        <td><input data-k="appointment" value="${item.appointment || ""}" /></td>
+        <td><input data-k="needs_power" type="checkbox" ${item.needs_power ? "checked" : ""} /></td>
+      `;
+      rows.appendChild(tr);
+    }
+
+    function readTrailers() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        const id = get("id").value.trim();
+        return {
+          id,
+          kind: get("kind").value,
+          temp: get("temp").value,
+          length_ft: Number(get("length_ft").value),
+          eta: get("eta").value.trim(),
+          door: get("door").value.trim(),
+          dwell_h: Number(get("dwell_h").value || 0),
+          priority: Number(get("priority").value || 2),
+          appointment: get("appointment").value.trim(),
+          needs_power: get("needs_power").checked,
+        };
+      }).filter(item => item.id);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        presetsById[p.id] = p;
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.spot_count} spots`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "dc_20";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "IN-401", kind: "inbound", temp: "dry", length_ft: 53, eta: "05:30", door: "D1", priority: 2, appointment: "07:00" });
+      addRow({ id: "OUT-510", kind: "outbound", temp: "dry", length_ft: 53, eta: "05:00", door: "D1", dwell_h: 8, priority: 1, appointment: "06:30" });
+      addRow({ id: "IN-403", kind: "inbound", temp: "reefer", length_ft: 53, eta: "05:45", door: "D4", priority: 1, appointment: "07:30", needs_power: true });
+      drawEmpty(presetsById[preset.value]);
+    }
+
+    function drawEmpty(yard) {
+      const root = document.getElementById("yard");
+      root.innerHTML = "";
+      if (!yard) return;
+      const groups = {};
+      yard.spots.forEach(spot => {
+        (groups[spot.row] ||= []).push(spot);
+      });
+      Object.keys(groups).sort().forEach(row => {
+        const line = document.createElement("div");
+        line.className = "yard-row";
+        const label = document.createElement("div");
+        label.className = "row-label";
+        label.textContent = row;
+        line.appendChild(label);
+        groups[row].sort((a, b) => a.bay - b.bay).forEach(spot => {
+          const stall = document.createElement("div");
+          stall.className = "stall " + spot.kind;
+          stall.innerHTML = `<span class="id">${spot.id} · ${spot.kind} · ${spot.door}</span>`;
+          line.appendChild(stall);
+        });
+        root.appendChild(line);
+      });
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      drawEmpty(presetsById[preset.value]);
+    });
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.trailers || []).forEach(addRow);
+      if (data.yard?.preset) preset.value = data.yard.preset;
+      labor.value = data.yard?.max_labor_min || preset.selectedOptions[0].dataset.labor;
+      strategy.value = data.strategy || "auto";
+      drawEmpty(presetsById[preset.value]);
+    });
+
+    document.getElementById("park").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        yard: { preset: preset.value, max_labor_min: Number(labor.value) },
+        strategy: strategy.value,
+        trailers: readTrailers(),
+      };
+      const res = await fetch("/api/park", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Park failed";
+        return;
+      }
+      renderStats(data);
+      drawResult(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statParked", String(data.parked_count), "good");
+      set("statPulls", String(data.pull_count));
+      set("statLabor", data.labor_min + "m");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("pulls").textContent = (data.pulls || [])
+        .map(p => `${p.start}–${p.ready} ${p.trailer_id} ${p.spot_id}→${p.door}`)
+        .join(" · ") || "No pulls this wave.";
+      const held = (data.held || []).map(h => `${h.id} ${h.reason}`);
+      const left = (data.leftover || []).map(u => `${u.id} ${u.reason}`);
+      document.getElementById("leftover").textContent = [...held, ...left].join(" · ");
+    }
+
+    function drawResult(data) {
+      const taken = {};
+      (data.parked || []).forEach(item => { taken[item.spot_id] = item; });
+      const root = document.getElementById("yard");
+      root.innerHTML = "";
+      const groups = {};
+      (data.yard.spots || []).forEach(spot => {
+        (groups[spot.row] ||= []).push(spot);
+      });
+      Object.keys(groups).sort().forEach(row => {
+        const line = document.createElement("div");
+        line.className = "yard-row";
+        const label = document.createElement("div");
+        label.className = "row-label";
+        label.textContent = row;
+        line.appendChild(label);
+        groups[row].sort((a, b) => a.bay - b.bay).forEach(spot => {
+          const stall = document.createElement("div");
+          const unit = taken[spot.id];
+          stall.className = "stall " + spot.kind + (unit ? " taken" : "");
+          stall.innerHTML = `<span class="id">${spot.id} · ${spot.kind} · ${spot.door}</span>` +
+            (unit ? `<span class="unit">${unit.trailer_id}</span>${unit.kind} ${unit.temp}` : "");
+          line.appendChild(stall);
+        });
+        root.appendChild(line);
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

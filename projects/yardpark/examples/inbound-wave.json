@@ -1,0 +1,83 @@
+{
+  "yard": { "preset": "dc_20" },
+  "strategy": "auto",
+  "trailers": [
+    {
+      "id": "IN-401",
+      "kind": "inbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "05:30",
+      "door": "D1",
+      "dwell_h": 0,
+      "priority": 2,
+      "appointment": "07:00"
+    },
+    {
+      "id": "IN-402",
+      "kind": "inbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "06:00",
+      "door": "D2",
+      "dwell_h": 0,
+      "priority": 2,
+      "appointment": "08:00"
+    },
+    {
+      "id": "IN-403",
+      "kind": "inbound",
+      "temp": "reefer",
+      "length_ft": 53,
+      "eta": "05:45",
+      "door": "D4",
+      "dwell_h": 0,
+      "priority": 1,
+      "needs_power": true,
+      "appointment": "07:30"
+    },
+    {
+      "id": "OUT-510",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "05:00",
+      "door": "D1",
+      "dwell_h": 8,
+      "priority": 1,
+      "appointment": "06:30"
+    },
+    {
+      "id": "OUT-511",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "05:00",
+      "door": "D3",
+      "dwell_h": 6,
+      "priority": 2,
+      "appointment": "09:00"
+    },
+    {
+      "id": "OUT-512",
+      "kind": "outbound",
+      "temp": "reefer",
+      "length_ft": 53,
+      "eta": "05:00",
+      "door": "D4",
+      "dwell_h": 4,
+      "priority": 1,
+      "appointment": "08:30"
+    },
+    {
+      "id": "MT-009",
+      "kind": "empty",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "06:10",
+      "door": "",
+      "dwell_h": 1,
+      "priority": 3
+    }
+  ]
+}

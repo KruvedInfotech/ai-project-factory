@@ -1,0 +1,28 @@
+{
+  "yard": { "preset": "mini_6" },
+  "strategy": "door",
+  "trailers": [
+    {
+      "id": "IN-101",
+      "kind": "inbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:15",
+      "door": "D1",
+      "dwell_h": 0,
+      "priority": 1,
+      "appointment": "09:00"
+    },
+    {
+      "id": "OUT-220",
+      "kind": "outbound",
+      "temp": "dry",
+      "length_ft": 53,
+      "eta": "08:00",
+      "door": "D2",
+      "dwell_h": 3,
+      "priority": 1,
+      "appointment": "10:30"
+    }
+  ]
+}
