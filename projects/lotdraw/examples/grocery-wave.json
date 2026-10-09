@@ -1,0 +1,69 @@
+{
+  "policy": { "preset": "grocery_dc" },
+  "today": "2026-10-09",
+  "strategy": "fefo",
+  "orders": [
+    {
+      "id": "SO-1001",
+      "sku": "MILK-1L",
+      "qty": 40,
+      "ship_by": "2026-10-10",
+      "priority": 1
+    },
+    {
+      "id": "SO-1002",
+      "sku": "MILK-1L",
+      "qty": 20,
+      "ship_by": "2026-10-11",
+      "priority": 2
+    },
+    {
+      "id": "SO-1003",
+      "sku": "YOG-500",
+      "qty": 30,
+      "ship_by": "2026-10-10",
+      "priority": 1
+    },
+    {
+      "id": "SO-1004",
+      "sku": "BREAD",
+      "qty": 12,
+      "ship_by": "2026-10-09",
+      "priority": 2
+    }
+  ],
+  "lots": [
+    {
+      "id": "L-M1",
+      "sku": "MILK-1L",
+      "qty": 24,
+      "expiry": "2026-10-20",
+      "received": "2026-10-01",
+      "location": "A-02-1"
+    },
+    {
+      "id": "L-M2",
+      "sku": "MILK-1L",
+      "qty": 48,
+      "expiry": "2026-10-27",
+      "received": "2026-10-04",
+      "location": "A-02-2"
+    },
+    {
+      "id": "L-Y1",
+      "sku": "YOG-500",
+      "qty": 36,
+      "expiry": "2026-10-18",
+      "received": "2026-10-02",
+      "location": "B-11-1"
+    },
+    {
+      "id": "L-B1",
+      "sku": "BREAD",
+      "qty": 20,
+      "expiry": "2026-10-16",
+      "received": "2026-10-08",
+      "location": "C-01-1"
+    }
+  ]
+}

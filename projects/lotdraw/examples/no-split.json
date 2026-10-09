@@ -1,0 +1,47 @@
+{
+  "policy": { "preset": "cosmetics_fc" },
+  "today": "2026-10-09",
+  "strategy": "fefo",
+  "orders": [
+    {
+      "id": "SO-4001",
+      "sku": "SERUM",
+      "qty": 30,
+      "ship_by": "2026-10-20",
+      "priority": 1
+    },
+    {
+      "id": "SO-4002",
+      "sku": "CREAM",
+      "qty": 12,
+      "ship_by": "2026-10-15",
+      "priority": 2
+    }
+  ],
+  "lots": [
+    {
+      "id": "L-S1",
+      "sku": "SERUM",
+      "qty": 18,
+      "expiry": "2027-01-15",
+      "received": "2026-06-01",
+      "location": "P-10"
+    },
+    {
+      "id": "L-S2",
+      "sku": "SERUM",
+      "qty": 18,
+      "expiry": "2027-04-01",
+      "received": "2026-07-01",
+      "location": "P-11"
+    },
+    {
+      "id": "L-C1",
+      "sku": "CREAM",
+      "qty": 24,
+      "expiry": "2027-02-01",
+      "received": "2026-05-01",
+      "location": "P-20"
+    }
+  ]
+}

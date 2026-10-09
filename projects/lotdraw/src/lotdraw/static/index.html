@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LotDraw — lot board</title>
+  <style>
+    :root {
+      --ink: #1a2430;
+      --paper: #e4edf1;
+      --board: #24323c;
+      --amber: #d39a12;
+      --ok: #2f7a62;
+      --rust: #b3401a;
+      --ice: #4f8c9a;
+      --line: rgba(26, 36, 48, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(36, 50, 60, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(26,36,48,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 58ch; }
+    .stamp {
+      border: 2px solid var(--ice);
+      color: var(--ink);
+      background: rgba(79, 140, 154, 0.16);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 580px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f4f8f9;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--ice);
+      color: #f4f8f9;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; color: inherit; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f4f8f9;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #e8f1f4;
+      padding: 14px;
+      min-height: 280px;
+    }
+    .sku-row { margin-bottom: 14px; }
+    .sku-label {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      color: rgba(232, 241, 244, 0.75);
+    }
+    .bar {
+      display: flex;
+      min-height: 44px;
+      border: 1px dashed rgba(232, 241, 244, 0.28);
+      overflow: hidden;
+    }
+    .seg {
+      padding: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      min-width: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid rgba(26, 36, 48, 0.25);
+    }
+    .seg.fresh { background: rgba(47, 122, 98, 0.72); }
+    .seg.warn { background: rgba(211, 154, 18, 0.78); color: #1a2430; }
+    .seg.short { background: rgba(179, 64, 26, 0.78); }
+    .seg.hold {
+      background: repeating-linear-gradient(135deg, rgba(179,64,26,0.55) 0 8px, rgba(36,50,60,0.7) 8px 16px);
+    }
+    .seg.used { box-shadow: inset 0 -4px 0 #e8f1f4; }
+    .seg .id { opacity: 0.8; }
+    .lists { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .note, .unpacked { margin-top: 12px; font-family: ui-monospace, monospace; font-size: 13px; }
+    .unpacked { color: var(--rust); }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .lists, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>LotDraw</h1>
+      <p>Allocate warehouse lots to outbound orders. FEFO burns the earliest expiry, holds stay on the shelf, and a customer life floor can skip a near-dated pallet.</p>
+    </div>
+    <div class="stamp">Lot copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <label for="preset">Policy</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="today">Today</label>
+          <input id="today" type="text" value="2026-10-09" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="fefo">FEFO</option>
+            <option value="fifo">FIFO</option>
+            <option value="fewest">Fewest lots</option>
+          </select>
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Orders</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>SKU</th><th>Qty</th><th>Ship by</th><th>Pri</th><th>Life</th>
+          </tr>
+        </thead>
+        <tbody id="orders"></tbody>
+      </table>
+      <h3>Lots</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>SKU</th><th>Qty</th><th>Expiry</th><th>Received</th><th>Loc</th><th>Hold</th>
+          </tr>
+        </thead>
+        <tbody id="lots"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addOrder">Add order</button>
+        <button type="button" class="ghost" id="addLot">Add lot</button>
+        <button type="button" id="draw">Draw lots</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Lot board</h2>
+      <div class="stats">
+        <div class="stat" id="statFilled"><span>Filled</span><b>—</b></div>
+        <div class="stat" id="statRate"><span>Fill</span><b>—</b></div>
+        <div class="stat" id="statLines"><span>Lines</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left out</span><b>—</b></div>
+      </div>
+      <div class="board" id="board" aria-label="Lot allocation board"></div>
+      <div class="lists">
+        <div>
+          <h3>Allocations</h3>
+          <div class="note" id="allocs">Draw a wave to assign lots.</div>
+        </div>
+        <div>
+          <h3>Leftovers &amp; holds</h3>
+          <div class="unpacked" id="leftover"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const orderBody = document.getElementById("orders");
+    const lotBody = document.getElementById("lots");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const today = document.getElementById("today");
+    const strategy = document.getElementById("strategy");
+    const error = document.getElementById("error");
+    const presetsById = {};
+
+    function addOrder(item = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${item.id || ""}" /></td>
+        <td><input data-k="sku" value="${item.sku || ""}" /></td>
+        <td><input data-k="qty" value="${item.qty ?? 10}" /></td>
+        <td><input data-k="ship_by" value="${item.ship_by || "2026-10-10"}" /></td>
+        <td><input data-k="priority" value="${item.priority ?? 2}" /></td>
+        <td><input data-k="min_remaining_days" value="${item.min_remaining_days ?? ""}" placeholder="policy" /></td>
+      `;
+      orderBody.appendChild(tr);
+    }
+
+    function addLot(item = {}) {
+      const tr = document.createElement("tr");
+      const hold = item.hold || "";
+      tr.innerHTML = `
+        <td><input data-k="id" value="${item.id || ""}" /></td>
+        <td><input data-k="sku" value="${item.sku || ""}" /></td>
+        <td><input data-k="qty" value="${item.qty ?? 24}" /></td>
+        <td><input data-k="expiry" value="${item.expiry || "2026-10-20"}" /></td>
+        <td><input data-k="received" value="${item.received || "2026-10-01"}" /></td>
+        <td><input data-k="location" value="${item.location || ""}" /></td>
+        <td>
+          <select data-k="hold">
+            <option value=""${hold === "" || hold === "none" ? " selected" : ""}>—</option>
+            <option value="quality"${hold === "quality" ? " selected" : ""}>quality</option>
+            <option value="recall"${hold === "recall" ? " selected" : ""}>recall</option>
+            <option value="damage"${hold === "damage" ? " selected" : ""}>damage</option>
+          </select>
+        </td>
+      `;
+      lotBody.appendChild(tr);
+    }
+
+    function readRows(tbody, keys) {
+      return [...tbody.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        const row = {};
+        keys.forEach(k => {
+          const el = get(k);
+          row[k] = el && el.type === "checkbox" ? el.checked : (el ? el.value.trim() : "");
+        });
+        return row;
+      }).filter(item => item.id);
+    }
+
+    function readOrders() {
+      return readRows(orderBody, ["id", "sku", "qty", "ship_by", "priority", "min_remaining_days"]).map(item => {
+        const out = {
+          id: item.id,
+          sku: item.sku,
+          qty: Number(item.qty),
+          ship_by: item.ship_by,
+          priority: Number(item.priority || 2),
+        };
+        if (item.min_remaining_days !== "") out.min_remaining_days = Number(item.min_remaining_days);
+        return out;
+      });
+    }
+
+    function readLots() {
+      return readRows(lotBody, ["id", "sku", "qty", "expiry", "received", "location", "hold"]).map(item => ({
+        id: item.id,
+        sku: item.sku,
+        qty: Number(item.qty),
+        expiry: item.expiry,
+        received: item.received,
+        location: item.location,
+        hold: item.hold,
+      }));
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        presetsById[p.id] = p;
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · life ${p.min_remaining_days}d · ${p.split}`;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_dc";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addOrder({ id: "SO-1001", sku: "MILK-1L", qty: 40, ship_by: "2026-10-10", priority: 1 });
+      addOrder({ id: "SO-1002", sku: "MILK-1L", qty: 20, ship_by: "2026-10-11", priority: 2 });
+      addLot({ id: "L-M1", sku: "MILK-1L", qty: 24, expiry: "2026-10-20", received: "2026-10-01", location: "A-02-1" });
+      addLot({ id: "L-M2", sku: "MILK-1L", qty: 48, expiry: "2026-10-27", received: "2026-10-04", location: "A-02-2" });
+      drawEmpty();
+    }
+
+    function lifeClass(lot) {
+      if (lot.hold && lot.hold !== "none") return "hold";
+      const days = lot.remaining_days;
+      if (days <= 7) return "short";
+      if (days <= 21) return "warn";
+      return "fresh";
+    }
+
+    function drawEmpty() {
+      const root = document.getElementById("board");
+      const lots = readLots();
+      root.innerHTML = "";
+      const groups = {};
+      lots.forEach(lot => { (groups[lot.sku] ||= []).push({ ...lot, remaining: lot.qty, allocated: 0, remaining_days: 99 }); });
+      Object.keys(groups).sort().forEach(sku => {
+        const wrap = document.createElement("div");
+        wrap.className = "sku-row";
+        wrap.innerHTML = `<div class="sku-label">${sku}</div>`;
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        groups[sku].forEach(lot => {
+          const seg = document.createElement("div");
+          seg.className = "seg " + lifeClass(lot);
+          seg.style.flex = String(lot.qty);
+          seg.innerHTML = `<span class="id">${lot.id}</span>${lot.qty} on hand`;
+          bar.appendChild(seg);
+        });
+        wrap.appendChild(bar);
+        root.appendChild(wrap);
+      });
+      if (!lots.length) root.textContent = "Add lots to see the board.";
+    }
+
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      orderBody.innerHTML = "";
+      lotBody.innerHTML = "";
+      (data.orders || []).forEach(addOrder);
+      (data.lots || []).forEach(addLot);
+      if (data.policy?.preset) preset.value = data.policy.preset;
+      today.value = data.today || "2026-10-09";
+      strategy.value = data.strategy || "fefo";
+      drawEmpty();
+    });
+
+    document.getElementById("addOrder").onclick = () => addOrder();
+    document.getElementById("addLot").onclick = () => { addLot(); drawEmpty(); };
+    document.getElementById("draw").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        policy: { preset: preset.value },
+        today: today.value.trim(),
+        strategy: strategy.value,
+        orders: readOrders(),
+        lots: readLots(),
+      };
+      const res = await fetch("/api/draw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Draw failed";
+        return;
+      }
+      renderStats(data);
+      drawResult(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statFilled", `${data.filled_qty}/${data.asked_qty}`, "good");
+      set("statRate", Math.round((data.fill_rate || 0) * 100) + "%", data.all_clear ? "good" : "");
+      set("statLines", String(data.allocation_count));
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("allocs").textContent = (data.allocations || [])
+        .map(a => `${a.order_id} ← ${a.lot_id} ×${a.qty} (life ${a.life_at_ship}d)`)
+        .join(" · ") || "No allocations.";
+      const left = (data.leftover || []).map(u => `${u.id} ${u.reason} short ${u.short}`);
+      const held = (data.held || []).map(h => `${h.id} ${h.hold}`);
+      document.getElementById("leftover").textContent = [...left, ...held].join(" · ");
+    }
+
+    function drawResult(data) {
+      const root = document.getElementById("board");
+      root.innerHTML = "";
+      const groups = {};
+      (data.lots || []).forEach(lot => { (groups[lot.sku] ||= []).push(lot); });
+      Object.keys(groups).sort().forEach(sku => {
+        const wrap = document.createElement("div");
+        wrap.className = "sku-row";
+        wrap.innerHTML = `<div class="sku-label">${sku}</div>`;
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        groups[sku].forEach(lot => {
+          if (lot.allocated > 0) {
+            const used = document.createElement("div");
+            used.className = "seg used " + lifeClass(lot);
+            used.style.flex = String(lot.allocated);
+            used.innerHTML = `<span class="id">${lot.id}</span>alloc ${lot.allocated}`;
+            bar.appendChild(used);
+          }
+          if (lot.remaining > 0) {
+            const free = document.createElement("div");
+            free.className = "seg " + lifeClass(lot);
+            free.style.flex = String(lot.remaining);
+            const tag = lot.hold && lot.hold !== "none" ? lot.hold : "left";
+            free.innerHTML = `<span class="id">${lot.id}</span>${lot.remaining} ${tag}`;
+            bar.appendChild(free);
+          }
+        });
+        wrap.appendChild(bar);
+        root.appendChild(wrap);
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>
