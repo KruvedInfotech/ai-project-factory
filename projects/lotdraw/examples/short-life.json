@@ -1,0 +1,48 @@
+{
+  "policy": { "preset": "grocery_dc" },
+  "today": "2026-10-09",
+  "strategy": "fefo",
+  "orders": [
+    {
+      "id": "SO-2001",
+      "sku": "JUICE",
+      "qty": 10,
+      "ship_by": "2026-10-10",
+      "priority": 1,
+      "min_remaining_days": 21
+    },
+    {
+      "id": "SO-2002",
+      "sku": "JUICE",
+      "qty": 10,
+      "ship_by": "2026-10-10",
+      "priority": 2
+    },
+    {
+      "id": "SO-2003",
+      "sku": "JUICE",
+      "qty": 5,
+      "ship_by": "2026-10-10",
+      "priority": 3,
+      "min_remaining_days": 60
+    }
+  ],
+  "lots": [
+    {
+      "id": "L-J1",
+      "sku": "JUICE",
+      "qty": 50,
+      "expiry": "2026-10-22",
+      "received": "2026-10-01",
+      "location": "C-04-1"
+    },
+    {
+      "id": "L-J2",
+      "sku": "JUICE",
+      "qty": 10,
+      "expiry": "2026-11-20",
+      "received": "2026-10-05",
+      "location": "C-04-2"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "policy": { "preset": "pharma_vault" },
+  "today": "2026-10-09",
+  "strategy": "fefo",
+  "orders": [
+    {
+      "id": "SO-3001",
+      "sku": "API-X",
+      "qty": 20,
+      "ship_by": "2026-11-01",
+      "priority": 1
+    },
+    {
+      "id": "SO-3002",
+      "sku": "VIT-C",
+      "qty": 10,
+      "ship_by": "2026-10-20",
+      "priority": 1
+    }
+  ],
+  "lots": [
+    {
+      "id": "L-H1",
+      "sku": "API-X",
+      "qty": 40,
+      "expiry": "2027-06-01",
+      "received": "2026-01-15",
+      "location": "V-01",
+      "hold": "quality"
+    },
+    {
+      "id": "L-V1",
+      "sku": "VIT-C",
+      "qty": 8,
+      "expiry": "2027-06-01",
+      "received": "2026-08-01",
+      "location": "V-02"
+    },
+    {
+      "id": "L-V2",
+      "sku": "VIT-C",
+      "qty": 20,
+      "expiry": "2027-03-01",
+      "received": "2026-09-01",
+      "location": "V-03",
+      "hold": "recall"
+    }
+  ]
+}

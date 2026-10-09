@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### LotDraw — FEFO lot allocator
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-09 |
+| **Intended repo** | `https://github.com/KruvedInfotech/lotdraw` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/lotdraw`](projects/lotdraw/) |
+| **What it is** | Outbound lot allocator. FEFO/FIFO/fewest, remaining-life floor, quality holds, SKU lot board. |
+
+**How it works (short):** orders are sorted by priority then ship date. LotDraw keeps lots that match the SKU, are not on hold, and still have enough life at `ship_by`. FEFO burns the earliest expiry (FIFO the earliest receipt; fewest the largest pallet). A no-split policy will not stitch two lots onto one line.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/lotdraw
+PYTHONPATH=src python3 -m lotdraw presets
+PYTHONPATH=src python3 -m lotdraw draw examples/grocery-wave.json
+PYTHONPATH=src python3 -m lotdraw serve --host 127.0.0.1 --port 8773
+```
+
+Open `http://127.0.0.1:8773`, then **Draw lots**. Full detail is in the [LotDraw README](projects/lotdraw/README.md).
