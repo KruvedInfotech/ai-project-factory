@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "putsteer"
+version = "0.1.0"
+description = "Directed putaway planner for inbound warehouse pallets."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "putaway", "inbound", "lpn", "reserve"]
+dependencies = []
+
+[project.scripts]
+putsteer = "putsteer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+putsteer = ["static/*"]

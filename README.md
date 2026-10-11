@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### PutSteer — directed putaway planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-11 |
+| **Intended repo** | `https://github.com/KruvedInfotech/putsteer` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/putsteer`](projects/putsteer/) |
+| **What it is** | Inbound pallet putaway. Same-SKU top-off, height/weight/temp match, labor cap, rack map. |
+
+**How it works (short):** inbound LPNs are sorted by strategy (priority, heavy, tall, FIFO). PutSteer claims a slot that matches type and temperature, has height and weight room, and is empty or already the same SKU. Top-off and the SKU’s home aisle win; travel minutes stop the wave when labor runs out.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/putsteer
+PYTHONPATH=src python3 -m putsteer presets
+PYTHONPATH=src python3 -m putsteer put examples/inbound-wave.json
+PYTHONPATH=src python3 -m putsteer serve --host 127.0.0.1 --port 8774
+```
+
+Open `http://127.0.0.1:8774`, then **Steer puts**. Full detail is in the [PutSteer README](projects/putsteer/README.md).
