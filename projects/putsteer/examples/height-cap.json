@@ -1,0 +1,56 @@
+{
+  "policy": { "preset": "reserve_dc" },
+  "strategy": "tall",
+  "inbound": [
+    {
+      "id": "LPN-2001",
+      "sku": "TOWER-BIN",
+      "qty": 12,
+      "pallets": 1,
+      "height_mm": 2000,
+      "weight_kg": 310,
+      "temp": "dry",
+      "velocity": "B",
+      "priority": 1,
+      "home_aisle": 2
+    },
+    {
+      "id": "LPN-2002",
+      "sku": "FLAT-CASE",
+      "qty": 24,
+      "pallets": 1,
+      "height_mm": 900,
+      "weight_kg": 180,
+      "temp": "dry",
+      "velocity": "B",
+      "priority": 2,
+      "home_aisle": 2
+    }
+  ],
+  "locations": [
+    {
+      "id": "R-B-02-1",
+      "zone": "B",
+      "type": "reserve",
+      "aisle": 2,
+      "bay": 1,
+      "level": 1,
+      "temp": "dry",
+      "max_pallets": 1,
+      "max_height_mm": 1500,
+      "max_weight_kg": 800
+    },
+    {
+      "id": "R-B-02-2",
+      "zone": "B",
+      "type": "reserve",
+      "aisle": 2,
+      "bay": 1,
+      "level": 2,
+      "temp": "dry",
+      "max_pallets": 1,
+      "max_height_mm": 1400,
+      "max_weight_kg": 600
+    }
+  ]
+}

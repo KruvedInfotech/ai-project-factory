@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PutSteer — putaway board</title>
+  <style>
+    :root {
+      --ink: #1c2218;
+      --paper: #e7ead8;
+      --board: #2a3324;
+      --amber: #d39a12;
+      --ok: #3b6f45;
+      --rust: #b3401a;
+      --steel: #6a7a4a;
+      --line: rgba(28, 34, 24, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 51, 36, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(28,34,24,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 58ch; }
+    .stamp {
+      border: 2px solid var(--steel);
+      color: var(--ink);
+      background: rgba(106, 122, 74, 0.18);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 620px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f4f6ea;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f4f6ea;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #eef3df;
+      padding: 14px;
+      min-height: 280px;
+      overflow-x: auto;
+    }
+    .aisles {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .aisle {
+      min-width: 132px;
+      flex: 1;
+    }
+    .aisle-label {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      color: rgba(238, 243, 223, 0.7);
+    }
+    .slot {
+      border: 1px solid rgba(238, 243, 223, 0.22);
+      padding: 8px;
+      margin-bottom: 8px;
+      min-height: 64px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background: rgba(238, 243, 223, 0.06);
+    }
+    .slot.put { background: rgba(59, 111, 69, 0.55); }
+    .slot.topoff { background: rgba(211, 154, 18, 0.55); color: #1c2218; }
+    .slot.blocked {
+      background: repeating-linear-gradient(135deg, rgba(179,64,26,0.45) 0 8px, rgba(42,51,36,0.7) 8px 16px);
+    }
+    .slot.full { box-shadow: inset 0 -4px 0 #eef3df; }
+    .slot .id { opacity: 0.8; }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PutSteer</h1>
+      <p>Park inbound pallets into reserve or pick slots. Same-SKU top-off wins, temperature and height have to match, and the clock stops when labor runs out.</p>
+    </div>
+    <div class="stamp">Desk copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Inbound</h2>
+      <label for="preset">Policy</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="priority">Priority</option>
+            <option value="heavy">Heavy</option>
+            <option value="tall">Tall</option>
+            <option value="fifo">FIFO</option>
+          </select>
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Pallets</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>LPN</th><th>SKU</th><th>Qty</th><th>H</th><th>kg</th><th>Temp</th><th>Vel</th><th>Pri</th><th>Home</th>
+          </tr>
+        </thead>
+        <tbody id="pallets"></tbody>
+      </table>
+      <h3>Locations</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>Zn</th><th>Type</th><th>A</th><th>B</th><th>L</th><th>Temp</th><th>Max</th><th>Hmax</th><th>kg</th><th>Occ</th><th>SKU</th>
+          </tr>
+        </thead>
+        <tbody id="locations"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addPallet">Add pallet</button>
+        <button type="button" class="ghost" id="addLocation">Add location</button>
+        <button type="button" id="steer">Steer puts</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Rack map</h2>
+      <div class="stats">
+        <div class="stat" id="statPut"><span>Put</span><b>—</b></div>
+        <div class="stat" id="statFill"><span>Fill</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <div class="board" id="board">Load a wave, then steer puts.</div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const pallets = document.getElementById("pallets");
+    const locations = document.getElementById("locations");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+
+    const palletKeys = ["id","sku","qty","height_mm","weight_kg","temp","velocity","priority","home_aisle"];
+    const locationKeys = ["id","zone","type","aisle","bay","level","temp","max_pallets","max_height_mm","max_weight_kg","occupied_pallets","sku"];
+
+    function addRow(tbody, keys, values = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = keys.map((key) => {
+        const val = values[key] ?? "";
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      tbody.appendChild(tr);
+    }
+
+    function readRows(tbody, keys) {
+      return [...tbody.querySelectorAll("tr")].map((tr) => {
+        const row = {};
+        keys.forEach((key) => {
+          row[key] = tr.querySelector(`[data-k="${key}"]`).value;
+        });
+        return row;
+      }).filter((row) => row.id && row.id.trim());
+    }
+
+    function numberOr(value, fallback) {
+      if (value === "" || value === undefined || value === null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function readInbound() {
+      return readRows(pallets, palletKeys).map((row) => ({
+        id: row.id.trim(),
+        sku: row.sku.trim(),
+        qty: numberOr(row.qty, 1),
+        pallets: 1,
+        height_mm: numberOr(row.height_mm, 0),
+        weight_kg: numberOr(row.weight_kg, 0),
+        temp: row.temp.trim() || "dry",
+        velocity: row.velocity.trim() || "B",
+        priority: numberOr(row.priority, 2),
+        home_aisle: row.home_aisle === "" ? null : numberOr(row.home_aisle, null),
+      }));
+    }
+
+    function readLocations() {
+      return readRows(locations, locationKeys).map((row) => ({
+        id: row.id.trim(),
+        zone: row.zone.trim() || "B",
+        type: row.type.trim() || "reserve",
+        aisle: numberOr(row.aisle, 0),
+        bay: numberOr(row.bay, 0),
+        level: numberOr(row.level, 0),
+        temp: row.temp.trim() || "dry",
+        max_pallets: numberOr(row.max_pallets, 1),
+        max_height_mm: numberOr(row.max_height_mm, 0),
+        max_weight_kg: numberOr(row.max_weight_kg, 0),
+        occupied_pallets: numberOr(row.occupied_pallets, 0),
+        sku: row.sku.trim(),
+      }));
+    }
+
+    function fillTables(data) {
+      pallets.innerHTML = "";
+      locations.innerHTML = "";
+      (data.inbound || []).forEach((row) => addRow(pallets, palletKeys, row));
+      (data.locations || []).forEach((row) => addRow(locations, locationKeys, row));
+      if (data.strategy) strategy.value = data.strategy;
+      if (data.policy?.preset) preset.value = data.policy.preset;
+      labor.value = data.labor_minutes || preset.selectedOptions[0]?.dataset.labor || "";
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.location_type || "any"} · ${p.minutes_per_put}m`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "reserve_dc";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const seed = await (await fetch("/api/examples/inbound-wave.json")).json();
+      fillTables(seed);
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+    });
+    document.getElementById("addPallet").onclick = () => addRow(pallets, palletKeys);
+    document.getElementById("addLocation").onclick = () => addRow(locations, locationKeys);
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillTables(data);
+    });
+
+    document.getElementById("steer").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        policy: { preset: preset.value },
+        strategy: strategy.value,
+        labor_minutes: Number(labor.value),
+        inbound: readInbound(),
+        locations: readLocations(),
+      };
+      const res = await fetch("/api/put", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Put failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statPut", String(data.put_count), "good");
+      set("statFill", Math.round(data.fill_rate * 100) + "%");
+      set("statLabor", `${data.labor_used_min}/${data.labor_cap_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map((item) => `${item.id} ${item.sku} — ${item.reason}`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const aisles = document.createElement("div");
+      aisles.className = "aisles";
+      const byAisle = {};
+      for (const loc of data.locations || []) {
+        (byAisle[loc.aisle] ||= []).push(loc);
+      }
+      Object.keys(byAisle).sort((a, b) => Number(a) - Number(b)).forEach((aisle) => {
+        const col = document.createElement("div");
+        col.className = "aisle";
+        const label = document.createElement("div");
+        label.className = "aisle-label";
+        label.textContent = `Aisle ${aisle}`;
+        col.appendChild(label);
+        byAisle[aisle]
+          .slice()
+          .sort((a, b) => a.bay - b.bay || a.level - b.level)
+          .forEach((loc) => {
+            const slot = document.createElement("div");
+            const assigned = loc.assigned || [];
+            slot.className = "slot";
+            if (loc.blocked) slot.classList.add("blocked");
+            else if (assigned.length) slot.classList.add("put");
+            if (assigned.length > 1) slot.classList.add("topoff");
+            if (loc.remaining_pallets === 0) slot.classList.add("full");
+            slot.innerHTML = `
+              <div class="id">${loc.id} · ${loc.type} ${loc.temp}</div>
+              <div>${loc.sku || "empty"} · ${loc.occupied_pallets}/${loc.max_pallets}</div>
+              <div>${assigned.join(" · ") || "—"}</div>
+            `;
+            col.appendChild(slot);
+          });
+        aisles.appendChild(col);
+      });
+      board.appendChild(aisles);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

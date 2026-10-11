@@ -1,0 +1,56 @@
+{
+  "policy": { "preset": "cold_vault" },
+  "strategy": "priority",
+  "inbound": [
+    {
+      "id": "LPN-3001",
+      "sku": "PEAS-FZN",
+      "qty": 40,
+      "pallets": 1,
+      "height_mm": 1300,
+      "weight_kg": 420,
+      "temp": "frozen",
+      "velocity": "A",
+      "priority": 1,
+      "home_aisle": 1
+    },
+    {
+      "id": "LPN-3002",
+      "sku": "YOG-CUP",
+      "qty": 30,
+      "pallets": 1,
+      "height_mm": 1100,
+      "weight_kg": 240,
+      "temp": "cool",
+      "velocity": "A",
+      "priority": 2,
+      "home_aisle": 1
+    }
+  ],
+  "locations": [
+    {
+      "id": "C-A-01-1",
+      "zone": "A",
+      "type": "reserve",
+      "aisle": 1,
+      "bay": 1,
+      "level": 1,
+      "temp": "cool",
+      "max_pallets": 2,
+      "max_height_mm": 1800,
+      "max_weight_kg": 1000
+    },
+    {
+      "id": "D-A-02-1",
+      "zone": "A",
+      "type": "reserve",
+      "aisle": 2,
+      "bay": 1,
+      "level": 1,
+      "temp": "dry",
+      "max_pallets": 2,
+      "max_height_mm": 1800,
+      "max_weight_kg": 1000
+    }
+  ]
+}
