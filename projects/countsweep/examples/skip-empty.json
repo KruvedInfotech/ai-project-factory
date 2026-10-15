@@ -1,0 +1,40 @@
+{
+  "policy": { "preset": "grocery_dc" },
+  "strategy": "aisle",
+  "as_of": "2026-10-15",
+  "locations": [
+    {
+      "id": "P-A-01-1",
+      "sku": "",
+      "book_qty": 0,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-09-01",
+      "type": "pick"
+    },
+    {
+      "id": "P-A-01-2",
+      "sku": "RICE-10KG",
+      "book_qty": 40,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 2,
+      "level": 1,
+      "last_counted": "2026-09-01",
+      "type": "pick"
+    },
+    {
+      "id": "P-A-02-1",
+      "sku": "OIL-5L",
+      "book_qty": 18,
+      "abc": "A",
+      "aisle": 2,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-10-12",
+      "type": "pick"
+    }
+  ]
+}

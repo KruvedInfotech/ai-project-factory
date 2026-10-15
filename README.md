@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### CountSweep — ABC cycle-count planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-15 |
+| **Intended repo** | `https://github.com/KruvedInfotech/countsweep` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/countsweep`](projects/countsweep/) |
+| **What it is** | Cycle-count walk for pick faces. ABC cadence, high-shrink, labor cap, variance flags, aisle map. |
+
+**How it works (short):** locations due on the as-of date (never counted, past ABC cycle, or high-shrink) are sorted by overdue / ABC / aisle / shrink. CountSweep walks them until labor runs out, skips empty faces when the policy says so, and flags a keyed count that misses the variance threshold.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/countsweep
+PYTHONPATH=src python3 -m countsweep presets
+PYTHONPATH=src python3 -m countsweep plan examples/due-wave.json
+PYTHONPATH=src python3 -m countsweep serve --host 127.0.0.1 --port 8775
+```
+
+Open `http://127.0.0.1:8775`, then **Sweep counts**. Full detail is in the [CountSweep README](projects/countsweep/README.md).

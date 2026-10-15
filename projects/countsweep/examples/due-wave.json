@@ -1,0 +1,73 @@
+{
+  "policy": { "preset": "grocery_dc" },
+  "strategy": "overdue",
+  "as_of": "2026-10-15",
+  "locations": [
+    {
+      "id": "P-A-01-1",
+      "sku": "RICE-10KG",
+      "book_qty": 48,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-10-01",
+      "high_shrink": true,
+      "type": "pick"
+    },
+    {
+      "id": "P-A-01-2",
+      "sku": "OIL-5L",
+      "book_qty": 24,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 2,
+      "level": 1,
+      "last_counted": "2026-10-12",
+      "type": "pick"
+    },
+    {
+      "id": "P-B-03-1",
+      "sku": "SOAP",
+      "book_qty": 80,
+      "abc": "B",
+      "aisle": 3,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-09-01",
+      "type": "pick"
+    },
+    {
+      "id": "P-C-05-1",
+      "sku": "TAPE",
+      "book_qty": 200,
+      "abc": "C",
+      "aisle": 5,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-08-01",
+      "type": "reserve"
+    },
+    {
+      "id": "P-A-02-1",
+      "sku": "SUGAR-1KG",
+      "book_qty": 36,
+      "abc": "A",
+      "aisle": 2,
+      "bay": 1,
+      "level": 1,
+      "type": "pick"
+    },
+    {
+      "id": "P-B-03-2",
+      "sku": "FLOUR-5KG",
+      "book_qty": 12,
+      "abc": "B",
+      "aisle": 3,
+      "bay": 2,
+      "level": 1,
+      "last_counted": "2026-10-10",
+      "type": "pick"
+    }
+  ]
+}

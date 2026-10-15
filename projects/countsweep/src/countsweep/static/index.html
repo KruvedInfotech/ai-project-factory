@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CountSweep — cycle-count board</title>
+  <style>
+    :root {
+      --ink: #1a2430;
+      --paper: #e4eaf0;
+      --board: #1e2a36;
+      --amber: #d4a017;
+      --ok: #2f7d6d;
+      --rust: #b3401a;
+      --steel: #4a6a7a;
+      --line: rgba(26, 36, 48, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(30, 42, 54, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(26,36,48,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 58ch; }
+    .stamp {
+      border: 2px solid var(--steel);
+      color: var(--ink);
+      background: rgba(74, 106, 122, 0.18);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 640px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"], input[type="date"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f3f6fa;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f3f6fa;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #e8eef5;
+      padding: 14px;
+      min-height: 280px;
+      overflow-x: auto;
+    }
+    .aisles {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .aisle { min-width: 148px; flex: 1; }
+    .aisle-label {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      color: rgba(232, 238, 245, 0.7);
+    }
+    .slot {
+      border: 1px solid rgba(232, 238, 245, 0.22);
+      padding: 8px;
+      margin-bottom: 8px;
+      min-height: 72px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background: rgba(232, 238, 245, 0.06);
+    }
+    .slot.scheduled { background: rgba(47, 125, 109, 0.55); }
+    .slot.leftover { background: rgba(179, 64, 26, 0.45); }
+    .slot.flag { background: rgba(212, 160, 23, 0.6); color: #1a2430; }
+    .slot.blocked {
+      background: repeating-linear-gradient(135deg, rgba(179,64,26,0.45) 0 8px, rgba(30,42,54,0.7) 8px 16px);
+    }
+    .slot .id { opacity: 0.8; }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>CountSweep</h1>
+      <p>Build today’s ABC cycle-count walk. Overdue and high-shrink faces go first, empty holes can be skipped, and the clock stops when labor runs out.</p>
+    </div>
+    <div class="stamp">Desk copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Locations</h2>
+      <label for="preset">Policy</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="overdue">Overdue</option>
+            <option value="abc">ABC</option>
+            <option value="aisle">Aisle walk</option>
+            <option value="shrink">Shrink first</option>
+          </select>
+        </div>
+        <div>
+          <label for="asOf">As of</label>
+          <input id="asOf" type="date" />
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Faces</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>SKU</th><th>Book</th><th>Count</th><th>ABC</th>
+            <th>A</th><th>B</th><th>L</th><th>Last</th><th>Shrink</th><th>Block</th>
+          </tr>
+        </thead>
+        <tbody id="locations"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addLocation">Add location</button>
+        <button type="button" id="plan">Sweep counts</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Count map</h2>
+      <div class="stats">
+        <div class="stat" id="statDue"><span>Due</span><b>—</b></div>
+        <div class="stat" id="statWalk"><span>Walk</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <div class="board" id="board">Load locations, then sweep counts.</div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const locations = document.getElementById("locations");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const labor = document.getElementById("labor");
+    const asOf = document.getElementById("asOf");
+    const error = document.getElementById("error");
+    const locationKeys = ["id","sku","book_qty","counted_qty","abc","aisle","bay","level","last_counted","high_shrink","blocked"];
+
+    function addRow(values = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = locationKeys.map((key) => {
+        let val = values[key];
+        if (key === "high_shrink" || key === "blocked") val = val ? "yes" : "";
+        if (val === undefined || val === null) val = "";
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      locations.appendChild(tr);
+    }
+
+    function numberOr(value, fallback) {
+      if (value === "" || value === undefined || value === null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function truthy(value) {
+      return ["1", "true", "yes", "on"].includes(String(value).trim().toLowerCase());
+    }
+
+    function readLocations() {
+      return [...locations.querySelectorAll("tr")].map((tr) => {
+        const get = (key) => tr.querySelector(`[data-k="${key}"]`).value;
+        const id = get("id").trim();
+        if (!id) return null;
+        const counted = get("counted_qty").trim();
+        return {
+          id,
+          sku: get("sku").trim(),
+          book_qty: numberOr(get("book_qty"), 0),
+          counted_qty: counted === "" ? null : numberOr(counted, null),
+          abc: get("abc").trim() || "B",
+          aisle: numberOr(get("aisle"), 0),
+          bay: numberOr(get("bay"), 0),
+          level: numberOr(get("level"), 0),
+          last_counted: get("last_counted").trim() || null,
+          high_shrink: truthy(get("high_shrink")),
+          blocked: truthy(get("blocked")),
+          type: "pick",
+        };
+      }).filter(Boolean);
+    }
+
+    function fillTables(data) {
+      locations.innerHTML = "";
+      (data.locations || []).forEach((row) => addRow(row));
+      if (data.strategy) strategy.value = data.strategy;
+      if (data.policy?.preset) preset.value = data.policy.preset;
+      labor.value = data.labor_minutes || preset.selectedOptions[0]?.dataset.labor || "";
+      asOf.value = data.as_of || "2026-10-15";
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.cadence}d · ${p.minutes_per_count}m`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery_dc";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const seed = await (await fetch("/api/examples/due-wave.json")).json();
+      fillTables(seed);
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+    });
+    document.getElementById("addLocation").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillTables(data);
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        policy: { preset: preset.value },
+        strategy: strategy.value,
+        as_of: asOf.value,
+        labor_minutes: Number(labor.value),
+        locations: readLocations(),
+      };
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statDue", String(data.due_count), "good");
+      set("statWalk", String(data.scheduled_count), "good");
+      set("statLabor", `${data.labor_used_min}/${data.labor_cap_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map((item) => `${item.id} ${item.sku || "empty"} — ${item.reason}`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const aisles = document.createElement("div");
+      aisles.className = "aisles";
+      const byAisle = {};
+      for (const loc of data.locations || []) {
+        (byAisle[loc.aisle] ||= []).push(loc);
+      }
+      Object.keys(byAisle).sort((a, b) => Number(a) - Number(b)).forEach((aisle) => {
+        const col = document.createElement("div");
+        col.className = "aisle";
+        const label = document.createElement("div");
+        label.className = "aisle-label";
+        label.textContent = `Aisle ${aisle}`;
+        col.appendChild(label);
+        byAisle[aisle]
+          .slice()
+          .sort((a, b) => a.bay - b.bay || a.level - b.level)
+          .forEach((loc) => {
+            const slot = document.createElement("div");
+            slot.className = "slot";
+            if (loc.blocked || loc.status === "blocked") slot.classList.add("blocked");
+            else if (loc.flag) slot.classList.add("flag");
+            else if (loc.status === "scheduled") slot.classList.add("scheduled");
+            else if (loc.status === "leftover") slot.classList.add("leftover");
+            const seq = loc.seq ? `#${loc.seq}` : loc.status;
+            const sku = loc.sku || "empty";
+            slot.innerHTML = `
+              <div class="id">${loc.id} · ${loc.abc} ${loc.type || ""}</div>
+              <div>${sku} · book ${loc.book_qty}</div>
+              <div>${seq}${loc.flag ? " · FLAG" : ""}${loc.freeze ? " · freeze" : ""}</div>
+            `;
+            col.appendChild(slot);
+          });
+        aisles.appendChild(col);
+      });
+      board.appendChild(aisles);
+    }
+
+    boot();
+  </script>
+</body>
+</html>
