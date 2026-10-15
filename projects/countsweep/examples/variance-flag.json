@@ -1,0 +1,42 @@
+{
+  "policy": { "preset": "pharma_vault" },
+  "strategy": "overdue",
+  "as_of": "2026-10-15",
+  "locations": [
+    {
+      "id": "V-A-01-1",
+      "sku": "ASPIRIN",
+      "book_qty": 100,
+      "counted_qty": 94,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-10-01",
+      "type": "pick"
+    },
+    {
+      "id": "V-A-01-2",
+      "sku": "SYRUP",
+      "book_qty": 50,
+      "counted_qty": 50,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 2,
+      "level": 1,
+      "last_counted": "2026-10-01",
+      "type": "pick"
+    },
+    {
+      "id": "V-C-04-1",
+      "sku": "GLOVES",
+      "book_qty": 400,
+      "abc": "C",
+      "aisle": 4,
+      "bay": 1,
+      "level": 1,
+      "last_counted": "2026-09-20",
+      "type": "reserve"
+    }
+  ]
+}

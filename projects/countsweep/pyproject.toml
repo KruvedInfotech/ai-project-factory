@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "countsweep"
+version = "0.1.0"
+description = "ABC cycle-count walk planner for warehouse locations."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "cycle-count", "inventory", "abc", "audit"]
+dependencies = []
+
+[project.scripts]
+countsweep = "countsweep.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+countsweep = ["static/*"]

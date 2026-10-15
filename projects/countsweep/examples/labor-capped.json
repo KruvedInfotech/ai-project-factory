@@ -1,0 +1,48 @@
+{
+  "policy": {
+    "preset": "grocery_dc",
+    "minutes_per_count": 4,
+    "aisle_change_min": 0
+  },
+  "strategy": "abc",
+  "as_of": "2026-10-15",
+  "labor_minutes": 8,
+  "locations": [
+    {
+      "id": "P-A-01-1",
+      "sku": "RICE-10KG",
+      "book_qty": 48,
+      "abc": "A",
+      "aisle": 1,
+      "bay": 1,
+      "level": 1
+    },
+    {
+      "id": "P-A-02-1",
+      "sku": "SUGAR-1KG",
+      "book_qty": 36,
+      "abc": "A",
+      "aisle": 2,
+      "bay": 1,
+      "level": 1
+    },
+    {
+      "id": "P-B-03-1",
+      "sku": "SOAP",
+      "book_qty": 80,
+      "abc": "B",
+      "aisle": 3,
+      "bay": 1,
+      "level": 1
+    },
+    {
+      "id": "P-C-05-1",
+      "sku": "TAPE",
+      "book_qty": 200,
+      "abc": "C",
+      "aisle": 5,
+      "bay": 1,
+      "level": 1
+    }
+  ]
+}
