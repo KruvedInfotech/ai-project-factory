@@ -1,0 +1,25 @@
+{
+  "trailer": { "preset": "mini_6" },
+  "strategy": "lifo",
+  "labor_minutes": 6,
+  "stops": [
+    {
+      "id": "FIRST",
+      "seq": 1,
+      "name": "First drop",
+      "pallets": [
+        { "id": "PAL-F1", "sku": "BREAD", "weight_kg": 220, "height_mm": 1200, "temp": "dry" }
+      ]
+    },
+    {
+      "id": "LAST",
+      "seq": 2,
+      "name": "Last drop",
+      "pallets": [
+        { "id": "PAL-L1", "sku": "WATER", "weight_kg": 300, "height_mm": 1200, "temp": "dry" },
+        { "id": "PAL-L2", "sku": "WATER", "weight_kg": 300, "height_mm": 1200, "temp": "dry" },
+        { "id": "PAL-L3", "sku": "WATER", "weight_kg": 300, "height_mm": 1200, "temp": "dry" }
+      ]
+    }
+  ]
+}

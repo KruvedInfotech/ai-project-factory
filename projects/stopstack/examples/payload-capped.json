@@ -1,0 +1,16 @@
+{
+  "trailer": { "preset": "mini_6" },
+  "strategy": "lifo",
+  "stops": [
+    {
+      "id": "DOCK-A",
+      "seq": 1,
+      "name": "Dock A",
+      "pallets": [
+        { "id": "PAL-H1", "sku": "TILES", "weight_kg": 1800, "height_mm": 1100, "temp": "dry" },
+        { "id": "PAL-H2", "sku": "TILES", "weight_kg": 1800, "height_mm": 1100, "temp": "dry" },
+        { "id": "PAL-H3", "sku": "TILES", "weight_kg": 1800, "height_mm": 1100, "temp": "dry" }
+      ]
+    }
+  ]
+}

@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### StopStack — multi-stop trailer loader
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-17 |
+| **Intended repo** | `https://github.com/KruvedInfotech/stopstack` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/stopstack`](projects/stopstack/) |
+| **What it is** | Milk-run LIFO loader. Last drop into the nose, first drop at the doors, optional 2-high stack, trailer map. |
+
+**How it works (short):** stops load in reverse delivery order. StopStack fills pallet bays from the nose, stacks same-stop pallets when height allows, and will not mix stops in a row when you ask. Reefer freight stays off a dry box; payload and labor caps leave the rest on the dock.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/stopstack
+PYTHONPATH=src python3 -m stopstack presets
+PYTHONPATH=src python3 -m stopstack stack examples/milk-run.json
+PYTHONPATH=src python3 -m stopstack serve --host 127.0.0.1 --port 8776
+```
+
+Open `http://127.0.0.1:8776`, then **Stack trailer**. Full detail is in the [StopStack README](projects/stopstack/README.md).
