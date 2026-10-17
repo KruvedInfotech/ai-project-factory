@@ -1,0 +1,35 @@
+{
+  "trailer": { "preset": "grocery_12m" },
+  "strategy": "lifo",
+  "stops": [
+    {
+      "id": "NORTH",
+      "seq": 1,
+      "name": "Store North",
+      "pallets": [
+        { "id": "PAL-N1", "sku": "MILK-1L", "weight_kg": 400, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-N2", "sku": "YOGURT", "weight_kg": 380, "height_mm": 1400, "temp": "dry" }
+      ]
+    },
+    {
+      "id": "CENTRAL",
+      "seq": 2,
+      "name": "Store Central",
+      "pallets": [
+        { "id": "PAL-C1", "sku": "RICE-10KG", "weight_kg": 410, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-C2", "sku": "OIL-5L", "weight_kg": 390, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-C3", "sku": "SUGAR-1KG", "weight_kg": 360, "height_mm": 1400, "temp": "dry" }
+      ]
+    },
+    {
+      "id": "SOUTH",
+      "seq": 3,
+      "name": "Store South",
+      "pallets": [
+        { "id": "PAL-S1", "sku": "FLOUR-25KG", "weight_kg": 500, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-S2", "sku": "RICE-25KG", "weight_kg": 480, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-S3", "sku": "OIL-20L", "weight_kg": 450, "height_mm": 1400, "temp": "dry" }
+      ]
+    }
+  ]
+}

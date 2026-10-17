@@ -1,0 +1,24 @@
+{
+  "trailer": { "preset": "grocery_12m" },
+  "strategy": "lifo",
+  "stops": [
+    {
+      "id": "CHILL",
+      "seq": 1,
+      "name": "Chill store",
+      "pallets": [
+        { "id": "PAL-R1", "sku": "ICE-CREAM", "weight_kg": 280, "height_mm": 1400, "temp": "reefer" },
+        { "id": "PAL-D1", "sku": "CRACKERS", "weight_kg": 240, "height_mm": 1400, "temp": "dry" }
+      ]
+    },
+    {
+      "id": "DRY",
+      "seq": 2,
+      "name": "Dry store",
+      "pallets": [
+        { "id": "PAL-D2", "sku": "PASTA", "weight_kg": 310, "height_mm": 1400, "temp": "dry" },
+        { "id": "PAL-D3", "sku": "CANS", "weight_kg": 330, "height_mm": 1400, "temp": "dry" }
+      ]
+    }
+  ]
+}
