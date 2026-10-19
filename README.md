@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### WallSort — put-to-wall cubby sorter
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-19 |
+| **Intended repo** | `https://github.com/KruvedInfotech/wallsort` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/wallsort`](projects/wallsort/) |
+| **What it is** | Pack-station put-wall. One order per cubby, waist-row hot tickets, carrier clustering, leftover board. |
+
+**How it works (short):** orders expand to units. WallSort seats a whole order in one cubby. A cubby is accepted only if every unit fits, cube and weight stay inside, temperature matches, and the labor clock has room. Auto gives priority-1 orders the waist row and keeps the same carrier in adjacent cubbies.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/wallsort
+PYTHONPATH=src python3 -m wallsort presets
+PYTHONPATH=src python3 -m wallsort sort examples/batch-wave.json
+PYTHONPATH=src python3 -m wallsort serve --host 127.0.0.1 --port 8777
+```
+
+Open `http://127.0.0.1:8777`, then **Sort wall**. Full detail is in the [WallSort README](projects/wallsort/README.md).

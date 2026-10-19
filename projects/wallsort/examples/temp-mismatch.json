@@ -1,0 +1,66 @@
+{
+  "wall": { "preset": "wall_3x4" },
+  "strategy": "auto",
+  "orders": [
+    {
+      "id": "ORD-DRY1",
+      "carrier": "UPS",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "TEE",
+          "length_mm": 250,
+          "width_mm": 180,
+          "height_mm": 60,
+          "weight_kg": 0.4,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-DRY2",
+      "carrier": "FEDEX",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "CAP",
+          "length_mm": 180,
+          "width_mm": 160,
+          "height_mm": 80,
+          "weight_kg": 0.25,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-DRY3",
+      "carrier": "USPS",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "BOOK",
+          "length_mm": 220,
+          "width_mm": 150,
+          "height_mm": 30,
+          "weight_kg": 0.45,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-COLD",
+      "carrier": "LOCAL",
+      "priority": 1,
+      "lines": [
+        {
+          "sku": "GEL-PACK",
+          "length_mm": 200,
+          "width_mm": 120,
+          "height_mm": 40,
+          "weight_kg": 0.5,
+          "temp": "chill"
+        }
+      ]
+    }
+  ]
+}

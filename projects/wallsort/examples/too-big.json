@@ -1,0 +1,51 @@
+{
+  "wall": { "preset": "mini_2x3" },
+  "strategy": "auto",
+  "orders": [
+    {
+      "id": "ORD-FIT",
+      "carrier": "UPS",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "TEE",
+          "length_mm": 250,
+          "width_mm": 180,
+          "height_mm": 60,
+          "weight_kg": 0.4,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-POLE",
+      "carrier": "FEDEX",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "POSTER-TUBE",
+          "length_mm": 900,
+          "width_mm": 80,
+          "height_mm": 80,
+          "weight_kg": 0.6,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-HEAVY",
+      "carrier": "LOCAL",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "DUMBBELL",
+          "length_mm": 280,
+          "width_mm": 180,
+          "height_mm": 180,
+          "weight_kg": 12,
+          "temp": "ambient"
+        }
+      ]
+    }
+  ]
+}
