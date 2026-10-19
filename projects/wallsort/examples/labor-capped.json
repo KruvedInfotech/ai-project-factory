@@ -1,0 +1,53 @@
+{
+  "wall": { "preset": "mini_2x3" },
+  "strategy": "auto",
+  "labor_minutes": 3,
+  "orders": [
+    {
+      "id": "ORD-BIG",
+      "carrier": "UPS",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "HOOD",
+          "length_mm": 300,
+          "width_mm": 250,
+          "height_mm": 80,
+          "weight_kg": 0.9,
+          "temp": "ambient",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "ORD-MID",
+      "carrier": "FEDEX",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "TEE",
+          "length_mm": 250,
+          "width_mm": 180,
+          "height_mm": 60,
+          "weight_kg": 0.4,
+          "temp": "ambient"
+        }
+      ]
+    },
+    {
+      "id": "ORD-SMALL",
+      "carrier": "USPS",
+      "priority": 2,
+      "lines": [
+        {
+          "sku": "SOCK",
+          "length_mm": 150,
+          "width_mm": 100,
+          "height_mm": 40,
+          "weight_kg": 0.2,
+          "temp": "ambient"
+        }
+      ]
+    }
+  ]
+}

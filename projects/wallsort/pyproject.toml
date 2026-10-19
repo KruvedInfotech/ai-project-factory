@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wallsort"
+version = "0.1.0"
+description = "Put-to-wall cubby sorter for batch-picked warehouse orders."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "putwall", "pack", "logistics", "wms"]
+dependencies = []
+
+[project.scripts]
+wallsort = "wallsort.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wallsort = ["static/*"]

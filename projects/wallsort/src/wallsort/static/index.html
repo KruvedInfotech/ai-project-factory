@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WallSort — put-wall map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23e0a106'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #1c1814;
+      --paper: #ece4d4;
+      --board: #2a2620;
+      --amber: #e0a106;
+      --ok: #2f6b4f;
+      --rust: #b3401a;
+      --line: rgba(28, 24, 20, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 38, 32, 0.14), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(28,24,20,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 58ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 640px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #f3ece0;
+      padding: 14px;
+      min-height: 280px;
+      overflow-x: auto;
+    }
+    .wall {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .end-cap {
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(243, 236, 224, 0.7);
+    }
+    .deck-row {
+      display: grid;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .row-label {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: rgba(243, 236, 224, 0.55);
+      display: flex;
+      align-items: center;
+    }
+    .bay {
+      border: 1px solid rgba(243, 236, 224, 0.22);
+      min-height: 72px;
+      padding: 6px;
+      background: rgba(243, 236, 224, 0.05);
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .bay.empty { opacity: 0.45; }
+    .bay.waist { box-shadow: inset 0 0 0 1px rgba(224, 161, 6, 0.55); }
+    .layer { padding: 4px 6px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 4px;
+      vertical-align: -1px;
+      border: 1px solid rgba(28,24,20,0.3);
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>WallSort</h1>
+      <p>Seat a batch-picked wave onto a put-wall. One order per cubby. Hot tickets take the waist row so the packer is not stretching over cold work.</p>
+    </div>
+    <div class="stamp">Pack copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Batch</h2>
+      <label for="preset">Wall</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="priority">Priority / waist</option>
+            <option value="carrier">Carrier blocks</option>
+            <option value="compact">Compact small-first</option>
+          </select>
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Orders</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th><th>Carrier</th><th>Prio</th><th>SKU</th>
+            <th>L</th><th>W</th><th>H</th><th>Kg</th><th>Temp</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="lines"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addLine">Add line</button>
+        <button type="button" id="plan">Sort wall</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Wall map</h2>
+      <div class="stats">
+        <div class="stat" id="statPacked"><span>Packed</span><b>—</b></div>
+        <div class="stat" id="statOrders"><span>Orders</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left on bench</span><b>—</b></div>
+      </div>
+      <div class="board" id="board">Load orders, then sort wall.</div>
+      <div class="legend" id="legend"></div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const CARRIER_COLORS = {
+      UPS: "#2f6b4f",
+      FEDEX: "#b3401a",
+      USPS: "#3d5a80",
+      LOCAL: "#6b4f7d",
+      DHL: "#d4a017",
+    };
+    const FALLBACK = ["#4a6a7a", "#7a4a3a", "#3a6a4a", "#5a4a6a"];
+    const lines = document.getElementById("lines");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+    const lineKeys = ["order_id","carrier","priority","sku","length_mm","width_mm","height_mm","weight_kg","temp","quantity"];
+
+    function addRow(values = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = lineKeys.map((key) => {
+        let val = values[key];
+        if (val === undefined || val === null) val = "";
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      lines.appendChild(tr);
+    }
+
+    function numberOr(value, fallback) {
+      if (value === "" || value === undefined || value === null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function readOrders() {
+      const groups = {};
+      const order = [];
+      [...lines.querySelectorAll("tr")].forEach((tr) => {
+        const get = (key) => tr.querySelector(`[data-k="${key}"]`).value;
+        const orderId = get("order_id").trim();
+        const sku = get("sku").trim();
+        if (!orderId || !sku) return;
+        if (!groups[orderId]) {
+          groups[orderId] = {
+            id: orderId,
+            carrier: get("carrier").trim() || "LOCAL",
+            priority: numberOr(get("priority"), 2),
+            lines: [],
+          };
+          order.push(orderId);
+        }
+        groups[orderId].lines.push({
+          sku,
+          length_mm: numberOr(get("length_mm"), 0),
+          width_mm: numberOr(get("width_mm"), 0),
+          height_mm: numberOr(get("height_mm"), 0),
+          weight_kg: numberOr(get("weight_kg"), 0),
+          temp: get("temp").trim() || "ambient",
+          quantity: numberOr(get("quantity"), 1),
+        });
+      });
+      return order.map((id) => groups[id]);
+    }
+
+    function fillTables(data) {
+      lines.innerHTML = "";
+      (data.orders || []).forEach((ord) => {
+        (ord.lines || []).forEach((row) => {
+          addRow({
+            order_id: ord.id,
+            carrier: ord.carrier,
+            priority: ord.priority,
+            sku: row.sku,
+            length_mm: row.length_mm,
+            width_mm: row.width_mm,
+            height_mm: row.height_mm,
+            weight_kg: row.weight_kg,
+            temp: row.temp || "ambient",
+            quantity: row.quantity || 1,
+          });
+        });
+      });
+      if (data.strategy) strategy.value = data.strategy;
+      if (data.wall?.preset) preset.value = data.wall.preset;
+      labor.value = data.labor_minutes || preset.selectedOptions[0]?.dataset.labor || "";
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.rows}×${p.cols} · ${p.temp}`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "wall_3x4";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const seed = await (await fetch("/api/examples/batch-wave.json")).json();
+      fillTables(seed);
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+    });
+    document.getElementById("addLine").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillTables(data);
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        wall: { preset: preset.value },
+        strategy: strategy.value,
+        labor_minutes: Number(labor.value),
+        orders: readOrders(),
+      };
+      const res = await fetch("/api/sort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Sort failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statPacked", `${data.packed_count}/${data.piece_count}`, data.all_fit ? "good" : "");
+      set("statOrders", `${data.packed_orders}/${data.order_count}`);
+      set("statLabor", `${data.labor_used_min}/${data.labor_cap_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map((item) => `${item.id} ${item.sku} — ${item.reason}`)
+        .join(" · ");
+    }
+
+    function colorFor(carrier, index) {
+      return CARRIER_COLORS[carrier] || FALLBACK[index % FALLBACK.length];
+    }
+
+    function draw(data) {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      const top = document.createElement("div");
+      top.className = "end-cap";
+      top.textContent = "Top · stretch";
+      wall.appendChild(top);
+
+      const rows = data.wall.rows;
+      const cols = data.wall.cols;
+      const byCell = {};
+      (data.wall_map || []).forEach((cell) => {
+        byCell[`${cell.row}:${cell.col}`] = cell;
+      });
+      const carriers = [];
+      for (let row = 1; row <= rows; row++) {
+        const line = document.createElement("div");
+        line.className = "deck-row";
+        line.style.gridTemplateColumns = `52px ${"1fr ".repeat(cols)}`.trim();
+        const label = document.createElement("div");
+        label.className = "row-label";
+        const zone = (byCell[`${row}:1`] || {}).zone || "";
+        label.textContent = `R${row} ${zone}`;
+        line.appendChild(label);
+        for (let col = 1; col <= cols; col++) {
+          const cell = byCell[`${row}:${col}`] || { order_id: null, zone: "" };
+          const bay = document.createElement("div");
+          bay.className = "bay" + (cell.order_id ? "" : " empty") + (cell.zone === "waist" ? " waist" : "");
+          if (!cell.order_id) {
+            bay.textContent = `${cell.cubby || `R${row}C${col}`} empty`;
+          } else {
+            if (!carriers.includes(cell.carrier)) carriers.push(cell.carrier);
+            const div = document.createElement("div");
+            div.className = "layer";
+            div.style.background = colorFor(cell.carrier, carriers.indexOf(cell.carrier));
+            div.innerHTML = `<div>${cell.order_id}</div>
+              <div>${cell.carrier} · ${cell.piece_count} u</div>
+              <div>${cell.cubby}</div>`;
+            bay.appendChild(div);
+          }
+          line.appendChild(bay);
+        }
+        wall.appendChild(line);
+      }
+      const packer = document.createElement("div");
+      packer.className = "end-cap";
+      packer.textContent = "Packer";
+      wall.appendChild(packer);
+      board.appendChild(wall);
+
+      const legend = document.getElementById("legend");
+      const packed = (data.orders || []).filter((ord) => ord.packed);
+      const seen = [];
+      legend.innerHTML = packed.map((ord) => {
+        if (seen.includes(ord.carrier)) return "";
+        seen.push(ord.carrier);
+        const count = packed.filter((item) => item.carrier === ord.carrier).length;
+        return `<span><i class="swatch" style="background:${colorFor(ord.carrier, seen.length - 1)}"></i>${ord.carrier} (${count})</span>`;
+      }).join("");
+    }
+
+    boot();
+  </script>
+</body>
+</html>
