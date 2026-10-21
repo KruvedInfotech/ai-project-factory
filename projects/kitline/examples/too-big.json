@@ -1,0 +1,64 @@
+{
+  "line": { "preset": "mini_1x3" },
+  "strategy": "auto",
+  "inventory": [
+    { "sku": "TEE", "on_hand": 20 },
+    { "sku": "TUBE", "on_hand": 4 },
+    { "sku": "PLATE", "on_hand": 4 },
+    { "sku": "CARD", "on_hand": 20 }
+  ],
+  "kits": [
+    {
+      "sku": "STARTER",
+      "length_mm": 250,
+      "width_mm": 180,
+      "height_mm": 70,
+      "weight_kg": 0.5,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "POSTER-KIT",
+      "length_mm": 900,
+      "width_mm": 80,
+      "height_mm": 80,
+      "weight_kg": 1.2,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TUBE", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "HEAVY-KIT",
+      "length_mm": 400,
+      "width_mm": 300,
+      "height_mm": 200,
+      "weight_kg": 16,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "PLATE", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "LONG-RUN",
+      "length_mm": 250,
+      "width_mm": 180,
+      "height_mm": 70,
+      "weight_kg": 0.5,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 }
+      ]
+    }
+  ],
+  "builds": [
+    { "id": "WO-OK", "kit_sku": "STARTER", "quantity": 2, "priority": 2 },
+    { "id": "WO-POLE", "kit_sku": "POSTER-KIT", "quantity": 1, "priority": 1 },
+    { "id": "WO-HEAVY", "kit_sku": "HEAVY-KIT", "quantity": 1, "priority": 1 },
+    { "id": "WO-RUN", "kit_sku": "LONG-RUN", "quantity": 12, "priority": 1 }
+  ]
+}

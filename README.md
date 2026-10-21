@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### KitLine — kitting-line planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-21 |
+| **Intended repo** | `https://github.com/KruvedInfotech/kitline` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/kitline`](projects/kitline/) |
+| **What it is** | VAS kitting cell. One build per bench, aisle-row hot kits, BOM inventory, leftover board. |
+
+**How it works (short):** builds explode through the kit BOM. KitLine seats a whole work order on one bench. A bench is accepted only if the finished kit fits, temperature matches, the run stays inside `max_run`, on-hand parts cover the BOM, and the labor clock has room. Auto gives priority-1 kits the aisle row and keeps the same kit SKU in adjacent benches.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/kitline
+PYTHONPATH=src python3 -m kitline presets
+PYTHONPATH=src python3 -m kitline plan examples/gift-wave.json
+PYTHONPATH=src python3 -m kitline serve --host 127.0.0.1 --port 8778
+```
+
+Open `http://127.0.0.1:8778`, then **Plan line**. Full detail is in the [KitLine README](projects/kitline/README.md).

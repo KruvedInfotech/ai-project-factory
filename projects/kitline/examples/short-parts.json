@@ -1,0 +1,42 @@
+{
+  "line": { "preset": "line_1x4" },
+  "strategy": "auto",
+  "inventory": [
+    { "sku": "TEE", "on_hand": 6 },
+    { "sku": "MUG", "on_hand": 10 },
+    { "sku": "CARD", "on_hand": 20 },
+    { "sku": "SOCK", "on_hand": 8 }
+  ],
+  "kits": [
+    {
+      "sku": "GIFT-SET",
+      "length_mm": 350,
+      "width_mm": 280,
+      "height_mm": 120,
+      "weight_kg": 1.4,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 },
+        { "sku": "MUG", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "STARTER",
+      "length_mm": 250,
+      "width_mm": 180,
+      "height_mm": 70,
+      "weight_kg": 0.5,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "SOCK", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    }
+  ],
+  "builds": [
+    { "id": "WO-101", "kit_sku": "GIFT-SET", "quantity": 4, "priority": 1 },
+    { "id": "WO-102", "kit_sku": "GIFT-SET", "quantity": 4, "priority": 1 },
+    { "id": "WO-103", "kit_sku": "STARTER", "quantity": 3, "priority": 2 }
+  ]
+}

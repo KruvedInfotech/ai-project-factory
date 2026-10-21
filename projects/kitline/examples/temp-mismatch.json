@@ -1,0 +1,43 @@
+{
+  "line": { "preset": "line_1x4" },
+  "strategy": "auto",
+  "inventory": [
+    { "sku": "TEE", "on_hand": 10 },
+    { "sku": "MUG", "on_hand": 10 },
+    { "sku": "CARD", "on_hand": 10 },
+    { "sku": "YOGURT", "on_hand": 12 },
+    { "sku": "SPOON", "on_hand": 12 }
+  ],
+  "kits": [
+    {
+      "sku": "GIFT-SET",
+      "length_mm": 350,
+      "width_mm": 280,
+      "height_mm": 120,
+      "weight_kg": 1.4,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 },
+        { "sku": "MUG", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "MEAL-KIT",
+      "length_mm": 280,
+      "width_mm": 220,
+      "height_mm": 90,
+      "weight_kg": 1.1,
+      "temp": "chill",
+      "bom": [
+        { "sku": "YOGURT", "quantity": 2 },
+        { "sku": "SPOON", "quantity": 1 }
+      ]
+    }
+  ],
+  "builds": [
+    { "id": "WO-DRY1", "kit_sku": "GIFT-SET", "quantity": 2, "priority": 2 },
+    { "id": "WO-COLD", "kit_sku": "MEAL-KIT", "quantity": 4, "priority": 1 },
+    { "id": "WO-DRY2", "kit_sku": "GIFT-SET", "quantity": 2, "priority": 2 }
+  ]
+}

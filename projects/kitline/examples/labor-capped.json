@@ -1,0 +1,56 @@
+{
+  "line": { "preset": "mini_1x3" },
+  "strategy": "auto",
+  "labor_minutes": 8,
+  "inventory": [
+    { "sku": "TEE", "on_hand": 20 },
+    { "sku": "MUG", "on_hand": 20 },
+    { "sku": "CARD", "on_hand": 20 },
+    { "sku": "SOCK", "on_hand": 20 }
+  ],
+  "kits": [
+    {
+      "sku": "GIFT-SET",
+      "length_mm": 350,
+      "width_mm": 280,
+      "height_mm": 120,
+      "weight_kg": 1.4,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 },
+        { "sku": "MUG", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "WELCOME",
+      "length_mm": 300,
+      "width_mm": 220,
+      "height_mm": 80,
+      "weight_kg": 0.8,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "TEE", "quantity": 1 },
+        { "sku": "SOCK", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    },
+    {
+      "sku": "STARTER",
+      "length_mm": 250,
+      "width_mm": 180,
+      "height_mm": 70,
+      "weight_kg": 0.5,
+      "temp": "ambient",
+      "bom": [
+        { "sku": "SOCK", "quantity": 1 },
+        { "sku": "CARD", "quantity": 1 }
+      ]
+    }
+  ],
+  "builds": [
+    { "id": "WO-BIG", "kit_sku": "GIFT-SET", "quantity": 3, "priority": 2 },
+    { "id": "WO-MID", "kit_sku": "WELCOME", "quantity": 1, "priority": 2 },
+    { "id": "WO-SMALL", "kit_sku": "STARTER", "quantity": 1, "priority": 2 }
+  ]
+}
