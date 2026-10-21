@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KitLine — kitting map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232f6b4f'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #1c1814;
+      --paper: #ece4d4;
+      --board: #2a2620;
+      --amber: #e0a106;
+      --ok: #2f6b4f;
+      --rust: #b3401a;
+      --line: rgba(28, 24, 20, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(47, 107, 79, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(28,24,20,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 62ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 680px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #f3ece0;
+      padding: 14px;
+      min-height: 280px;
+      overflow-x: auto;
+    }
+    .wall {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .end-cap {
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(243, 236, 224, 0.7);
+    }
+    .deck-row {
+      display: grid;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .row-label {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: rgba(243, 236, 224, 0.55);
+      display: flex;
+      align-items: center;
+    }
+    .bay {
+      border: 1px solid rgba(243, 236, 224, 0.22);
+      min-height: 84px;
+      padding: 6px;
+      background: rgba(243, 236, 224, 0.05);
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .bay.empty { opacity: 0.45; }
+    .bay.aisle { box-shadow: inset 0 0 0 1px rgba(224, 161, 6, 0.55); }
+    .layer { padding: 4px 6px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 4px;
+      vertical-align: -1px;
+      border: 1px solid rgba(28,24,20,0.3);
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .stock { margin-top: 8px; font-family: ui-monospace, monospace; font-size: 12px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>KitLine</h1>
+      <p>Seat a kitting wave onto workbenches. One build per bench. Hot kits take the aisle so the walker is not reaching over cold work for same-day gift sets.</p>
+    </div>
+    <div class="stamp">Line copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <label for="preset">Line</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="priority">Priority / aisle</option>
+            <option value="family">Family blocks</option>
+            <option value="compact">Compact small-first</option>
+          </select>
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Inventory</h3>
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>On hand</th></tr>
+        </thead>
+        <tbody id="stock"></tbody>
+      </table>
+      <h3>Kits</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>L</th><th>W</th><th>H</th><th>Kg</th><th>Temp</th><th>BOM</th>
+          </tr>
+        </thead>
+        <tbody id="kits"></tbody>
+      </table>
+      <h3>Builds</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Build</th><th>Kit</th><th>Qty</th><th>Prio</th>
+          </tr>
+        </thead>
+        <tbody id="builds"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addStock">Add part</button>
+        <button type="button" class="ghost" id="addKit">Add kit</button>
+        <button type="button" class="ghost" id="addBuild">Add build</button>
+        <button type="button" id="plan">Plan line</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Line map</h2>
+      <div class="stats">
+        <div class="stat" id="statKits"><span>Kits</span><b>—</b></div>
+        <div class="stat" id="statBuilds"><span>Builds</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left on cart</span><b>—</b></div>
+      </div>
+      <div class="board" id="board">Load a wave, then plan line.</div>
+      <div class="legend" id="legend"></div>
+      <div class="stock" id="leftStock"></div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const KIT_COLORS = {
+      "GIFT-SET": "#2f6b4f",
+      WELCOME: "#b3401a",
+      BUNDLE: "#3d5a80",
+      STARTER: "#6b4f7d",
+      "MEAL-KIT": "#3d6b8a",
+      "POSTER-KIT": "#7a4a3a",
+      "HEAVY-KIT": "#5a4a2a",
+      "LONG-RUN": "#4a6a7a",
+    };
+    const FALLBACK = ["#4a6a7a", "#7a4a3a", "#3a6a4a", "#5a4a6a"];
+    const stockBody = document.getElementById("stock");
+    const kitBody = document.getElementById("kits");
+    const buildBody = document.getElementById("builds");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+
+    function addInputs(parent, keys, values) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = keys.map((key) => {
+        let val = values[key];
+        if (val === undefined || val === null) val = "";
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      parent.appendChild(tr);
+    }
+
+    function numberOr(value, fallback) {
+      if (value === "" || value === undefined || value === null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function readTable(tbody, keys) {
+      return [...tbody.querySelectorAll("tr")].map((tr) => {
+        const get = (key) => tr.querySelector(`[data-k="${key}"]`).value;
+        const row = {};
+        keys.forEach((key) => { row[key] = get(key); });
+        return row;
+      });
+    }
+
+    function parseBom(text) {
+      return text.split(",").map((part) => part.trim()).filter(Boolean).map((part) => {
+        const [sku, qty] = part.split(":").map((bit) => bit.trim());
+        return { sku, quantity: numberOr(qty, 1) };
+      }).filter((line) => line.sku);
+    }
+
+    function formatBom(bom) {
+      return (bom || []).map((line) => `${line.sku}:${line.quantity}`).join(", ");
+    }
+
+    function fillTables(data) {
+      stockBody.innerHTML = "";
+      kitBody.innerHTML = "";
+      buildBody.innerHTML = "";
+      (data.inventory || []).forEach((row) => addInputs(stockBody, ["sku", "on_hand"], row));
+      (data.kits || []).forEach((row) => addInputs(kitBody, ["sku", "length_mm", "width_mm", "height_mm", "weight_kg", "temp", "bom"], {
+        ...row,
+        bom: formatBom(row.bom),
+      }));
+      (data.builds || []).forEach((row) => addInputs(buildBody, ["id", "kit_sku", "quantity", "priority"], row));
+      if (data.strategy) strategy.value = data.strategy;
+      if (data.line?.preset) preset.value = data.line.preset;
+      labor.value = data.labor_minutes || preset.selectedOptions[0]?.dataset.labor || "";
+    }
+
+    function readWave() {
+      const inventory = readTable(stockBody, ["sku", "on_hand"])
+        .filter((row) => row.sku.trim())
+        .map((row) => ({ sku: row.sku.trim(), on_hand: numberOr(row.on_hand, 0) }));
+      const kits = readTable(kitBody, ["sku", "length_mm", "width_mm", "height_mm", "weight_kg", "temp", "bom"])
+        .filter((row) => row.sku.trim())
+        .map((row) => ({
+          sku: row.sku.trim(),
+          length_mm: numberOr(row.length_mm, 0),
+          width_mm: numberOr(row.width_mm, 0),
+          height_mm: numberOr(row.height_mm, 0),
+          weight_kg: numberOr(row.weight_kg, 0),
+          temp: row.temp.trim() || "ambient",
+          bom: parseBom(row.bom),
+        }));
+      const builds = readTable(buildBody, ["id", "kit_sku", "quantity", "priority"])
+        .filter((row) => row.id.trim() && row.kit_sku.trim())
+        .map((row) => ({
+          id: row.id.trim(),
+          kit_sku: row.kit_sku.trim(),
+          quantity: numberOr(row.quantity, 1),
+          priority: numberOr(row.priority, 2),
+        }));
+      return { inventory, kits, builds };
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.rows}×${p.cols} · ${p.temp}`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "cell_2x3";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const seed = await (await fetch("/api/examples/gift-wave.json")).json();
+      fillTables(seed);
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+    });
+    document.getElementById("addStock").onclick = () => addInputs(stockBody, ["sku", "on_hand"], {});
+    document.getElementById("addKit").onclick = () => addInputs(kitBody, ["sku", "length_mm", "width_mm", "height_mm", "weight_kg", "temp", "bom"], { temp: "ambient" });
+    document.getElementById("addBuild").onclick = () => addInputs(buildBody, ["id", "kit_sku", "quantity", "priority"], { quantity: 1, priority: 2 });
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillTables(data);
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        line: { preset: preset.value },
+        strategy: strategy.value,
+        labor_minutes: Number(labor.value),
+        ...readWave(),
+      };
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statKits", `${data.packed_kits}/${data.kit_count}`, data.all_fit ? "good" : "");
+      set("statBuilds", `${data.packed_builds}/${data.build_count}`);
+      set("statLabor", `${data.labor_used_min}/${data.labor_cap_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map((item) => {
+          const short = item.reason === "short"
+            ? ` (${item.missing_sku} need ${item.need} have ${item.on_hand})`
+            : "";
+          return `${item.id} ${item.quantity}× ${item.kit_sku} — ${item.reason}${short}`;
+        })
+        .join(" · ");
+      document.getElementById("leftStock").textContent = (data.inventory_left || [])
+        .map((row) => `${row.sku} ${row.on_hand} left`)
+        .join(" · ");
+    }
+
+    function colorFor(sku, index) {
+      return KIT_COLORS[sku] || FALLBACK[index % FALLBACK.length];
+    }
+
+    function draw(data) {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      const top = document.createElement("div");
+      top.className = "end-cap";
+      top.textContent = "Back wall";
+      wall.appendChild(top);
+
+      const rows = data.line.rows;
+      const cols = data.line.cols;
+      const byCell = {};
+      (data.line_map || []).forEach((cell) => {
+        byCell[`${cell.row}:${cell.col}`] = cell;
+      });
+      const kits = [];
+      for (let row = 1; row <= rows; row++) {
+        const line = document.createElement("div");
+        line.className = "deck-row";
+        line.style.gridTemplateColumns = `52px ${"1fr ".repeat(cols)}`.trim();
+        const label = document.createElement("div");
+        label.className = "row-label";
+        const zone = (byCell[`${row}:1`] || {}).zone || "";
+        label.textContent = `R${row} ${zone}`;
+        line.appendChild(label);
+        for (let col = 1; col <= cols; col++) {
+          const cell = byCell[`${row}:${col}`] || { build_id: null, zone: "" };
+          const bay = document.createElement("div");
+          bay.className = "bay" + (cell.build_id ? "" : " empty") + (cell.zone === "aisle" ? " aisle" : "");
+          if (!cell.build_id) {
+            bay.textContent = `${cell.bench || `R${row}C${col}`} empty`;
+          } else {
+            if (!kits.includes(cell.kit_sku)) kits.push(cell.kit_sku);
+            const div = document.createElement("div");
+            div.className = "layer";
+            div.style.background = colorFor(cell.kit_sku, kits.indexOf(cell.kit_sku));
+            div.innerHTML = `<div>${cell.build_id}</div>
+              <div>${cell.kit_sku} · ${cell.quantity}</div>
+              <div>${cell.bench}</div>`;
+            bay.appendChild(div);
+          }
+          line.appendChild(bay);
+        }
+        wall.appendChild(line);
+      }
+      const walker = document.createElement("div");
+      walker.className = "end-cap";
+      walker.textContent = "Aisle · walker";
+      wall.appendChild(walker);
+      board.appendChild(wall);
+
+      const legend = document.getElementById("legend");
+      const packed = (data.builds || []).filter((row) => row.packed);
+      const seen = [];
+      legend.innerHTML = packed.map((row) => {
+        if (seen.includes(row.kit_sku)) return "";
+        seen.push(row.kit_sku);
+        const count = packed.filter((item) => item.kit_sku === row.kit_sku).length;
+        return `<span><i class="swatch" style="background:${colorFor(row.kit_sku, seen.length - 1)}"></i>${row.kit_sku} (${count})</span>`;
+      }).join("");
+    }
+
+    boot();
+  </script>
+</body>
+</html>

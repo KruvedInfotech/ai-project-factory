@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kitline"
+version = "0.1.0"
+description = "Kitting-line planner for warehouse VAS and assembly cells."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "kitting", "vas", "bom", "logistics", "wms"]
+dependencies = []
+
+[project.scripts]
+kitline = "kitline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+kitline = ["static/*"]
