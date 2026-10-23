@@ -1,0 +1,13 @@
+{
+  "bank": { "preset": "mini_1x3", "max_cartons": 2 },
+  "strategy": "auto",
+  "cartons": [
+    { "id": "C-1", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-2", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-3", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-4", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-5", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-6", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-7", "dest": "STORE-99", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 }
+  ]
+}

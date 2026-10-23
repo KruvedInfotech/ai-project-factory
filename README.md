@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### ChuteDrop — sortation chute assigner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-23 |
+| **Intended repo** | `https://github.com/KruvedInfotech/chutedrop` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/chutedrop`](projects/chutedrop/) |
+| **What it is** | Destination sortation bank. Many cartons share a dest chute, induction-first hot stores, leftover recirculation. |
+
+**How it works (short):** the first carton into a chute locks it to that dest. Later twins top off until `max_cartons` or weight is full, then a second mouth opens. Auto gives priority-1 dests the induction row and keeps the same store in adjacent chutes.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/chutedrop
+PYTHONPATH=src python3 -m chutedrop presets
+PYTHONPATH=src python3 -m chutedrop plan examples/store-wave.json
+PYTHONPATH=src python3 -m chutedrop serve --host 127.0.0.1 --port 8779
+```
+
+Open `http://127.0.0.1:8779`, then **Plan bank**. Full detail is in the [ChuteDrop README](projects/chutedrop/README.md).

@@ -1,0 +1,9 @@
+{
+  "bank": { "preset": "chill_1x4" },
+  "strategy": "auto",
+  "cartons": [
+    { "id": "C-COLD1", "dest": "STORE-G1", "carrier": "OWN", "length_mm": 280, "width_mm": 200, "height_mm": 140, "weight_kg": 2.2, "temp": "chill", "priority": 2 },
+    { "id": "C-COLD2", "dest": "STORE-G1", "carrier": "OWN", "length_mm": 280, "width_mm": 200, "height_mm": 140, "weight_kg": 2.1, "temp": "chill", "priority": 2 },
+    { "id": "C-DRY", "dest": "STORE-G2", "carrier": "OWN", "length_mm": 280, "width_mm": 200, "height_mm": 140, "weight_kg": 2.0, "temp": "ambient", "priority": 1 }
+  ]
+}
