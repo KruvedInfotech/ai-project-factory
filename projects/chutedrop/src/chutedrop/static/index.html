@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChuteDrop — sortation map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23c45c26'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #16181d;
+      --paper: #e6e2d8;
+      --board: #1b1f27;
+      --amber: #e0a106;
+      --ok: #2f6b4f;
+      --rust: #c45c26;
+      --steel: #6d7b8a;
+      --line: rgba(22, 24, 29, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(196, 92, 38, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(22,24,29,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 62ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(340px, 680px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 16px 0 8px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; box-sizing: border-box; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--amber);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .board {
+      background: var(--board);
+      color: #f3ece0;
+      padding: 14px;
+      min-height: 280px;
+      overflow-x: auto;
+    }
+    .wall {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .end-cap {
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(243, 236, 224, 0.7);
+    }
+    .belt {
+      height: 18px;
+      background:
+        repeating-linear-gradient(90deg, #3a414d 0 18px, #2a3038 18px 22px);
+      border: 1px solid rgba(243, 236, 224, 0.2);
+    }
+    .deck-row {
+      display: grid;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .row-label {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: rgba(243, 236, 224, 0.55);
+      display: flex;
+      align-items: center;
+    }
+    .bay {
+      border: 1px solid rgba(243, 236, 224, 0.22);
+      min-height: 84px;
+      padding: 6px;
+      background: rgba(243, 236, 224, 0.05);
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .bay.empty { opacity: 0.45; }
+    .bay.induction { box-shadow: inset 0 0 0 1px rgba(224, 161, 6, 0.55); }
+    .layer { padding: 4px 6px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 4px;
+      vertical-align: -1px;
+      border: 1px solid rgba(22,24,29,0.3);
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .row3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ChuteDrop</h1>
+      <p>Divert a carton wave onto destination chutes. Many cartons share a dest. Hot stores take induction so the belt is not carrying same-day freight to the far bank.</p>
+    </div>
+    <div class="stamp">Bank copy · not a live WCS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <label for="preset">Bank</label>
+      <select id="preset"></select>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="dest">Dest blocks</option>
+            <option value="carrier">Carrier groups</option>
+            <option value="compact">Compact small-first</option>
+          </select>
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <h3>Cartons</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th><th>Dest</th><th>Carrier</th><th>L</th><th>W</th><th>H</th><th>Kg</th><th>Temp</th><th>Prio</th>
+          </tr>
+        </thead>
+        <tbody id="cartons"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addCarton">Add carton</button>
+        <button type="button" id="plan">Plan bank</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Bank map</h2>
+      <div class="stats">
+        <div class="stat" id="statCartons"><span>Cartons</span><b>—</b></div>
+        <div class="stat" id="statDests"><span>Chutes</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>On the loop</span><b>—</b></div>
+      </div>
+      <div class="board" id="board">Load a wave, then plan bank.</div>
+      <div class="legend" id="legend"></div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const DEST_COLORS = {
+      "STORE-12": "#2f6b4f",
+      "STORE-08": "#c45c26",
+      "STORE-21": "#3d5a80",
+      "STORE-04": "#6b4f7d",
+      "STORE-33": "#4a6a7a",
+      "STORE-99": "#7a4a3a",
+      "STORE-7": "#5a4a2a",
+      "STORE-G1": "#3d6b8a",
+      "STORE-G2": "#8a5a3d",
+      "STORE-1": "#2f6b4f",
+    };
+    const FALLBACK = ["#4a6a7a", "#7a4a3a", "#3a6a4a", "#5a4a6a"];
+    const cartonBody = document.getElementById("cartons");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const strategy = document.getElementById("strategy");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+    const CARTON_KEYS = ["id", "dest", "carrier", "length_mm", "width_mm", "height_mm", "weight_kg", "temp", "priority"];
+    let bankExtras = {};
+
+    function addInputs(parent, keys, values) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = keys.map((key) => {
+        let val = values[key];
+        if (val === undefined || val === null) val = "";
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      parent.appendChild(tr);
+    }
+
+    function numberOr(value, fallback) {
+      if (value === "" || value === undefined || value === null) return fallback;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function readTable(tbody, keys) {
+      return [...tbody.querySelectorAll("tr")].map((tr) => {
+        const get = (key) => tr.querySelector(`[data-k="${key}"]`).value;
+        const row = {};
+        keys.forEach((key) => { row[key] = get(key); });
+        return row;
+      });
+    }
+
+    function fillTables(data) {
+      cartonBody.innerHTML = "";
+      (data.cartons || []).forEach((row) => addInputs(cartonBody, CARTON_KEYS, row));
+      if (data.strategy) strategy.value = data.strategy;
+      bankExtras = { ...(data.bank || {}) };
+      if (data.bank?.preset) preset.value = data.bank.preset;
+      delete bankExtras.preset;
+      delete bankExtras.id;
+      delete bankExtras.name;
+      labor.value = data.labor_minutes || preset.selectedOptions[0]?.dataset.labor || "";
+    }
+
+    function readWave() {
+      return readTable(cartonBody, CARTON_KEYS)
+        .filter((row) => row.id.trim() && row.dest.trim())
+        .map((row) => ({
+          id: row.id.trim(),
+          dest: row.dest.trim(),
+          carrier: row.carrier.trim() || "OWN",
+          length_mm: numberOr(row.length_mm, 0),
+          width_mm: numberOr(row.width_mm, 0),
+          height_mm: numberOr(row.height_mm, 0),
+          weight_kg: numberOr(row.weight_kg, 0),
+          temp: row.temp.trim() || "ambient",
+          priority: numberOr(row.priority, 2),
+        }));
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.rows}×${p.cols} · ${p.temp}`;
+        opt.dataset.labor = p.max_labor_min;
+        preset.appendChild(opt);
+      });
+      preset.value = "bank_2x5";
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach((name) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const seed = await (await fetch("/api/examples/store-wave.json")).json();
+      fillTables(seed);
+    }
+
+    preset.addEventListener("change", () => {
+      labor.value = preset.selectedOptions[0].dataset.labor;
+      bankExtras = {};
+    });
+    document.getElementById("addCarton").onclick = () => addInputs(cartonBody, CARTON_KEYS, {
+      carrier: "OWN",
+      temp: "ambient",
+      priority: 2,
+    });
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillTables(data);
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        bank: { preset: preset.value, ...bankExtras },
+        strategy: strategy.value,
+        labor_minutes: Number(labor.value),
+        cartons: readWave(),
+      };
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statCartons", `${data.packed_cartons}/${data.carton_count}`, data.all_fit ? "good" : "");
+      set("statDests", `${data.used_chutes}/${data.bank.chute_count}`);
+      set("statLabor", `${data.labor_used_min}/${data.labor_cap_min}m`);
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map((item) => `${item.id} ${item.dest} — ${item.reason}`)
+        .join(" · ");
+    }
+
+    function colorFor(dest, index) {
+      return DEST_COLORS[dest] || FALLBACK[index % FALLBACK.length];
+    }
+
+    function draw(data) {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      const top = document.createElement("div");
+      top.className = "end-cap";
+      top.textContent = "Induction belt";
+      wall.appendChild(top);
+      const belt = document.createElement("div");
+      belt.className = "belt";
+      wall.appendChild(belt);
+
+      const rows = data.bank.rows;
+      const cols = data.bank.cols;
+      const byCell = {};
+      (data.bank_map || []).forEach((cell) => {
+        byCell[`${cell.row}:${cell.col}`] = cell;
+      });
+      const dests = [];
+      for (let row = 1; row <= rows; row++) {
+        const line = document.createElement("div");
+        line.className = "deck-row";
+        line.style.gridTemplateColumns = `64px ${"1fr ".repeat(cols)}`.trim();
+        const label = document.createElement("div");
+        label.className = "row-label";
+        const zone = (byCell[`${row}:1`] || {}).zone || "";
+        label.textContent = `R${row} ${zone}`;
+        line.appendChild(label);
+        for (let col = 1; col <= cols; col++) {
+          const cell = byCell[`${row}:${col}`] || { dest: null, zone: "" };
+          const bay = document.createElement("div");
+          bay.className = "bay" + (cell.dest ? "" : " empty") + (cell.zone === "induction" ? " induction" : "");
+          if (!cell.dest) {
+            bay.textContent = `${cell.chute || `R${row}C${col}`} empty`;
+          } else {
+            if (!dests.includes(cell.dest)) dests.push(cell.dest);
+            const div = document.createElement("div");
+            div.className = "layer";
+            div.style.background = colorFor(cell.dest, dests.indexOf(cell.dest));
+            div.innerHTML = `<div>${cell.dest}</div>
+              <div>${cell.count} ct · ${cell.carrier || ""}</div>
+              <div>${cell.chute}</div>`;
+            bay.appendChild(div);
+          }
+          line.appendChild(bay);
+        }
+        wall.appendChild(line);
+      }
+      const far = document.createElement("div");
+      far.className = "end-cap";
+      far.textContent = "Far bank · recirculate";
+      wall.appendChild(far);
+      board.appendChild(wall);
+
+      const legend = document.getElementById("legend");
+      const packed = (data.dests || []).filter((row) => row.packed);
+      legend.innerHTML = packed.map((row, index) => {
+        return `<span><i class="swatch" style="background:${colorFor(row.dest, index)}"></i>${row.dest} (${row.packed})</span>`;
+      }).join("");
+    }
+
+    boot();
+  </script>
+</body>
+</html>

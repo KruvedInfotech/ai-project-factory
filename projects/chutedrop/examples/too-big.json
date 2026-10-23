@@ -1,0 +1,9 @@
+{
+  "bank": { "preset": "mini_1x3" },
+  "strategy": "auto",
+  "cartons": [
+    { "id": "C-OK", "dest": "STORE-7", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 2.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-POLE", "dest": "STORE-7", "carrier": "OWN", "length_mm": 900, "width_mm": 200, "height_mm": 150, "weight_kg": 3.0, "temp": "ambient", "priority": 1 },
+    { "id": "C-HEAVY", "dest": "STORE-7", "carrier": "OWN", "length_mm": 300, "width_mm": 200, "height_mm": 150, "weight_kg": 40.0, "temp": "ambient", "priority": 1 }
+  ]
+}

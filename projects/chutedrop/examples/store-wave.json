@@ -1,0 +1,20 @@
+{
+  "bank": { "preset": "bank_2x5" },
+  "strategy": "auto",
+  "cartons": [
+    { "id": "C-121", "dest": "STORE-12", "carrier": "OWN", "length_mm": 400, "width_mm": 300, "height_mm": 200, "weight_kg": 5.0, "temp": "ambient", "priority": 1 },
+    { "id": "C-122", "dest": "STORE-12", "carrier": "OWN", "length_mm": 400, "width_mm": 300, "height_mm": 200, "weight_kg": 5.0, "temp": "ambient", "priority": 1 },
+    { "id": "C-123", "dest": "STORE-12", "carrier": "OWN", "length_mm": 400, "width_mm": 300, "height_mm": 200, "weight_kg": 4.8, "temp": "ambient", "priority": 1 },
+    { "id": "C-124", "dest": "STORE-12", "carrier": "OWN", "length_mm": 400, "width_mm": 300, "height_mm": 200, "weight_kg": 4.6, "temp": "ambient", "priority": 1 },
+    { "id": "C-081", "dest": "STORE-08", "carrier": "OWN", "length_mm": 380, "width_mm": 280, "height_mm": 180, "weight_kg": 4.0, "temp": "ambient", "priority": 1 },
+    { "id": "C-082", "dest": "STORE-08", "carrier": "OWN", "length_mm": 380, "width_mm": 280, "height_mm": 180, "weight_kg": 3.8, "temp": "ambient", "priority": 1 },
+    { "id": "C-083", "dest": "STORE-08", "carrier": "OWN", "length_mm": 380, "width_mm": 280, "height_mm": 180, "weight_kg": 3.6, "temp": "ambient", "priority": 1 },
+    { "id": "C-211", "dest": "STORE-21", "carrier": "LTL", "length_mm": 350, "width_mm": 250, "height_mm": 160, "weight_kg": 3.5, "temp": "ambient", "priority": 2 },
+    { "id": "C-212", "dest": "STORE-21", "carrier": "LTL", "length_mm": 350, "width_mm": 250, "height_mm": 160, "weight_kg": 3.4, "temp": "ambient", "priority": 2 },
+    { "id": "C-213", "dest": "STORE-21", "carrier": "LTL", "length_mm": 350, "width_mm": 250, "height_mm": 160, "weight_kg": 3.2, "temp": "ambient", "priority": 2 },
+    { "id": "C-041", "dest": "STORE-04", "carrier": "OWN", "length_mm": 320, "width_mm": 240, "height_mm": 150, "weight_kg": 3.0, "temp": "ambient", "priority": 2 },
+    { "id": "C-042", "dest": "STORE-04", "carrier": "OWN", "length_mm": 320, "width_mm": 240, "height_mm": 150, "weight_kg": 2.8, "temp": "ambient", "priority": 2 },
+    { "id": "C-331", "dest": "STORE-33", "carrier": "PARCEL", "length_mm": 300, "width_mm": 220, "height_mm": 140, "weight_kg": 2.5, "temp": "ambient", "priority": 3 },
+    { "id": "C-332", "dest": "STORE-33", "carrier": "PARCEL", "length_mm": 300, "width_mm": 220, "height_mm": 140, "weight_kg": 2.4, "temp": "ambient", "priority": 3 }
+  ]
+}

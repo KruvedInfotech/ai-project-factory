@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chutedrop"
+version = "0.1.0"
+description = "Sortation chute assigner for warehouse destination banks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "sortation", "chute", "wms", "logistics"]
+dependencies = []
+
+[project.scripts]
+chutedrop = "chutedrop.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+chutedrop = ["static/*"]
