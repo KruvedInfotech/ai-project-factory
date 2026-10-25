@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "returnsort"
+version = "0.1.0"
+description = "Returns-dock disposition and putback planner."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "returns", "reverse-logistics", "disposition"]
+dependencies = []
+
+[project.scripts]
+returnsort = "returnsort.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+returnsort = ["static/*"]

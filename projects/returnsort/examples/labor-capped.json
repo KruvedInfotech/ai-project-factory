@@ -1,0 +1,10 @@
+{
+  "floor": { "preset": "store_backroom" },
+  "labor_minutes": 12,
+  "units": [
+    { "ticket": "R-3001", "sku": "TEE-BLK-M", "reason": "unwanted", "grade": "sellable", "velocity": "A", "quantity": 2 },
+    { "ticket": "R-3002", "sku": "HOOD-GRY", "reason": "defective", "grade": "repairable", "velocity": "B", "quantity": 3 },
+    { "ticket": "R-3003", "sku": "LAMP-01", "reason": "crushed", "grade": "damaged", "velocity": "C", "quantity": 2 },
+    { "ticket": "R-3004", "sku": "ICE-PACK", "reason": "unwanted", "grade": "sellable", "temp": "freeze", "velocity": "B", "quantity": 1 }
+  ]
+}

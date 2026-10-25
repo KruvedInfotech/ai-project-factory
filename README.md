@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### ReturnSort — returns disposition planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-25 |
+| **Intended repo** | `https://github.com/KruvedInfotech/returnsort` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/returnsort`](projects/returnsort/) |
+| **What it is** | Returns-dock planner. Grade inbound tickets, park them in restock / refurb / scrap / RMA / hold lanes, leftover board, floor map. |
+
+**How it works (short):** each ticket expands to physical units. ReturnSort grades reason + condition, then parks hold and vendor RMA first, perishable restock next, and A-velocity onto the pick face. A unit only sits in a lane that matches disposition and temperature, still has a slot, and fits the labor cap. Same SKU stays together; leftovers keep a reason.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/returnsort
+PYTHONPATH=src python3 -m returnsort floors
+PYTHONPATH=src python3 -m returnsort plan examples/mixed-returns.json
+PYTHONPATH=src python3 -m returnsort serve --host 127.0.0.1 --port 8765
+```
+
+Open `http://127.0.0.1:8765`, then **Plan dock**. Full detail is in the [ReturnSort README](projects/returnsort/README.md).
