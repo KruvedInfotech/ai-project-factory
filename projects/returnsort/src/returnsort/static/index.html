@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReturnSort — returns planner</title>
+  <style>
+    :root {
+      --ink: #1b2420;
+      --paper: #d7e3d4;
+      --board: #c3d2be;
+      --tape: #d4c35a;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --hold: #8a6a12;
+      --line: rgba(27, 36, 32, 0.22);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(27, 36, 32, 0.08), transparent 180px),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(27,36,32,0.06) 31px 32px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+      background: rgba(247, 251, 244, 0.82);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--ok);
+      color: var(--ok);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+      background: #f7fbf4;
+      white-space: nowrap;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 460px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: #f7fbf4;
+      border: 1px solid var(--ink);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f7fbf4;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; margin-top: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f7fbf4;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 480px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 70% 20%, rgba(212,195,90,0.14), transparent 42%),
+        #1d2621;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .mix { margin-top: 8px; font-family: ui-monospace, monospace; font-size: 12px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ReturnSort</h1>
+      <p>Park inbound returns into restock, refurb, scrap, RMA, or hold lanes. Units stay in a matching temp lane and only stack while slots and labor last.</p>
+    </div>
+    <div class="stamp">Dock copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Returns batch</h2>
+      <label for="preset">Returns floor</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" value="90" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticket</th><th>SKU</th><th>Reason</th><th>Grade</th><th>Temp</th><th>Vel</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add ticket</button>
+        <button type="button" id="plan">Plan dock</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Returns map</h2>
+      <div class="stats">
+        <div class="stat" id="statParked"><span>Parked</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statHold"><span>Hold + RMA</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="640" aria-label="Returns floor map"></canvas>
+      <div class="mix" id="mix"></div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const reasons = ["unwanted","wrong-item","fit","opened","defective","missing-parts","damaged","crushed","wet","rma","vendor","hold","quality","recall"];
+    const grades = ["sellable","repairable","damaged","suspect","vendor"];
+    const temps = ["dry","chill","freeze"];
+    const vels = ["A","B","C"];
+    const colors = {
+      restock: "#6f8f72",
+      refurb: "#d4c35a",
+      scrap: "#b08968",
+      rma: "#7a90b4",
+      hold: "#c45c4a",
+    };
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+
+    function selectCell(key, value, options) {
+      return `<td><select data-k="${key}">${options.map(o =>
+        `<option value="${o}" ${o === value ? "selected" : ""}>${o}</option>`
+      ).join("")}</select></td>`;
+    }
+
+    function addRow(unit = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = [
+        `<td><input data-k="ticket" value="${unit.ticket || ""}" /></td>`,
+        `<td><input data-k="sku" value="${unit.sku || ""}" /></td>`,
+        selectCell("reason", unit.reason || "unwanted", reasons),
+        selectCell("grade", unit.grade || "sellable", grades),
+        selectCell("temp", unit.temp || "dry", temps),
+        selectCell("velocity", unit.velocity || "B", vels),
+        `<td><input data-k="quantity" value="${unit.quantity ?? 1}" /></td>`,
+      ].join("");
+      rows.appendChild(tr);
+    }
+
+    function readUnits() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          ticket: get("ticket").trim(),
+          sku: get("sku").trim(),
+          reason: get("reason"),
+          grade: get("grade"),
+          temp: get("temp"),
+          velocity: get("velocity"),
+          quantity: Number(get("quantity") || 1),
+        };
+      }).filter(u => u.ticket && u.sku);
+    }
+
+    async function boot() {
+      const floors = await (await fetch("/api/floors")).json();
+      floors.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f.id;
+        opt.textContent = `${f.name} · ${f.lanes.length} lanes`;
+        preset.appendChild(opt);
+      });
+      preset.value = "dc_returns";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ ticket: "R-1001", sku: "TEE-BLK-M", reason: "unwanted", grade: "sellable", velocity: "A", quantity: 3 });
+      addRow({ ticket: "R-1002", sku: "HOOD-GRY", reason: "defective", grade: "repairable", quantity: 2 });
+      addRow({ ticket: "R-1003", sku: "LAMP-01", reason: "crushed", grade: "damaged", velocity: "C", quantity: 2 });
+    }
+
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.units || []).forEach(addRow);
+      if (data.floor?.preset) preset.value = data.floor.preset;
+      labor.value = data.labor_minutes || 90;
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        floor: { preset: preset.value },
+        labor_minutes: Number(labor.value),
+        units: readUnits(),
+      };
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      const mix = data.disposition_counts || {};
+      set("statParked", String(data.assigned_count), "good");
+      set("statLabor", data.labor_used + "/" + data.labor_cap);
+      set("statHold", String((mix.hold || 0) + (mix.rma || 0)));
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("mix").textContent = ["restock","refurb","scrap","rma","hold"]
+        .map(k => `${k} ${mix[k] || 0}`).join("  ·  ");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.quantity}× ${u.ticket} ${u.sku} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const lanes = data.floor.lanes || [];
+      const maxCol = Math.max(...lanes.map(l => l.col), 0) + 1;
+      const maxRow = Math.max(...lanes.map(l => l.row), 0) + 1;
+      const pad = 36;
+      const cellW = (canvas.width - pad * 2) / maxCol;
+      const cellH = (canvas.height - pad * 2) / maxRow;
+      const byLane = {};
+      for (const item of data.assignments || []) {
+        (byLane[item.lane_id] ||= []).push(item);
+      }
+      ctx.font = "12px ui-monospace, monospace";
+      for (const lane of lanes) {
+        const x = pad + lane.col * cellW + 8;
+        const y = pad + lane.row * cellH + 8;
+        const w = cellW - 16;
+        const h = cellH - 16;
+        ctx.fillStyle = "#2a3530";
+        ctx.strokeStyle = "rgba(212,195,90,0.55)";
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "#efe6d6";
+        ctx.fillText(lane.id + "  " + lane.temp, x + 10, y + 20);
+        ctx.fillStyle = "rgba(239,230,214,0.7)";
+        ctx.fillText(lane.dispositions.join("/"), x + 10, y + 36);
+        const parked = byLane[lane.id] || [];
+        const slotW = Math.max(16, (w - 20) / lane.slots);
+        for (let i = 0; i < lane.slots; i++) {
+          const sx = x + 10 + i * slotW;
+          const sy = y + h - 28;
+          const item = parked[i];
+          ctx.fillStyle = item ? colors[item.disposition] || "#888" : "rgba(239,230,214,0.12)";
+          ctx.fillRect(sx, sy, slotW - 4, 16);
+          if (item) {
+            ctx.fillStyle = "#1b2420";
+            ctx.font = "9px ui-monospace, monospace";
+            ctx.fillText(item.sku.slice(0, 6), sx + 2, sy + 12);
+            ctx.font = "12px ui-monospace, monospace";
+          }
+        }
+        ctx.fillStyle = "#d4c35a";
+        ctx.fillText(parked.length + "/" + lane.slots, x + w - 48, y + 20);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

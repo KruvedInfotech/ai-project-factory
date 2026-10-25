@@ -1,0 +1,11 @@
+{
+  "floor": { "preset": "dc_returns" },
+  "labor_minutes": 60,
+  "units": [
+    { "ticket": "R-2001", "sku": "KIT-BLEND", "reason": "recall", "grade": "suspect", "velocity": "A", "quantity": 3 },
+    { "ticket": "R-2002", "sku": "SERUM-02", "reason": "quality", "grade": "suspect", "velocity": "B", "quantity": 2 },
+    { "ticket": "R-2003", "sku": "BOOT-10", "reason": "vendor", "grade": "vendor", "velocity": "B", "quantity": 3 },
+    { "ticket": "R-2004", "sku": "TEE-BLK-M", "reason": "unwanted", "grade": "sellable", "velocity": "A", "quantity": 2 },
+    { "ticket": "R-2005", "sku": "YOG-CHILL", "reason": "hold", "grade": "suspect", "temp": "chill", "velocity": "A", "remaining_life_days": 2, "quantity": 2 }
+  ]
+}
