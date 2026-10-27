@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### SlotFold — honeycomb slot consolidator
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-27 |
+| **Intended repo** | `https://github.com/KruvedInfotech/slotfold` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/slotfold`](projects/slotfold/) |
+| **What it is** | Rack-room honeycomb planner. Same-SKU partials fold together, last pick face stays, leftover board, aisle map. |
+
+**How it works (short):** locations that share SKU, lot, and temperature form a family. SlotFold empties reserve first into the fullest legal sink — same aisle, then nearest bay — and will not donate the last pick-face of a SKU. A trip only happens if quantity and weight still fit and the labor clock has room. Locked and quality-hold locations sit out.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/slotfold
+PYTHONPATH=src python3 -m slotfold presets
+PYTHONPATH=src python3 -m slotfold fold examples/mixed-partials.json
+PYTHONPATH=src python3 -m slotfold serve --host 127.0.0.1 --port 8779
+```
+
+Open `http://127.0.0.1:8779`, then **Fold slots**. Full detail is in the [SlotFold README](projects/slotfold/README.md).

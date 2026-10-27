@@ -1,0 +1,11 @@
+{
+  "warehouse": { "preset": "small_dc" },
+  "labor_minutes": 40,
+  "minutes_per_move": 4,
+  "keep_last_pick_face": true,
+  "locations": [
+    { "aisle": "B", "bay": 2, "level": 1, "sku": "WATER-1L", "qty": 6, "max_qty": 20, "kind": "reserve", "temp": "dry" },
+    { "aisle": "B", "bay": 7, "level": 1, "sku": "WATER-1L", "qty": 14, "max_qty": 20, "kind": "reserve", "temp": "dry" },
+    { "aisle": "B", "bay": 7, "level": 2, "sku": "WATER-1L", "qty": 20, "max_qty": 20, "kind": "pick", "temp": "dry" }
+  ]
+}

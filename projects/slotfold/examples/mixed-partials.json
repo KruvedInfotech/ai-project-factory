@@ -1,0 +1,16 @@
+{
+  "warehouse": { "preset": "small_dc" },
+  "labor_minutes": 48,
+  "minutes_per_move": 4,
+  "keep_last_pick_face": true,
+  "locations": [
+    { "aisle": "A", "bay": 1, "level": 1, "sku": "TEE-BLK-M", "qty": 5, "max_qty": 20, "kind": "reserve", "temp": "dry" },
+    { "aisle": "A", "bay": 6, "level": 1, "sku": "TEE-BLK-M", "qty": 15, "max_qty": 20, "kind": "reserve", "temp": "dry" },
+    { "aisle": "C", "bay": 2, "level": 2, "sku": "MUG-12OZ", "qty": 4, "max_qty": 10, "kind": "reserve", "temp": "dry" },
+    { "aisle": "C", "bay": 8, "level": 2, "sku": "MUG-12OZ", "qty": 6, "max_qty": 10, "kind": "reserve", "temp": "dry" },
+    { "aisle": "D", "bay": 4, "level": 1, "sku": "RICE-5KG", "qty": 8, "max_qty": 24, "kind": "reserve", "temp": "dry" },
+    { "aisle": "D", "bay": 4, "level": 3, "sku": "RICE-5KG", "qty": 16, "max_qty": 24, "kind": "pick", "temp": "dry" },
+    { "aisle": "B", "bay": 1, "level": 1, "sku": "SOAP-4PK", "qty": 3, "max_qty": 12, "kind": "reserve", "temp": "chill" },
+    { "aisle": "B", "bay": 10, "level": 1, "sku": "SOAP-4PK", "qty": 9, "max_qty": 12, "kind": "reserve", "temp": "chill" }
+  ]
+}
