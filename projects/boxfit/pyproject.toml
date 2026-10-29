@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boxfit"
+version = "0.1.0"
+description = "Shipper cartonization planner for pack-station orders."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "cartonization", "pack-station", "shipping", "wms"]
+dependencies = []
+
+[project.scripts]
+boxfit = "boxfit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+boxfit = ["static/*"]
