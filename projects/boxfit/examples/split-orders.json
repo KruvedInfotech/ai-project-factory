@@ -1,0 +1,10 @@
+{
+  "catalog": { "preset": "parcel_dc" },
+  "labor_minutes": 60,
+  "allow_rotation": true,
+  "this_side_up": true,
+  "items": [
+    { "order_id": "O-100", "sku": "CASE-A", "length_mm": 280, "width_mm": 180, "height_mm": 120, "weight_kg": 2.4, "quantity": 2, "temp": "dry" },
+    { "order_id": "O-200", "sku": "CASE-B", "length_mm": 280, "width_mm": 180, "height_mm": 120, "weight_kg": 2.4, "quantity": 2, "temp": "dry" }
+  ]
+}

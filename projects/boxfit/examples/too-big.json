@@ -1,0 +1,10 @@
+{
+  "catalog": { "preset": "ecom_pack" },
+  "labor_minutes": 60,
+  "allow_rotation": true,
+  "this_side_up": true,
+  "items": [
+    { "order_id": "O-9", "sku": "LAMP", "length_mm": 900, "width_mm": 400, "height_mm": 400, "weight_kg": 4, "quantity": 1, "temp": "dry" },
+    { "order_id": "O-9", "sku": "BOOK-A", "length_mm": 200, "width_mm": 130, "height_mm": 18, "weight_kg": 0.3, "quantity": 1, "temp": "dry" }
+  ]
+}

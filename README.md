@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### BoxFit — pack-station cartonizer
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-29 |
+| **Intended repo** | `https://github.com/KruvedInfotech/boxfit` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/boxfit`](projects/boxfit/) |
+| **What it is** | Shipper cartonization for pack-station orders. Smallest legal carton, same-order top-off, leftover board, isometric carton map. |
+
+**How it works (short):** pieces of one order stay together. BoxFit tops off an open same-temp carton first, then opens the smallest catalog shipper that fits. A piece is accepted only if it stays inside the inner box, does not overlap, has a floor (the carton or ≥70% support), and stays under payload. Leftovers keep a reason (`too-big`, `too-heavy`, `labor cap`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/boxfit
+PYTHONPATH=src python3 -m boxfit presets
+PYTHONPATH=src python3 -m boxfit pack examples/mixed-order.json
+PYTHONPATH=src python3 -m boxfit serve --host 127.0.0.1 --port 8780
+```
+
+Open `http://127.0.0.1:8780`, then **Fit cartons**. Full detail is in the [BoxFit README](projects/boxfit/README.md).

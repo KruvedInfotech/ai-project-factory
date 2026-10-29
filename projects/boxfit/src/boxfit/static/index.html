@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoxFit — cartonization planner</title>
+  <style>
+    :root {
+      --ink: #2a2118;
+      --paper: #e7d9c4;
+      --board: #d4c2a6;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(42, 33, 24, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 33, 24, 0.06), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(42,33,24,0.05) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+      background: rgba(255, 248, 236, 0.82);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--ok);
+      color: var(--ok);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+      background: #fff8ec;
+      white-space: nowrap;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 480px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: #fff8ec;
+      border: 1px solid var(--ink);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fff8ec;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checks { display: flex; gap: 16px; margin: 12px 0; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; margin-top: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fff8ec;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 500px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 24% 18%, rgba(224,161,6,0.12), transparent 42%),
+        #2a2118;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .mix { margin-top: 8px; font-family: ui-monospace, monospace; font-size: 12px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>BoxFit</h1>
+      <p>Pick the smallest shipper that holds an order. Same-temp pieces top off an open carton, a new mouth costs labor, leftovers keep a reason.</p>
+    </div>
+    <div class="stamp">Pack copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Order bench</h2>
+      <label for="preset">Shipper catalog</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" value="60" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="checks">
+        <label><input id="rotate" type="checkbox" checked /> Rotate on floor</label>
+        <label><input id="upright" type="checkbox" checked /> This side up</label>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th><th>SKU</th><th>L</th><th>W</th><th>H</th><th>Kg</th><th>Qty</th><th>Temp</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add item</button>
+        <button type="button" id="pack">Fit cartons</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Carton map</h2>
+      <div class="stats">
+        <div class="stat" id="statCartons"><span>Cartons</span><b>—</b></div>
+        <div class="stat" id="statPacked"><span>Packed</span><b>—</b></div>
+        <div class="stat" id="statVoid"><span>Mean void</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1200" height="640" aria-label="Shipper carton map"></canvas>
+      <div class="mix" id="mix"></div>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const error = document.getElementById("error");
+    const skuColors = ["#e0a106", "#7a90b4", "#6f8f72", "#c45c4a", "#b08968", "#d6c25b", "#8a6a9a"];
+
+    function addRow(item = {}) {
+      const tr = document.createElement("tr");
+      const cells = [
+        ["order_id", item.order_id ?? "O-100", "text"],
+        ["sku", item.sku ?? "", "text"],
+        ["length_mm", item.length_mm ?? 200, "number"],
+        ["width_mm", item.width_mm ?? 140, "number"],
+        ["height_mm", item.height_mm ?? 20, "number"],
+        ["weight_kg", item.weight_kg ?? 0.4, "number"],
+        ["quantity", item.quantity ?? 1, "number"],
+        ["temp", item.temp ?? "dry", "temp"],
+      ];
+      tr.innerHTML = cells.map(([key, val, type]) => {
+        if (type === "temp") {
+          return `<td><select data-k="${key}">
+            <option value="dry"${val === "dry" ? " selected" : ""}>dry</option>
+            <option value="chill"${val === "chill" ? " selected" : ""}>chill</option>
+            <option value="freeze"${val === "freeze" ? " selected" : ""}>frz</option>
+          </select></td>`;
+        }
+        return `<td><input data-k="${key}" type="${type}" value="${val}"${type === "number" ? " step=\"any\"" : ""} /></td>`;
+      }).join("");
+      rows.appendChild(tr);
+    }
+
+    function readItems() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          order_id: get("order_id").trim(),
+          sku: get("sku").trim(),
+          length_mm: Number(get("length_mm")),
+          width_mm: Number(get("width_mm")),
+          height_mm: Number(get("height_mm")),
+          weight_kg: Number(get("weight_kg")),
+          quantity: Number(get("quantity") || 1),
+          temp: get("temp"),
+        };
+      }).filter(item => item.sku && item.order_id);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.carton_count} sizes`;
+        preset.appendChild(opt);
+      });
+      preset.value = "ecom_pack";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ order_id: "O-4412", sku: "BOOK-A", length_mm: 200, width_mm: 130, height_mm: 18, weight_kg: 0.3, quantity: 2 });
+      addRow({ order_id: "O-4412", sku: "MUG-12", length_mm: 90, width_mm: 90, height_mm: 110, weight_kg: 0.4, quantity: 1 });
+    }
+
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.items || []).forEach(addRow);
+      if (data.catalog?.preset) preset.value = data.catalog.preset;
+      labor.value = data.labor_minutes || 60;
+      document.getElementById("rotate").checked = data.allow_rotation !== false;
+      document.getElementById("upright").checked = data.this_side_up !== false;
+    });
+
+    document.getElementById("pack").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        catalog: { preset: preset.value },
+        labor_minutes: Number(labor.value),
+        allow_rotation: document.getElementById("rotate").checked,
+        this_side_up: document.getElementById("upright").checked,
+        items: readItems(),
+      };
+      const res = await fetch("/api/pack", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Pack failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statCartons", String(data.carton_count), "good");
+      set("statPacked", data.packed_count + "/" + data.piece_count, data.leftover_count ? "" : "good");
+      set("statVoid", Math.round((data.mean_void || 0) * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("mix").textContent = (data.cartons || [])
+        .map(c => `${c.id} ${c.shipper.id}  ${c.piece_count} pcs  ${c.order_id}`)
+        .join(" · ");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.order_id} ${u.quantity}× ${u.sku} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function iso(x, y, z, o) {
+      return [o.ox + (x - y) * o.s * 0.86, o.oy + (x + y) * o.s * 0.42 - z * o.s];
+    }
+
+    function shade(hex, amt) {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.round(((n >> 16) & 255) * amt);
+      const g = Math.round(((n >> 8) & 255) * amt);
+      const b = Math.round((n & 255) * amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function drawBox(ctx, p, color, o) {
+      const pts = (dx, dy, dz) => iso(p.x + dx, p.y + dy, p.z + dz, o);
+      const a = pts(0, 0, p.height_mm), b = pts(p.length_mm, 0, p.height_mm);
+      const c = pts(p.length_mm, p.width_mm, p.height_mm), d = pts(0, p.width_mm, p.height_mm);
+      const e = pts(0, 0, 0), f = pts(p.length_mm, 0, 0);
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...c); ctx.lineTo(...d); ctx.closePath();
+      ctx.fillStyle = color; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...d); ctx.lineTo(...a); ctx.lineTo(...e); ctx.lineTo(iso(p.x, p.y + p.width_mm, 0, o)[0], iso(p.x, p.y + p.width_mm, 0, o)[1]); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.72); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...f); ctx.lineTo(...e); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.86); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#fff8ec";
+      const label = iso(p.x + p.length_mm / 2, p.y + p.width_mm / 2, p.z + p.height_mm, o);
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.fillText(p.sku.slice(0, 8), label[0] - 16, label[1] + 4);
+    }
+
+    function drawShipper(ctx, shipper, o) {
+      const c = shipper;
+      ctx.strokeStyle = "rgba(224,161,6,0.55)";
+      ctx.lineWidth = 1.5;
+      const corners = [
+        [0, 0, 0], [c.length_mm, 0, 0], [c.length_mm, c.width_mm, 0], [0, c.width_mm, 0],
+        [0, 0, c.height_mm], [c.length_mm, 0, c.height_mm], [c.length_mm, c.width_mm, c.height_mm], [0, c.width_mm, c.height_mm],
+      ].map(([x, y, z]) => iso(x, y, z, o));
+      const edge = (i, j) => { ctx.beginPath(); ctx.moveTo(...corners[i]); ctx.lineTo(...corners[j]); ctx.stroke(); };
+      [0, 1, 2, 3, 0].forEach((i, n, arr) => { if (n) edge(arr[n - 1], i); });
+      edge(0, 4); edge(1, 5); edge(2, 6); edge(3, 7);
+      [4, 5, 6, 7, 4].forEach((i, n, arr) => { if (n) edge(arr[n - 1], i); });
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cartons = data.cartons || [];
+      if (!cartons.length) {
+        ctx.fillStyle = "#e0a106";
+        ctx.font = "14px ui-monospace, monospace";
+        ctx.fillText("No cartons opened.", 32, 48);
+        return;
+      }
+      const cols = Math.min(3, cartons.length);
+      const rowsN = Math.ceil(cartons.length / cols);
+      const cellW = canvas.width / cols;
+      const cellH = canvas.height / rowsN;
+      const bySku = {};
+      let n = 0;
+      for (const carton of cartons) {
+        for (const p of carton.placements) {
+          if (!(p.sku in bySku)) bySku[p.sku] = skuColors[n++ % skuColors.length];
+        }
+      }
+      cartons.forEach((carton, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const c = carton.shipper;
+        const s = Math.min(cellW, cellH) / (c.length_mm + c.width_mm + 80) * 1.35;
+        const o = { s, ox: col * cellW + cellW * 0.52, oy: row * cellH + cellH * 0.62 };
+        drawShipper(ctx, c, o);
+        ctx.strokeStyle = "#1a1612";
+        for (const p of carton.placements) {
+          drawBox(ctx, p, bySku[p.sku] || "#7a90b4", o);
+        }
+        ctx.fillStyle = "#e0a106";
+        ctx.font = "12px ui-monospace, monospace";
+        ctx.fillText(`${carton.id}  ${c.id}  ${carton.order_id}`, col * cellW + 16, row * cellH + 22);
+        ctx.fillText(`${Math.round(carton.volume_utilization * 100)}% cube  ${carton.temp}`, col * cellW + 16, row * cellH + 38);
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>
