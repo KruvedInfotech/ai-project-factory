@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### CartClip — pick-cart cluster planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-10-31 |
+| **Intended repo** | `https://github.com/KruvedInfotech/cartclip` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/cartclip`](projects/cartclip/) |
+| **What it is** | Cluster picker for warehouse order waves. One tote per order, aisle-overlap top-off, leftover board, cart / aisle map. |
+
+**How it works (short):** hot tickets clip first. CartClip tops off an open same-temp cart that already visits those aisles, then opens a new cart. An order is accepted only if a tote is free, cube and weight fit, temperature matches, aisle span stays inside the cart limit, and labor still has minutes. Leftovers keep a reason (`temp`, `too-heavy`, `too-cube`, `aisle-span`, `labor-cap`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/cartclip
+PYTHONPATH=src python3 -m cartclip presets
+PYTHONPATH=src python3 -m cartclip clip examples/mixed-wave.json
+PYTHONPATH=src python3 -m cartclip serve --host 127.0.0.1 --port 8781
+```
+
+Open `http://127.0.0.1:8781`, then **Clip carts**. Full detail is in the [CartClip README](projects/cartclip/README.md).

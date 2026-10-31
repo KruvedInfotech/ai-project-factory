@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CartClip — pick-cart planner</title>
+  <style>
+    :root {
+      --ink: #1b2420;
+      --paper: #e6eee7;
+      --board: #c7d4cb;
+      --tape: #f0c400;
+      --rust: #b42318;
+      --ok: #1f6b4a;
+      --steel: #3a4f55;
+      --line: rgba(27, 36, 32, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(27, 36, 32, 0.05), transparent 160px),
+        repeating-linear-gradient(90deg, transparent 0 39px, rgba(27,36,32,0.035) 39px 40px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(420px, 560px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.78);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button {
+      font: inherit;
+      color: inherit;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f7fff8;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { min-width: 88px; }
+    th:nth-child(4), td:nth-child(4) { min-width: 88px; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f7fff8;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .carts { display: grid; gap: 10px; margin-bottom: 14px; }
+    .cart {
+      border: 1px solid var(--ink);
+      background: #1f2a2c;
+      color: #e8f0ea;
+      padding: 10px;
+    }
+    .cart header {
+      display: flex;
+      justify-content: space-between;
+      border: 0;
+      padding: 0 0 8px;
+      color: inherit;
+      align-items: center;
+    }
+    .cart header strong {
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.08em;
+    }
+    .totes { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tote {
+      min-width: 88px;
+      flex: 1;
+      border: 1px dashed rgba(240, 196, 0, 0.45);
+      padding: 8px;
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+      min-height: 64px;
+      background: rgba(255,255,255,0.04);
+    }
+    .tote.filled {
+      border-style: solid;
+      border-color: var(--tape);
+      background: rgba(240, 196, 0, 0.16);
+    }
+    canvas {
+      width: 100%;
+      height: 360px;
+      border: 1px solid var(--ink);
+      background: #1b2420;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>CartClip</h1>
+      <p>Clip several orders onto one pick cart. Same-aisle tickets share a walk, one tote per order, leftovers stay on the board.</p>
+    </div>
+    <div class="stamp">Floor copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <div class="row">
+        <div>
+          <label for="warehouse">Floor</label>
+          <select id="warehouse"></select>
+        </div>
+        <div>
+          <label for="cart">Cart</label>
+          <select id="cart"></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="aisle">Aisle</option>
+            <option value="priority">Priority</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th><th>Pri</th><th>Temp</th><th>SKU</th><th>Aisle</th><th>Bay</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      </div>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add line</button>
+        <button type="button" id="clip">Clip carts</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Cart map</h2>
+      <div class="stats">
+        <div class="stat" id="statCarts"><span>Carts</span><b>—</b></div>
+        <div class="stat" id="statClipped"><span>Clipped</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <div class="carts" id="carts"></div>
+      <h2>Aisle visits</h2>
+      <canvas id="view" width="1100" height="420" aria-label="Aisle visit map"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#f0c400", "#6f8f72", "#d97b46", "#7a90b4", "#c45c4a", "#b08968", "#d6c25b"];
+    const rows = document.getElementById("rows");
+    const warehouse = document.getElementById("warehouse");
+    const cart = document.getElementById("cart");
+    const labor = document.getElementById("labor");
+    const strategy = document.getElementById("strategy");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+    let cartCatalog = {};
+
+    function addRow(line = {}) {
+      const tr = document.createElement("tr");
+      const fields = [
+        ["order_id", line.order_id || ""],
+        ["priority", line.priority ?? 2],
+        ["temp", line.temp || "dry"],
+        ["sku", line.sku || ""],
+        ["aisle", line.aisle || "A"],
+        ["bay", line.bay ?? 1],
+        ["quantity", line.quantity ?? 1],
+      ];
+      tr.innerHTML = fields.map(([key, val]) => `<td><input data-k="${key}" value="${val}" /></td>`).join("");
+      ["length_mm","width_mm","height_mm","weight_kg"].forEach(key => {
+        const hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.dataset.k = key;
+        hidden.value = line[key] ?? (key === "weight_kg" ? 0.4 : 120);
+        tr.appendChild(hidden);
+      });
+      rows.appendChild(tr);
+    }
+
+    function readOrders() {
+      const grouped = new Map();
+      for (const tr of rows.querySelectorAll("tr")) {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        const id = get("order_id").trim();
+        if (!id) continue;
+        if (!grouped.has(id)) {
+          grouped.set(id, {
+            id,
+            priority: Number(get("priority") || 2),
+            temp: (get("temp") || "dry").trim(),
+            lines: [],
+          });
+        }
+        grouped.get(id).lines.push({
+          sku: get("sku").trim(),
+          aisle: get("aisle").trim().toUpperCase(),
+          bay: Number(get("bay")),
+          quantity: Number(get("quantity") || 1),
+          length_mm: Number(get("length_mm")),
+          width_mm: Number(get("width_mm")),
+          height_mm: Number(get("height_mm")),
+          weight_kg: Number(get("weight_kg")),
+        });
+      }
+      return [...grouped.values()].filter(order => order.lines.some(line => line.sku));
+    }
+
+    function flatten(data) {
+      rows.innerHTML = "";
+      for (const order of data.orders || []) {
+        for (const line of order.lines || []) {
+          addRow({
+            order_id: order.id,
+            priority: order.priority,
+            temp: order.temp,
+            ...line,
+          });
+        }
+      }
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.warehouses.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.name} · ${item.aisles.join("-")}`;
+        warehouse.appendChild(opt);
+      });
+      presets.carts.forEach(item => {
+        cartCatalog[item.id] = item;
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.name} · ${item.tote_slots} totes`;
+        cart.appendChild(opt);
+      });
+      warehouse.value = "small_dc";
+      cart.value = "ecom_8tote";
+      labor.value = cartCatalog[cart.value].max_labor_min;
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ order_id: "ORD-101", priority: 1, sku: "TEE-BLK-M", aisle: "A", bay: 2, quantity: 2, length_mm: 220, width_mm: 160, height_mm: 40, weight_kg: 0.35 });
+      addRow({ order_id: "ORD-101", priority: 1, sku: "TEE-BLK-L", aisle: "A", bay: 4, quantity: 1, length_mm: 230, width_mm: 170, height_mm: 40, weight_kg: 0.38 });
+      addRow({ order_id: "ORD-102", sku: "SOCK-3PK", aisle: "A", bay: 7, quantity: 3, length_mm: 180, width_mm: 120, height_mm: 50, weight_kg: 0.18 });
+      addRow({ order_id: "ORD-103", sku: "MUG-WHT", aisle: "B", bay: 3, quantity: 2, length_mm: 120, width_mm: 90, height_mm: 110, weight_kg: 0.42 });
+    }
+
+    cart.addEventListener("change", () => {
+      labor.value = cartCatalog[cart.value].max_labor_min;
+    });
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      if (data.warehouse?.preset) warehouse.value = data.warehouse.preset;
+      if (data.cart?.preset) cart.value = data.cart.preset;
+      labor.value = data.labor_minutes || cartCatalog[cart.value].max_labor_min;
+      strategy.value = data.strategy || "auto";
+      flatten(data);
+    });
+
+    document.getElementById("clip").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        warehouse: { preset: warehouse.value },
+        cart: { preset: cart.value },
+        strategy: strategy.value,
+        labor_minutes: Number(labor.value),
+        orders: readOrders(),
+      };
+      const res = await fetch("/api/clip", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Clip failed";
+        return;
+      }
+      renderStats(data);
+      renderCarts(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statCarts", String(data.cart_count), "good");
+      set("statClipped", String(data.clipped_count), "good");
+      set("statLabor", Math.round(data.labor_utilization * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(item => `${item.id} left behind (${item.reason})`)
+        .join(" · ");
+    }
+
+    function renderCarts(data) {
+      const root = document.getElementById("carts");
+      root.innerHTML = "";
+      for (const item of data.carts || []) {
+        const el = document.createElement("div");
+        el.className = "cart";
+        el.innerHTML = `<header><strong>${item.id}</strong><span>${item.used_slots}/${item.tote_slots} totes · ${item.aisles.join(", ") || "—"} · ${item.weight_kg} kg · ${item.minutes} min</span></header>`;
+        const totes = document.createElement("div");
+        totes.className = "totes";
+        for (const tote of item.totes) {
+          const cell = document.createElement("div");
+          cell.className = "tote" + (tote.order_id ? " filled" : "");
+          cell.textContent = tote.order_id ? `${tote.slot} ${tote.order_id}` : `${tote.slot} empty`;
+          totes.appendChild(cell);
+        }
+        el.appendChild(totes);
+        root.appendChild(el);
+      }
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const aisles = data.aisle_map || [];
+      if (!aisles.length) return;
+      const left = 70, top = 36, right = 36, bottom = 40;
+      const width = canvas.width - left - right;
+      const height = canvas.height - top - bottom;
+      const rowH = height / aisles.length;
+      const bays = data.warehouse.bays;
+      const cartColor = {};
+      (data.carts || []).forEach((item, i) => { cartColor[item.id] = colors[i % colors.length]; });
+
+      aisles.forEach((aisle, r) => {
+        const y = top + r * rowH;
+        ctx.fillStyle = "#e8f0ea";
+        ctx.font = "14px ui-monospace, monospace";
+        ctx.fillText(aisle.aisle, 24, y + rowH * 0.55);
+        ctx.fillStyle = "rgba(232,240,234,0.08)";
+        ctx.fillRect(left, y + 8, width, rowH - 16);
+        const bayW = width / bays;
+        aisle.bays.forEach((count, i) => {
+          const x = left + i * bayW;
+          ctx.strokeStyle = "rgba(232,240,234,0.12)";
+          ctx.strokeRect(x, y + 8, bayW, rowH - 16);
+          if (!count) return;
+          const cartsHere = (data.picks || [])
+            .filter(p => p.aisle === aisle.aisle && p.bay === i + 1)
+            .map(p => p.cart_id);
+          const color = cartColor[cartsHere[0]] || colors[0];
+          ctx.fillStyle = color;
+          ctx.fillRect(x + 3, y + 12, bayW - 6, rowH - 24);
+          ctx.fillStyle = "#1b2420";
+          ctx.font = "11px ui-monospace, monospace";
+          ctx.fillText(String(count), x + 8, y + rowH * 0.55);
+        });
+      });
+      ctx.fillStyle = "rgba(232,240,234,0.7)";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillText("bay 1 →", left, canvas.height - 14);
+    }
+
+    boot();
+  </script>
+</body>
+</html>
