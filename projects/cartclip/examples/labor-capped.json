@@ -1,0 +1,25 @@
+{
+  "warehouse": { "preset": "small_dc" },
+  "cart": { "preset": "ecom_8tote" },
+  "strategy": "auto",
+  "labor_minutes": 10,
+  "orders": [
+    {
+      "id": "ORD-HOT",
+      "priority": 1,
+      "temp": "dry",
+      "lines": [
+        { "sku": "HAT-NAVY", "aisle": "A", "bay": 1, "quantity": 1, "length_mm": 220, "width_mm": 180, "height_mm": 80, "weight_kg": 0.2 },
+        { "sku": "BELT-BRN", "aisle": "A", "bay": 3, "quantity": 1, "length_mm": 300, "width_mm": 80, "height_mm": 40, "weight_kg": 0.25 }
+      ]
+    },
+    {
+      "id": "ORD-NEXT",
+      "priority": 2,
+      "temp": "dry",
+      "lines": [
+        { "sku": "SCARF", "aisle": "A", "bay": 5, "quantity": 1, "length_mm": 250, "width_mm": 150, "height_mm": 40, "weight_kg": 0.15 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "warehouse": { "preset": "small_dc" },
+  "cart": { "preset": "ecom_8tote" },
+  "strategy": "auto",
+  "orders": [
+    {
+      "id": "ORD-LIGHT",
+      "priority": 2,
+      "temp": "dry",
+      "lines": [
+        { "sku": "BOOK-A", "aisle": "C", "bay": 2, "quantity": 2, "length_mm": 200, "width_mm": 130, "height_mm": 20, "weight_kg": 0.4 }
+      ]
+    },
+    {
+      "id": "ORD-ANVIL",
+      "priority": 2,
+      "temp": "dry",
+      "lines": [
+        { "sku": "ANVIL", "aisle": "C", "bay": 8, "quantity": 1, "length_mm": 400, "width_mm": 200, "height_mm": 200, "weight_kg": 52 }
+      ]
+    }
+  ]
+}

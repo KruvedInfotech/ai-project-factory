@@ -1,0 +1,42 @@
+{
+  "warehouse": { "preset": "small_dc" },
+  "cart": { "preset": "ecom_8tote" },
+  "strategy": "auto",
+  "labor_minutes": 90,
+  "orders": [
+    {
+      "id": "ORD-101",
+      "priority": 1,
+      "temp": "dry",
+      "lines": [
+        { "sku": "TEE-BLK-M", "aisle": "A", "bay": 2, "quantity": 2, "length_mm": 220, "width_mm": 160, "height_mm": 40, "weight_kg": 0.35 },
+        { "sku": "TEE-BLK-L", "aisle": "A", "bay": 4, "quantity": 1, "length_mm": 230, "width_mm": 170, "height_mm": 40, "weight_kg": 0.38 }
+      ]
+    },
+    {
+      "id": "ORD-102",
+      "priority": 2,
+      "temp": "dry",
+      "lines": [
+        { "sku": "SOCK-3PK", "aisle": "A", "bay": 7, "quantity": 3, "length_mm": 180, "width_mm": 120, "height_mm": 50, "weight_kg": 0.18 }
+      ]
+    },
+    {
+      "id": "ORD-103",
+      "priority": 2,
+      "temp": "dry",
+      "lines": [
+        { "sku": "MUG-WHT", "aisle": "B", "bay": 3, "quantity": 2, "length_mm": 120, "width_mm": 90, "height_mm": 110, "weight_kg": 0.42 },
+        { "sku": "COASTER", "aisle": "B", "bay": 5, "quantity": 4, "length_mm": 100, "width_mm": 100, "height_mm": 8, "weight_kg": 0.05 }
+      ]
+    },
+    {
+      "id": "ORD-104",
+      "priority": 3,
+      "temp": "dry",
+      "lines": [
+        { "sku": "TOTE-BAG", "aisle": "B", "bay": 8, "quantity": 1, "length_mm": 350, "width_mm": 80, "height_mm": 280, "weight_kg": 0.22 }
+      ]
+    }
+  ]
+}

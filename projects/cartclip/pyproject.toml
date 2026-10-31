@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cartclip"
+version = "0.1.0"
+description = "Pick-cart cluster planner for warehouse order walks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "cluster-picking", "pick-cart", "wms", "logistics"]
+dependencies = []
+
+[project.scripts]
+cartclip = "cartclip.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cartclip = ["static/*"]
