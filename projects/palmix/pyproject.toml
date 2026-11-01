@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "palmix"
+version = "0.1.0"
+description = "Mixed-store pallet builder with store lock, crush rules, and a local deck map."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "pallet", "logistics", "slotting"]
+dependencies = []
+
+[project.scripts]
+palmix = "palmix.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+palmix = ["static/*"]

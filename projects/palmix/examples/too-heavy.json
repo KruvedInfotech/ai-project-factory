@@ -1,0 +1,9 @@
+{
+  "deck": { "preset": "gma_48", "max_weight_kg": 40 },
+  "strategy": "auto",
+  "store_lock": true,
+  "cases": [
+    { "sku": "FLOUR-10", "store": "11", "family": "grocery", "temp": "dry", "length_mm": 400, "width_mm": 300, "height_mm": 220, "weight_kg": 12, "quantity": 2 },
+    { "sku": "ANVIL", "store": "11", "family": "hardline", "temp": "dry", "length_mm": 500, "width_mm": 400, "height_mm": 300, "weight_kg": 55, "quantity": 1 }
+  ]
+}

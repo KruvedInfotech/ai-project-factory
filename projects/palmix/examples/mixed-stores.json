@@ -1,0 +1,13 @@
+{
+  "deck": { "preset": "gma_48" },
+  "strategy": "auto",
+  "labor_minutes": 90,
+  "allow_rotation": true,
+  "store_lock": true,
+  "cases": [
+    { "sku": "CEREAL-12", "store": "12", "family": "grocery", "temp": "dry", "length_mm": 400, "width_mm": 300, "height_mm": 280, "weight_kg": 6, "quantity": 8 },
+    { "sku": "PASTA-12", "store": "12", "family": "grocery", "temp": "dry", "length_mm": 380, "width_mm": 260, "height_mm": 220, "weight_kg": 7.5, "quantity": 6 },
+    { "sku": "JUICE-6", "store": "19", "family": "bev", "temp": "dry", "length_mm": 300, "width_mm": 200, "height_mm": 250, "weight_kg": 8, "quantity": 6 },
+    { "sku": "WATER-24", "store": "19", "family": "bev", "temp": "dry", "length_mm": 400, "width_mm": 270, "height_mm": 310, "weight_kg": 12, "quantity": 4 }
+  ]
+}
