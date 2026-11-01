@@ -1,0 +1,10 @@
+{
+  "deck": { "preset": "gma_48" },
+  "strategy": "auto",
+  "labor_minutes": 10,
+  "store_lock": true,
+  "cases": [
+    { "sku": "RICE-20", "store": "08", "family": "grocery", "temp": "dry", "length_mm": 400, "width_mm": 300, "height_mm": 220, "weight_kg": 10, "quantity": 1 },
+    { "sku": "BEANS-12", "store": "15", "family": "grocery", "temp": "dry", "length_mm": 360, "width_mm": 240, "height_mm": 200, "weight_kg": 8, "quantity": 1 }
+  ]
+}

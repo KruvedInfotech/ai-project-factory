@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PalMix — mixed pallet planner</title>
+  <style>
+    :root {
+      --ink: #2a2118;
+      --paper: #efe3cf;
+      --board: #d8c4a0;
+      --tape: #e0a106;
+      --rust: #a33b16;
+      --ok: #3b6b3f;
+      --pine: #5b4634;
+      --line: rgba(42, 33, 24, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 33, 24, 0.05), transparent 170px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(42,33,24,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(420px, 560px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 250, 240, 0.78);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fff8eb;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .checks { display: flex; gap: 16px; margin: 12px 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    td input[type="checkbox"] { width: auto; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fff8eb;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .pallets { display: grid; gap: 8px; margin-bottom: 14px; }
+    .pallet {
+      border: 1px solid var(--ink);
+      background: #2a2118;
+      color: #f4ead8;
+      padding: 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+    }
+    .pallet strong { letter-spacing: 0.08em; }
+    canvas {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 28% 18%, rgba(224,161,6,0.14), transparent 42%),
+        #241c14;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PalMix</h1>
+      <p>Build store-ready mixed pallets. One store per deck, heavy cases on the floor, crushable on top, leftovers stay on the board.</p>
+    </div>
+    <div class="stamp">Deck copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Build</h2>
+      <div class="row">
+        <div>
+          <label for="deck">Pallet deck</label>
+          <select id="deck"></select>
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">Auto</option>
+            <option value="store">Store</option>
+            <option value="heavy">Heavy first</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="maxWeight">Payload cap (kg)</label>
+          <input id="maxWeight" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <div class="checks">
+        <label><input id="rotate" type="checkbox" checked /> Rotate on deck</label>
+        <label><input id="storeLock" type="checkbox" checked /> One store per pallet</label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th><th>Store</th><th>Family</th><th>Temp</th>
+              <th>L</th><th>W</th><th>H</th><th>kg</th><th>Qty</th><th>Crush</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add case</button>
+        <button type="button" id="mix">Mix pallets</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Deck map</h2>
+      <div class="stats">
+        <div class="stat" id="statPacked"><span>Packed</span><b>—</b></div>
+        <div class="stat" id="statPallets"><span>Pallets</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <div class="pallets" id="palletList"></div>
+      <canvas id="view" width="1100" height="620" aria-label="Isometric pallet view"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#e0a106", "#c56a32", "#6f8f72", "#c45c4a", "#7a90b4", "#b08968", "#d6c25b", "#8a6a4a"];
+    const rows = document.getElementById("rows");
+    const deck = document.getElementById("deck");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const maxWeight = document.getElementById("maxWeight");
+    const error = document.getElementById("error");
+
+    function addRow(box = {}) {
+      const tr = document.createElement("tr");
+      const fields = [
+        ["sku", box.sku || ""],
+        ["store", box.store || ""],
+        ["family", box.family || ""],
+        ["temp", box.temp || "dry"],
+        ["length_mm", box.length_mm ?? ""],
+        ["width_mm", box.width_mm ?? ""],
+        ["height_mm", box.height_mm ?? ""],
+        ["weight_kg", box.weight_kg ?? ""],
+        ["quantity", box.quantity ?? 1],
+      ];
+      tr.innerHTML = fields.map(([key, val]) => {
+        if (key === "temp") {
+          const opts = ["dry", "chill", "freeze"].map(t =>
+            `<option value="${t}" ${t === val ? "selected" : ""}>${t}</option>`
+          ).join("");
+          return `<td><select data-k="${key}">${opts}</select></td>`;
+        }
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("") + `<td><input data-k="crushable" type="checkbox" ${box.crushable ? "checked" : ""} /></td>`;
+      rows.appendChild(tr);
+    }
+
+    function readCases() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        return {
+          sku: get("sku").value.trim(),
+          store: get("store").value.trim(),
+          family: get("family").value.trim(),
+          temp: get("temp").value,
+          length_mm: Number(get("length_mm").value),
+          width_mm: Number(get("width_mm").value),
+          height_mm: Number(get("height_mm").value),
+          weight_kg: Number(get("weight_kg").value),
+          quantity: Number(get("quantity").value || 1),
+          crushable: get("crushable").checked,
+        };
+      }).filter(b => b.sku && b.store);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.decks.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.length_mm}×${p.width_mm}×${p.height_mm} mm`;
+        opt.dataset.weight = p.max_weight_kg;
+        opt.dataset.labor = p.max_labor_min;
+        deck.appendChild(opt);
+      });
+      deck.value = "gma_48";
+      applyDeckCaps();
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ sku: "CEREAL-12", store: "12", family: "grocery", temp: "dry", length_mm: 400, width_mm: 300, height_mm: 280, weight_kg: 6, quantity: 8 });
+      addRow({ sku: "JUICE-6", store: "19", family: "bev", temp: "dry", length_mm: 300, width_mm: 200, height_mm: 250, weight_kg: 8, quantity: 6 });
+    }
+
+    function applyDeckCaps() {
+      const selected = deck.selectedOptions[0];
+      if (!selected) return;
+      maxWeight.value = selected.dataset.weight;
+      labor.value = selected.dataset.labor;
+    }
+
+    deck.addEventListener("change", applyDeckCaps);
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.cases || []).forEach(addRow);
+      if (data.deck?.preset) deck.value = data.deck.preset;
+      applyDeckCaps();
+      if (data.deck?.max_weight_kg) maxWeight.value = data.deck.max_weight_kg;
+      if (data.labor_minutes) labor.value = data.labor_minutes;
+      document.getElementById("strategy").value = data.strategy || "auto";
+      document.getElementById("rotate").checked = data.allow_rotation !== false;
+      document.getElementById("storeLock").checked = data.store_lock !== false;
+    });
+
+    document.getElementById("mix").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        deck: { preset: deck.value, max_weight_kg: Number(maxWeight.value) },
+        strategy: document.getElementById("strategy").value,
+        labor_minutes: Number(labor.value),
+        allow_rotation: document.getElementById("rotate").checked,
+        store_lock: document.getElementById("storeLock").checked,
+        cases: readCases(),
+      };
+      const res = await fetch("/api/mix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Mix failed";
+        return;
+      }
+      renderStats(data);
+      renderPallets(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statPacked", String(data.packed_count), "good");
+      set("statPallets", String(data.pallet_count));
+      set("statLabor", Math.round(data.labor_utilization * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.quantity}× ${u.sku} store ${u.store} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function renderPallets(data) {
+      const host = document.getElementById("palletList");
+      host.innerHTML = (data.pallets || []).map(p =>
+        `<div class="pallet"><strong>${p.id}</strong> · store ${p.store} · ${p.temp} · ${p.case_count} cases · ${p.weight_kg} kg · ${p.height_mm} mm</div>`
+      ).join("");
+    }
+
+    function iso(x, y, z, o) {
+      return [o.ox + (x - y) * o.s * 0.86, o.oy + (x + y) * o.s * 0.42 - z * o.s];
+    }
+
+    function shade(hex, amt) {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.round(((n >> 16) & 255) * amt);
+      const g = Math.round(((n >> 8) & 255) * amt);
+      const b = Math.round((n & 255) * amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function drawBox(ctx, p, color, o) {
+      const pts = (dx, dy, dz) => iso(p.x + dx, p.y + dy, p.z + dz, o);
+      const a = pts(0,0,p.height_mm), b = pts(p.length_mm,0,p.height_mm);
+      const c = pts(p.length_mm,p.width_mm,p.height_mm), d = pts(0,p.width_mm,p.height_mm);
+      const e = pts(0,0,0), f = pts(p.length_mm,0,0);
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...c); ctx.lineTo(...d); ctx.closePath();
+      ctx.fillStyle = color; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...d); ctx.lineTo(...a); ctx.lineTo(...e); ctx.lineTo(iso(p.x, p.y + p.width_mm, 0, o)[0], iso(p.x, p.y + p.width_mm, 0, o)[1]); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.72); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(...f); ctx.lineTo(...e); ctx.closePath();
+      ctx.fillStyle = shade(color, 0.86); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#2a2118";
+      const label = iso(p.x + p.length_mm/2, p.y + p.width_mm/2, p.z + p.height_mm, o);
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.fillText(p.sku, label[0] - 16, label[1] + 3);
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const deckBox = data.deck;
+      const pallets = data.pallets || [];
+      const count = Math.max(pallets.length, 1);
+      const gap = deckBox.width_mm * 0.35;
+      const spanX = deckBox.length_mm;
+      const spanY = count * deckBox.width_mm + (count - 1) * gap;
+      const s = Math.min(canvas.width, canvas.height) / (spanX + spanY) * 1.2;
+      const o0 = { s, ox: canvas.width * 0.42, oy: canvas.height * 0.7 };
+      const bySku = {};
+      let n = 0;
+      pallets.forEach((pallet, i) => {
+        const dy = i * (deckBox.width_mm + gap);
+        const o = { s, ox: o0.ox, oy: o0.oy };
+        ctx.strokeStyle = "rgba(224,161,6,0.55)";
+        ctx.lineWidth = 1.5;
+        const corners = [
+          [0,dy,0],[deckBox.length_mm,dy,0],[deckBox.length_mm,dy+deckBox.width_mm,0],[0,dy+deckBox.width_mm,0],
+          [0,dy,deckBox.height_mm],[deckBox.length_mm,dy,deckBox.height_mm],
+          [deckBox.length_mm,dy+deckBox.width_mm,deckBox.height_mm],[0,dy+deckBox.width_mm,deckBox.height_mm]
+        ].map(([x,y,z]) => iso(x,y,z,o));
+        const edge = (a,b) => { ctx.beginPath(); ctx.moveTo(...corners[a]); ctx.lineTo(...corners[b]); ctx.stroke(); };
+        [0,1,2,3,0].forEach((idx, n2, arr) => { if (n2) edge(arr[n2-1], idx); });
+        edge(0,4); edge(1,5); edge(2,6); edge(3,7);
+        ctx.fillStyle = "#f4ead8";
+        ctx.font = "13px ui-monospace, monospace";
+        const tag = iso(0, dy + deckBox.width_mm / 2, deckBox.height_mm + 80, o);
+        ctx.fillText(`${pallet.id} store ${pallet.store}`, tag[0] - 20, tag[1]);
+        ctx.strokeStyle = "#1a1612";
+        for (const p of data.placements.filter(item => item.pallet_id === pallet.id)) {
+          if (!(p.sku in bySku)) bySku[p.sku] = colors[n++ % colors.length];
+          drawBox(ctx, { ...p, y: p.y + dy }, bySku[p.sku], o);
+        }
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "deck": { "preset": "eur" },
+  "strategy": "auto",
+  "store_lock": true,
+  "cases": [
+    { "sku": "SOAP-10", "store": "04", "family": "hpc", "temp": "dry", "length_mm": 300, "width_mm": 200, "height_mm": 180, "weight_kg": 4, "quantity": 3 },
+    { "sku": "SOAP-10", "store": "21", "family": "hpc", "temp": "dry", "length_mm": 300, "width_mm": 200, "height_mm": 180, "weight_kg": 4, "quantity": 2 }
+  ]
+}

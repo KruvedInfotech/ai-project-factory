@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### PalMix — mixed-store pallet builder
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-01 |
+| **Intended repo** | `https://github.com/KruvedInfotech/palmix` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/palmix`](projects/palmix/) |
+| **What it is** | Store-ready mixed pallet builder. One store per deck, crushable on top, leftover board, isometric deck map. |
+
+**How it works (short):** cases are expanded, store-grouped, heavy first. PalMix tops off an open same-store same-temp pallet, then opens a new deck. A case is accepted only if it stays inside the envelope, has a floor (the deck or ≥70% support), does not sit on crushable, and labor still has minutes. Leftovers keep a reason (`temp`, `too-heavy`, `too-big`, `crush`, `labor-cap`, `pallet-cap`, `no-space`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/palmix
+PYTHONPATH=src python3 -m palmix presets
+PYTHONPATH=src python3 -m palmix mix examples/mixed-stores.json
+PYTHONPATH=src python3 -m palmix serve --host 127.0.0.1 --port 8782
+```
+
+Open `http://127.0.0.1:8782`, then **Mix pallets**. Full detail is in the [PalMix README](projects/palmix/README.md).
