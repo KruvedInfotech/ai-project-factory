@@ -1,0 +1,18 @@
+{
+  "floor": { "preset": "chill" },
+  "strategy": "auto",
+  "carts": [
+    {
+      "id": "CART-40",
+      "priority": 1,
+      "temp": "chill",
+      "walk": [{ "aisle": "A", "picks": 2 }]
+    },
+    {
+      "id": "CART-41",
+      "priority": 2,
+      "temp": "dry",
+      "walk": [{ "aisle": "B", "picks": 1 }]
+    }
+  ]
+}

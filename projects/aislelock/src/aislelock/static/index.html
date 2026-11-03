@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AisleLock — pick-floor traffic</title>
+  <style>
+    :root {
+      --ink: #221c16;
+      --paper: #efe6d6;
+      --board: #d8c9ae;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(34, 28, 22, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(34, 28, 22, 0.04), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(34,28,22,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button {
+      font: inherit;
+      color: inherit;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .checks { display: flex; gap: 16px; margin: 12px 0; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 3px; text-align: left; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    td input[type="checkbox"] { width: auto; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 520px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 30% 20%, rgba(224,161,6,0.12), transparent 40%),
+        #2a241d;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AisleLock</h1>
+      <p>Stamp pick carts into aisle time windows. Capacity holds, bulky takes the whole aisle, and a late cutoff does not steal a slot from a cart already locked.</p>
+    </div>
+    <div class="stamp">Floor copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <label for="preset">Floor</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">auto</option>
+            <option value="cutoff">cutoff</option>
+            <option value="cluster">cluster</option>
+            <option value="compact">compact</option>
+          </select>
+        </div>
+        <div>
+          <label for="horizon">Horizon (min)</label>
+          <input id="horizon" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <div class="checks">
+        <label><input id="exclusive" type="checkbox" checked /> Bulky exclusive</label>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Cart</th><th>Pri</th><th>Temp</th><th>B</th><th>Ready</th><th>Cut</th><th>Walk</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add cart</button>
+        <button type="button" id="lock">Lock floor</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Aisle Gantt</h2>
+      <div class="stats">
+        <div class="stat" id="statLocked"><span>Locked</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statHorizon"><span>Horizon</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="720" aria-label="Aisle occupancy Gantt"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#e0a106", "#d97b46", "#6f8f72", "#c45c4a", "#7a90b4", "#b08968", "#d6c25b", "#8aa4c8"];
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const horizon = document.getElementById("horizon");
+    const error = document.getElementById("error");
+    let floors = [];
+
+    function addRow(cart = {}) {
+      const tr = document.createElement("tr");
+      const walk = (cart.walk || []).map(s => s.picks ? `${s.aisle}:${s.picks}` : s.aisle).join(" ");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${cart.id || ""}" /></td>
+        <td><input data-k="priority" value="${cart.priority ?? 2}" /></td>
+        <td><input data-k="temp" value="${cart.temp || "dry"}" /></td>
+        <td><input data-k="bulky" type="checkbox" ${cart.bulky ? "checked" : ""} /></td>
+        <td><input data-k="ready_min" value="${cart.ready_min ?? 0}" /></td>
+        <td><input data-k="cutoff_min" value="${cart.cutoff_min ?? ""}" /></td>
+        <td><input data-k="walk" value="${walk}" /></td>
+      `;
+      rows.appendChild(tr);
+    }
+
+    function parseWalk(text) {
+      return text.trim().split(/[\s,]+/).filter(Boolean).map(token => {
+        const [aisle, picks] = token.split(":");
+        return { aisle: aisle.trim().toUpperCase(), picks: Number(picks || 0) };
+      });
+    }
+
+    function readCarts() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        const id = get("id").value.trim();
+        const cutoff = get("cutoff_min").value.trim();
+        return {
+          id,
+          priority: Number(get("priority").value || 2),
+          temp: get("temp").value.trim() || "dry",
+          bulky: get("bulky").checked,
+          ready_min: Number(get("ready_min").value || 0),
+          cutoff_min: cutoff === "" ? null : Number(cutoff),
+          walk: parseWalk(get("walk").value),
+        };
+      }).filter(c => c.id && c.walk.length);
+    }
+
+    function applyFloor(id) {
+      const floor = floors.find(item => item.id === id);
+      if (!floor) return;
+      labor.value = floor.max_labor_min;
+      horizon.value = floor.horizon_min;
+    }
+
+    async function boot() {
+      const body = await (await fetch("/api/presets")).json();
+      floors = body.floors || [];
+      floors.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        const last = p.aisles[p.aisles.length - 1];
+        opt.textContent = `${p.name} · ${p.aisles[0].id}–${last.id} cap ${p.aisles[0].capacity}`;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery";
+      applyFloor("grocery");
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "CART-11", priority: 1, walk: [{ aisle: "A", picks: 3 }, { aisle: "B", picks: 2 }] });
+      addRow({ id: "CART-12", priority: 2, walk: [{ aisle: "A", picks: 2 }, { aisle: "C", picks: 2 }] });
+      addRow({ id: "CART-18", priority: 2, walk: [{ aisle: "D", picks: 4 }, { aisle: "E", picks: 1 }] });
+    }
+
+    preset.addEventListener("change", () => applyFloor(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.carts || []).forEach(addRow);
+      if (data.floor?.preset) preset.value = data.floor.preset;
+      applyFloor(preset.value);
+      if (data.labor_minutes) labor.value = data.labor_minutes;
+      if (data.floor?.horizon_min) horizon.value = data.floor.horizon_min;
+      document.getElementById("strategy").value = data.strategy || "auto";
+      document.getElementById("exclusive").checked = data.exclusive_bulky !== false;
+    });
+
+    document.getElementById("lock").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        floor: { preset: preset.value, max_labor_min: Number(labor.value), horizon_min: Number(horizon.value) },
+        strategy: document.getElementById("strategy").value,
+        labor_minutes: Number(labor.value),
+        exclusive_bulky: document.getElementById("exclusive").checked,
+        carts: readCarts(),
+      };
+      const res = await fetch("/api/lock", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Lock failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statLocked", String(data.locked_count), "good");
+      set("statLabor", Math.round(data.labor_utilization * 100) + "%");
+      set("statHorizon", Math.round(data.horizon_utilization * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.id} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function shade(hex, amt) {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.round(((n >> 16) & 255) * amt);
+      const g = Math.round(((n >> 8) & 255) * amt);
+      const b = Math.round((n & 255) * amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const aisles = data.floor.aisles;
+      const horizonMin = data.floor.horizon_min || 120;
+      const padL = 64, padR = 24, padT = 36, padB = 28;
+      const rowH = Math.min(56, (canvas.height - padT - padB) / Math.max(aisles.length, 1));
+      const width = canvas.width - padL - padR;
+      const xAt = t => padL + (t / horizonMin) * width;
+
+      ctx.strokeStyle = "rgba(224,161,6,0.25)";
+      ctx.fillStyle = "rgba(239,230,214,0.12)";
+      ctx.font = "12px ui-monospace, monospace";
+      const ticks = 6;
+      for (let i = 0; i <= ticks; i++) {
+        const t = Math.round(horizonMin * i / ticks);
+        const x = xAt(t);
+        ctx.beginPath(); ctx.moveTo(x, padT - 8); ctx.lineTo(x, canvas.height - padB); ctx.stroke();
+        ctx.fillStyle = "#efe6d6";
+        ctx.fillText(String(t) + "m", x - 8, 22);
+      }
+
+      const byCart = {};
+      let n = 0;
+      for (const lock of data.locks) {
+        if (!(lock.cart_id in byCart)) byCart[lock.cart_id] = colors[n++ % colors.length];
+      }
+
+      aisles.forEach((aisle, index) => {
+        const y = padT + index * rowH;
+        ctx.fillStyle = "rgba(216,201,174,0.18)";
+        ctx.fillRect(padL, y + 8, width, rowH - 16);
+        ctx.strokeStyle = "rgba(224,161,6,0.4)";
+        ctx.strokeRect(padL, y + 8, width, rowH - 16);
+        ctx.fillStyle = "#efe6d6";
+        ctx.font = "14px ui-monospace, monospace";
+        ctx.fillText(aisle.id, 18, y + rowH / 2 + 4);
+        ctx.font = "10px ui-monospace, monospace";
+        ctx.fillStyle = "rgba(239,230,214,0.7)";
+        ctx.fillText("×" + aisle.capacity, 18, y + rowH / 2 + 16);
+
+        const visits = (data.occupancy || []).filter(item => item.aisle === aisle.id);
+        visits.forEach((visit, slot) => {
+          const x = xAt(visit.start_min);
+          const w = Math.max(8, xAt(visit.end_min) - x);
+          const color = byCart[visit.cart_id] || "#e0a106";
+          const lanes = Math.max(aisle.capacity, 1);
+          const laneH = (rowH - 20) / lanes;
+          const lane = slot % lanes;
+          const yy = y + 10 + lane * laneH;
+          ctx.fillStyle = color;
+          ctx.fillRect(x, yy, w, laneH - 2);
+          ctx.strokeStyle = "#1a1612";
+          ctx.strokeRect(x, yy, w, laneH - 2);
+          ctx.fillStyle = "#221c16";
+          ctx.font = "11px ui-monospace, monospace";
+          if (w > 48) ctx.fillText(visit.cart_id.replace("CART-", ""), x + 6, yy + Math.min(14, laneH - 4));
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

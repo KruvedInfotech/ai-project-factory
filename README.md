@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### AisleLock — pick-aisle traffic lock
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-03 |
+| **Intended repo** | `https://github.com/KruvedInfotech/aislelock` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/aislelock`](projects/aislelock/) |
+| **What it is** | Floor planner that stamps pick carts into aisle time windows. Capacity, bulky exclusive, cutoff, leftover reasons, local Gantt. |
+
+**How it works (short):** carts already have a walk. AisleLock takes hot and bulky carts first, then finds the earliest start where every aisle visit fits remaining capacity (a bulky cart takes the whole aisle). Time in an aisle is traverse minutes plus picks; hops cost a minute. Leftovers keep a reason (`temp`, `aisle-busy`, `cutoff`, `labor-cap`, `cart-cap`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/aislelock
+PYTHONPATH=src python3 -m aislelock presets
+PYTHONPATH=src python3 -m aislelock lock examples/clear-wave.json
+PYTHONPATH=src python3 -m aislelock serve --host 127.0.0.1 --port 8783
+```
+
+Open `http://127.0.0.1:8783`, then **Lock floor**. Full detail is in the [AisleLock README](projects/aislelock/README.md).

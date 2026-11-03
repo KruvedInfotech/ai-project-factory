@@ -1,0 +1,21 @@
+{
+  "floor": { "preset": "vna" },
+  "strategy": "auto",
+  "exclusive_bulky": true,
+  "carts": [
+    {
+      "id": "CART-01",
+      "priority": 1,
+      "temp": "dry",
+      "cutoff_min": 40,
+      "walk": [{ "aisle": "A", "picks": 1 }]
+    },
+    {
+      "id": "CART-02",
+      "priority": 2,
+      "temp": "dry",
+      "cutoff_min": 20,
+      "walk": [{ "aisle": "A", "picks": 1 }]
+    }
+  ]
+}

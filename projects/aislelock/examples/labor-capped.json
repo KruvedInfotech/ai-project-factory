@@ -1,0 +1,19 @@
+{
+  "floor": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 12,
+  "carts": [
+    {
+      "id": "CART-31",
+      "priority": 1,
+      "temp": "dry",
+      "walk": [{ "aisle": "A", "picks": 3 }]
+    },
+    {
+      "id": "CART-32",
+      "priority": 2,
+      "temp": "dry",
+      "walk": [{ "aisle": "B", "picks": 2 }]
+    }
+  ]
+}
