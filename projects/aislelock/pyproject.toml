@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aislelock"
+version = "0.1.0"
+description = "Pick-aisle traffic lock planner with capacity, bulky exclusive, and a local floor Gantt."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "picking", "aisle", "congestion", "logistics"]
+dependencies = []
+
+[project.scripts]
+aislelock = "aislelock.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+aislelock = ["static/*"]

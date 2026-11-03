@@ -1,0 +1,41 @@
+{
+  "floor": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 90,
+  "exclusive_bulky": true,
+  "carts": [
+    {
+      "id": "CART-11",
+      "priority": 1,
+      "temp": "dry",
+      "walk": [
+        { "aisle": "A", "picks": 3 },
+        { "aisle": "B", "picks": 2 }
+      ]
+    },
+    {
+      "id": "CART-12",
+      "priority": 2,
+      "temp": "dry",
+      "walk": [
+        { "aisle": "A", "picks": 2 },
+        { "aisle": "C", "picks": 2 }
+      ]
+    },
+    {
+      "id": "CART-18",
+      "priority": 2,
+      "temp": "dry",
+      "walk": [
+        { "aisle": "D", "picks": 4 },
+        { "aisle": "E", "picks": 1 }
+      ]
+    },
+    {
+      "id": "CART-21",
+      "priority": 3,
+      "temp": "dry",
+      "walk": [{ "aisle": "F", "picks": 3 }]
+    }
+  ]
+}
