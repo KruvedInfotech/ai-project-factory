@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StageLane — outbound staging</title>
+  <style>
+    :root {
+      --ink: #221c16;
+      --paper: #efe6d6;
+      --board: #d8c9ae;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(34, 28, 22, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(34, 28, 22, 0.04), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(34,28,22,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button {
+      font: inherit;
+      color: inherit;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checks { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 3px; text-align: left; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    td input[type="checkbox"] { width: auto; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 520px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(224,161,6,0.14), transparent 42%),
+        #2a241d;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>StageLane</h1>
+      <p>Seat outbound pallets into painted dock lanes. Same carrier tops off a bay, a booked door stays exclusive, and a late cutoff does not steal a slot from a pallet already seated.</p>
+    </div>
+    <div class="stamp">Dock copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <label for="preset">Yard</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">auto</option>
+            <option value="cutoff">cutoff</option>
+            <option value="cluster">cluster</option>
+            <option value="compact">compact</option>
+          </select>
+        </div>
+        <div>
+          <label for="maxPallets">Max pallets</label>
+          <input id="maxPallets" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <div class="checks">
+        <label><input id="mixCarriers" type="checkbox" /> Mix carriers</label>
+        <label><input id="mixDoors" type="checkbox" /> Mix doors</label>
+        <label><input id="allowStack" type="checkbox" /> Allow stack</label>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Pallet</th><th>Carr</th><th>Pri</th><th>Temp</th><th>Door</th><th>L</th><th>Kg</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add pallet</button>
+        <button type="button" id="seat">Seat yard</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Dock map</h2>
+      <div class="stats">
+        <div class="stat" id="statSeated"><span>Seated</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLength"><span>Length</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="720" aria-label="Staging lane map"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#e0a106", "#d97b46", "#6f8f72", "#c45c4a", "#7a90b4", "#b08968", "#d6c25b", "#8aa4c8"];
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const maxPallets = document.getElementById("maxPallets");
+    const error = document.getElementById("error");
+    let yards = [];
+
+    function addRow(pallet = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${pallet.id || ""}" /></td>
+        <td><input data-k="carrier" value="${pallet.carrier || "UPS"}" /></td>
+        <td><input data-k="priority" value="${pallet.priority ?? 2}" /></td>
+        <td><input data-k="temp" value="${pallet.temp || "dry"}" /></td>
+        <td><input data-k="door" value="${pallet.door ?? ""}" /></td>
+        <td><input data-k="length_mm" value="${pallet.length_mm ?? 1200}" /></td>
+        <td><input data-k="weight_kg" value="${pallet.weight_kg ?? 400}" /></td>
+      `;
+      rows.appendChild(tr);
+    }
+
+    function readPallets() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        const id = get("id").value.trim();
+        const door = get("door").value.trim();
+        return {
+          id,
+          carrier: get("carrier").value.trim() || "UPS",
+          priority: Number(get("priority").value || 2),
+          temp: get("temp").value.trim() || "dry",
+          door: door === "" ? null : Number(door),
+          length_mm: Number(get("length_mm").value || 1200),
+          width_mm: 1000,
+          height_mm: 1400,
+          weight_kg: Number(get("weight_kg").value || 400),
+        };
+      }).filter(item => item.id);
+    }
+
+    function applyYard(id) {
+      const yard = yards.find(item => item.id === id);
+      if (!yard) return;
+      labor.value = yard.max_labor_min;
+      maxPallets.value = yard.max_pallets;
+    }
+
+    async function boot() {
+      const body = await (await fetch("/api/presets")).json();
+      yards = body.yards || [];
+      yards.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        const last = p.lanes[p.lanes.length - 1];
+        opt.textContent = `${p.name} · ${p.lanes[0].id}–${last.id}`;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery";
+      applyYard("grocery");
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "PAL-11", carrier: "UPS", priority: 1, door: 1 });
+      addRow({ id: "PAL-12", carrier: "UPS", priority: 2, door: 1 });
+      addRow({ id: "PAL-21", carrier: "FDX", priority: 2, door: 2 });
+    }
+
+    preset.addEventListener("change", () => applyYard(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.pallets || []).forEach(addRow);
+      if (data.yard?.preset) preset.value = data.yard.preset;
+      applyYard(preset.value);
+      if (data.labor_minutes) labor.value = data.labor_minutes;
+      if (data.yard?.max_pallets) maxPallets.value = data.yard.max_pallets;
+      document.getElementById("strategy").value = data.strategy || "auto";
+      document.getElementById("mixCarriers").checked = !!data.mix_carriers;
+      document.getElementById("mixDoors").checked = !!data.mix_doors;
+      document.getElementById("allowStack").checked = !!data.allow_stack;
+    });
+
+    document.getElementById("seat").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        yard: {
+          preset: preset.value,
+          max_labor_min: Number(labor.value),
+          max_pallets: Number(maxPallets.value),
+        },
+        strategy: document.getElementById("strategy").value,
+        labor_minutes: Number(labor.value),
+        mix_carriers: document.getElementById("mixCarriers").checked,
+        mix_doors: document.getElementById("mixDoors").checked,
+        allow_stack: document.getElementById("allowStack").checked,
+        pallets: readPallets(),
+      };
+      const res = await fetch("/api/seat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Seat failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statSeated", String(data.seated_count), "good");
+      set("statLabor", Math.round(data.labor_utilization * 100) + "%");
+      set("statLength", Math.round(data.length_utilization * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.id} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const lanes = data.yard.lanes;
+      const maxLen = Math.max(...lanes.map(lane => lane.length_mm), 1);
+      const padL = 88, padR = 28, padT = 36, padB = 28;
+      const rowH = Math.min(72, (canvas.height - padT - padB) / Math.max(lanes.length, 1));
+      const width = canvas.width - padL - padR;
+      const xAt = mm => padL + (mm / maxLen) * width;
+
+      ctx.fillStyle = "#efe6d6";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillText("DOCK", 18, 22);
+      const ticks = 4;
+      ctx.strokeStyle = "rgba(224,161,6,0.25)";
+      for (let i = 0; i <= ticks; i++) {
+        const mm = Math.round(maxLen * i / ticks);
+        const x = xAt(mm);
+        ctx.beginPath(); ctx.moveTo(x, padT - 8); ctx.lineTo(x, canvas.height - padB); ctx.stroke();
+        ctx.fillStyle = "#efe6d6";
+        ctx.fillText((mm / 1000).toFixed(1) + "m", x - 8, 22);
+      }
+
+      const byCarrier = {};
+      let n = 0;
+      for (const item of data.seats) {
+        if (!(item.carrier in byCarrier)) byCarrier[item.carrier] = colors[n++ % colors.length];
+      }
+
+      lanes.forEach((lane, index) => {
+        const y = padT + index * rowH;
+        ctx.fillStyle = "rgba(216,201,174,0.18)";
+        ctx.fillRect(padL, y + 10, width * (lane.length_mm / maxLen), rowH - 20);
+        ctx.strokeStyle = "rgba(224,161,6,0.55)";
+        ctx.setLineDash([6, 4]);
+        ctx.strokeRect(padL, y + 10, width * (lane.length_mm / maxLen), rowH - 20);
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = "#3b2c22";
+        ctx.fillRect(18, y + 12, 54, rowH - 24);
+        ctx.fillStyle = "#e0a106";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText("DOOR", 24, y + rowH / 2 - 4);
+        ctx.fillStyle = "#efe6d6";
+        ctx.font = "16px ui-monospace, monospace";
+        ctx.fillText(String(lane.door || lane.id), 28, y + rowH / 2 + 14);
+
+        ctx.fillStyle = "rgba(239,230,214,0.7)";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText(lane.id, padL - 22, y + 8);
+
+        const seated = (data.seats || []).filter(item => item.lane === lane.id);
+        seated.forEach(item => {
+          const x = xAt(item.x_mm);
+          const w = Math.max(10, xAt(item.x_mm + item.length_mm) - x);
+          const color = byCarrier[item.carrier] || "#e0a106";
+          const stackLift = item.stack_level ? 8 : 0;
+          const h = rowH - 28 - stackLift;
+          const yy = y + 14 + (item.stack_level ? 4 : 8);
+          ctx.fillStyle = color;
+          ctx.fillRect(x, yy, w - 2, h);
+          ctx.strokeStyle = "#1a1612";
+          ctx.strokeRect(x, yy, w - 2, h);
+          ctx.fillStyle = "#221c16";
+          ctx.font = "11px ui-monospace, monospace";
+          if (w > 44) ctx.fillText(item.pallet_id.replace("PAL-", "").replace("CAG-", ""), x + 6, yy + 14);
+          if (w > 70) ctx.fillText(item.carrier, x + 6, yy + 28);
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

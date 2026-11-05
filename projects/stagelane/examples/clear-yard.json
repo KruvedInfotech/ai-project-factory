@@ -1,0 +1,58 @@
+{
+  "yard": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 90,
+  "mix_carriers": false,
+  "mix_doors": false,
+  "allow_stack": false,
+  "pallets": [
+    {
+      "id": "PAL-11",
+      "carrier": "UPS",
+      "priority": 1,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 420,
+      "depart_min": 90
+    },
+    {
+      "id": "PAL-12",
+      "carrier": "UPS",
+      "priority": 2,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1200,
+      "weight_kg": 310,
+      "depart_min": 90
+    },
+    {
+      "id": "PAL-21",
+      "carrier": "FDX",
+      "priority": 2,
+      "temp": "dry",
+      "door": 2,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1350,
+      "weight_kg": 380,
+      "depart_min": 80
+    },
+    {
+      "id": "PAL-22",
+      "carrier": "FDX",
+      "priority": 3,
+      "temp": "dry",
+      "door": 2,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1100,
+      "weight_kg": 260,
+      "depart_min": 80
+    }
+  ]
+}
