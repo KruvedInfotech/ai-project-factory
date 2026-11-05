@@ -1,0 +1,29 @@
+{
+  "yard": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 6,
+  "pallets": [
+    {
+      "id": "PAL-31",
+      "carrier": "UPS",
+      "priority": 1,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 400
+    },
+    {
+      "id": "PAL-32",
+      "carrier": "UPS",
+      "priority": 2,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 390
+    }
+  ]
+}

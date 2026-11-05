@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### StageLane — outbound staging-lane planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-05 |
+| **Intended repo** | `https://github.com/KruvedInfotech/stagelane` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/stagelane`](projects/stagelane/) |
+| **What it is** | Dock planner that seats pallets into painted staging lanes. Carrier exclusive, door match, leftover reasons, local yard map. |
+
+**How it works (short):** pallets already exist. StageLane takes hot and soon-to-depart first, then tops off a lane that already holds that carrier before opening an empty bay. A seat sticks only if temp, length, floor load, door, dwell, and labor still fit. Leftovers keep a reason (`temp`, `lane-full`, `carrier-mix`, `door`, `cutoff`, `labor-cap`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/stagelane
+PYTHONPATH=src python3 -m stagelane presets
+PYTHONPATH=src python3 -m stagelane seat examples/clear-yard.json
+PYTHONPATH=src python3 -m stagelane serve --host 127.0.0.1 --port 8784
+```
+
+Open `http://127.0.0.1:8784`, then **Seat yard**. Full detail is in the [StageLane README](projects/stagelane/README.md).

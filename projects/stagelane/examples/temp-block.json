@@ -1,0 +1,28 @@
+{
+  "yard": { "preset": "chill" },
+  "strategy": "auto",
+  "pallets": [
+    {
+      "id": "PAL-40",
+      "carrier": "CDL",
+      "priority": 1,
+      "temp": "chill",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1200,
+      "weight_kg": 280
+    },
+    {
+      "id": "PAL-41",
+      "carrier": "CDL",
+      "priority": 2,
+      "temp": "dry",
+      "door": 2,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 300
+    }
+  ]
+}

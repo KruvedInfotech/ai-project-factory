@@ -1,0 +1,53 @@
+{
+  "yard": {
+    "preset": "parcel",
+    "lanes": [
+      {
+        "id": "P1",
+        "temp": "mixed",
+        "length_mm": 2400,
+        "width_mm": 1200,
+        "max_weight_kg": 2000,
+        "max_height_mm": 1800,
+        "door": 1
+      }
+    ]
+  },
+  "strategy": "auto",
+  "mix_carriers": false,
+  "pallets": [
+    {
+      "id": "CAG-01",
+      "carrier": "UPS",
+      "priority": 1,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 180
+    },
+    {
+      "id": "CAG-02",
+      "carrier": "UPS",
+      "priority": 2,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 175
+    },
+    {
+      "id": "CAG-03",
+      "carrier": "UPS",
+      "priority": 3,
+      "temp": "dry",
+      "door": 1,
+      "length_mm": 1200,
+      "width_mm": 1000,
+      "height_mm": 1400,
+      "weight_kg": 160
+    }
+  ]
+}
