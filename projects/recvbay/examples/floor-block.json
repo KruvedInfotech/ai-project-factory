@@ -1,0 +1,30 @@
+{
+  "dock": { "preset": "parcel" },
+  "strategy": "auto",
+  "mix_doors": true,
+  "mix_vendors": true,
+  "loads": [
+    {
+      "id": "ASN-40",
+      "vendor": "AMZN",
+      "priority": 1,
+      "temp": "dry",
+      "pallets": 4,
+      "unload": "live",
+      "floor_loaded": false,
+      "eta_min": 0,
+      "appointment_min": 60
+    },
+    {
+      "id": "ASN-41",
+      "vendor": "AMZN",
+      "priority": 2,
+      "temp": "dry",
+      "pallets": 4,
+      "unload": "live",
+      "floor_loaded": true,
+      "eta_min": 0,
+      "appointment_min": 90
+    }
+  ]
+}
