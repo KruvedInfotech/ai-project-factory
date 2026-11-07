@@ -1,0 +1,57 @@
+{
+  "dock": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 240,
+  "mix_doors": false,
+  "mix_vendors": true,
+  "loads": [
+    {
+      "id": "ASN-11",
+      "vendor": "NESTLE",
+      "priority": 1,
+      "temp": "dry",
+      "pallets": 8,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 1,
+      "eta_min": 0,
+      "appointment_min": 120
+    },
+    {
+      "id": "ASN-12",
+      "vendor": "NESTLE",
+      "priority": 2,
+      "temp": "dry",
+      "pallets": 6,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 1,
+      "eta_min": 60,
+      "appointment_min": 90
+    },
+    {
+      "id": "ASN-21",
+      "vendor": "PEPSICO",
+      "priority": 2,
+      "temp": "dry",
+      "pallets": 8,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 2,
+      "eta_min": 15,
+      "appointment_min": 120
+    },
+    {
+      "id": "ASN-31",
+      "vendor": "SYSCO",
+      "priority": 1,
+      "temp": "chill",
+      "pallets": 4,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 5,
+      "eta_min": 0,
+      "appointment_min": 90
+    }
+  ]
+}

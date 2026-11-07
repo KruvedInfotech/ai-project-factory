@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### RecvBay — inbound receiving-bay planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-07 |
+| **Intended repo** | `https://github.com/KruvedInfotech/recvbay` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/recvbay`](projects/recvbay/) |
+| **What it is** | Door-window planner for inbound ASNs. Live vs drop, floor-load leveler, reefer plug, leftover reasons, local Gantt. |
+
+**How it works (short):** hot and soon-to-arrive first. RecvBay pins the booked door when it is free, then a bay that already ran that vendor. A slot sticks only if temp, equipment, staging, height, dwell, wait, shift, and labor still fit. Leftovers keep a reason (`temp`, `equipment`, `dwell`, `wait`, `door-busy`, `labor-cap`).
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/recvbay
+PYTHONPATH=src python3 -m recvbay presets
+PYTHONPATH=src python3 -m recvbay dock examples/clear-dock.json
+PYTHONPATH=src python3 -m recvbay serve --host 127.0.0.1 --port 8785
+```
+
+Open `http://127.0.0.1:8785`, then **Plan dock**. Full detail is in the [RecvBay README](projects/recvbay/README.md).

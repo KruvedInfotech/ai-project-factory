@@ -1,0 +1,32 @@
+{
+  "dock": { "preset": "grocery" },
+  "strategy": "auto",
+  "mix_doors": false,
+  "mix_vendors": true,
+  "loads": [
+    {
+      "id": "ASN-60",
+      "vendor": "NESTLE",
+      "priority": 1,
+      "temp": "dry",
+      "pallets": 8,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 1,
+      "eta_min": 0,
+      "appointment_min": 30
+    },
+    {
+      "id": "ASN-61",
+      "vendor": "PEPSICO",
+      "priority": 2,
+      "temp": "dry",
+      "pallets": 6,
+      "unload": "live",
+      "floor_loaded": false,
+      "door": 2,
+      "eta_min": 0,
+      "appointment_min": 120
+    }
+  ]
+}

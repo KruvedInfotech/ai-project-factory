@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recvbay"
+version = "0.1.0"
+description = "Inbound receiving-bay planner: door windows, live vs drop, floor-load equipment, local Gantt."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "receiving", "inbound", "dock", "logistics"]
+dependencies = []
+
+[project.scripts]
+recvbay = "recvbay.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+recvbay = ["static/*"]
