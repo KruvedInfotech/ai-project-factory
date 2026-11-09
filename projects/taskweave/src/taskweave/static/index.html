@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskWeave — forklift interleave</title>
+  <style>
+    :root {
+      --ink: #221c16;
+      --paper: #efe6d6;
+      --board: #d8c9ae;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(34, 28, 22, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(34, 28, 22, 0.04), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(34,28,22,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 56ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 500px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button {
+      font: inherit;
+      color: inherit;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 2px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 16%; }
+    th:nth-child(2), td:nth-child(2) { width: 14%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 560px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(224,161,6,0.14), transparent 42%),
+        #2a241d;
+    }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>TaskWeave</h1>
+      <p>Interleave putaway, replen, and pick onto forklifts. After a drop in the rack, grab a nearby outbound instead of deadheading empty to the dock.</p>
+    </div>
+    <div class="stamp">Dock copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Board</h2>
+      <label for="preset">Floor</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap (min)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example">
+            <option value="">Choose…</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy">
+            <option value="auto">auto</option>
+            <option value="nearest">nearest</option>
+            <option value="dual">dual</option>
+            <option value="fifo">fifo</option>
+          </select>
+        </div>
+        <div>
+          <label for="shiftEnd">Shift end (min)</label>
+          <input id="shiftEnd" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th><th>Kind</th><th>From</th><th>To</th><th>Pri</th><th>Temp</th><th>Pal</th><th>Ready</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add task</button>
+        <button type="button" id="plan">Weave tasks</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Floor map</h2>
+      <div class="stats">
+        <div class="stat" id="statWeaved"><span>Weaved</span><b>—</b></div>
+        <div class="stat" id="statDual"><span>Dual cycle</span><b>—</b></div>
+        <div class="stat" id="statDead"><span>Deadhead</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="760" aria-label="Forklift floor map and Gantt"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const colors = ["#e0a106", "#d97b46", "#6f8f72", "#c45c4a", "#7a90b4", "#b08968", "#d6c25b", "#8aa4c8"];
+    const rows = document.getElementById("rows");
+    const preset = document.getElementById("preset");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const shiftEnd = document.getElementById("shiftEnd");
+    const error = document.getElementById("error");
+    let floors = [];
+    let floorTrucks = null;
+
+    function addRow(task = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${task.id || ""}" /></td>
+        <td><input data-k="kind" value="${task.kind || "putaway"}" /></td>
+        <td><input data-k="from" value="${task.from || "D1"}" /></td>
+        <td><input data-k="to" value="${task.to || "A3-3"}" /></td>
+        <td><input data-k="priority" value="${task.priority ?? 2}" /></td>
+        <td><input data-k="temp" value="${task.temp || "dry"}" /></td>
+        <td><input data-k="pallets" value="${task.pallets ?? 1}" /></td>
+        <td><input data-k="ready_min" value="${task.ready_min ?? 0}" /></td>
+      `;
+      tr.dataset.weight = task.weight_kg ?? 400;
+      tr.dataset.height = task.height_mm ?? 1400;
+      rows.appendChild(tr);
+    }
+
+    function readTasks() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`);
+        const id = get("id").value.trim();
+        return {
+          id,
+          kind: get("kind").value.trim() || "putaway",
+          from: get("from").value.trim(),
+          to: get("to").value.trim(),
+          priority: Number(get("priority").value || 2),
+          temp: get("temp").value.trim() || "dry",
+          pallets: Number(get("pallets").value || 1),
+          weight_kg: Number(tr.dataset.weight || 400),
+          height_mm: Number(tr.dataset.height || 1400),
+          ready_min: Number(get("ready_min").value || 0),
+        };
+      }).filter(item => item.id);
+    }
+
+    function applyFloor(id) {
+      const floor = floors.find(item => item.id === id);
+      if (!floor) return;
+      labor.value = floor.max_labor_min;
+      shiftEnd.value = floor.shift_end_min;
+      floorTrucks = null;
+    }
+
+    async function boot() {
+      const body = await (await fetch("/api/presets")).json();
+      floors = body.floors || [];
+      floors.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} · ${p.trucks.map(t => t.id).join(", ")}`;
+        preset.appendChild(opt);
+      });
+      preset.value = "grocery";
+      applyFloor("grocery");
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ id: "PUT-11", kind: "putaway", from: "D1", to: "A3-3", priority: 1, pallets: 1, ready_min: 0 });
+      addRow({ id: "PICK-11", kind: "pick", from: "A3-4", to: "S1", priority: 2, pallets: 1, ready_min: 0 });
+      addRow({ id: "PUT-21", kind: "putaway", from: "D2", to: "A5-2", priority: 1, pallets: 1, ready_min: 0 });
+      addRow({ id: "PICK-21", kind: "pick", from: "A5-3", to: "S2", priority: 2, pallets: 1, ready_min: 0 });
+    }
+
+    preset.addEventListener("change", () => applyFloor(preset.value));
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      rows.innerHTML = "";
+      (data.tasks || []).forEach(addRow);
+      if (data.floor?.preset) preset.value = data.floor.preset;
+      applyFloor(preset.value);
+      floorTrucks = data.floor?.trucks || null;
+      if (data.labor_minutes) labor.value = data.labor_minutes;
+      if (data.floor?.shift_end_min) shiftEnd.value = data.floor.shift_end_min;
+      if (data.strategy) document.getElementById("strategy").value = data.strategy;
+    });
+
+    document.getElementById("plan").onclick = async () => {
+      error.textContent = "";
+      const floorSpec = { preset: preset.value, shift_end_min: Number(shiftEnd.value) };
+      if (floorTrucks) floorSpec.trucks = floorTrucks;
+      const body = {
+        floor: floorSpec,
+        strategy: document.getElementById("strategy").value,
+        labor_minutes: Number(labor.value),
+        tasks: readTasks(),
+      };
+      const res = await fetch("/api/weave", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Weave failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statWeaved", String(data.weaved_count), "good");
+      set("statDual", String(data.dual_count), data.dual_count ? "good" : "");
+      set("statDead", Math.round(data.deadhead_ratio * 100) + "%");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.id} ${u.kind} ${u.from}→${u.to} (${u.reason})`)
+        .join(" · ");
+    }
+
+    function locMap(floor) {
+      const map = {};
+      for (const loc of floor.locations) map[loc.id] = loc;
+      return map;
+    }
+
+    function project(loc, box) {
+      return [
+        box.pad + (loc.x - box.minX) * box.sx,
+        box.pad + (loc.y - box.minY) * box.sy,
+      ];
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const floor = data.floor;
+      const locs = floor.locations;
+      const minX = Math.min(...locs.map(l => l.x));
+      const maxX = Math.max(...locs.map(l => l.x));
+      const minY = Math.min(...locs.map(l => l.y));
+      const maxY = Math.max(...locs.map(l => l.y));
+      const mapH = canvas.height * 0.62;
+      const pad = 36;
+      const sx = (canvas.width - pad * 2) / Math.max(1, maxX - minX + 1);
+      const sy = (mapH - pad * 2) / Math.max(1, maxY - minY + 1);
+      const box = { minX, minY, sx, sy, pad };
+      const byId = locMap(floor);
+      const truckColor = {};
+      floor.trucks.forEach((t, i) => { truckColor[t.id] = colors[i % colors.length]; });
+
+      ctx.fillStyle = "rgba(224,161,6,0.08)";
+      ctx.fillRect(0, 0, canvas.width, mapH);
+
+      for (const loc of locs) {
+        const [x, y] = project(loc, box);
+        if (loc.kind === "aisle") {
+          ctx.fillStyle = loc.temp === "freeze" ? "#3d5a80" : loc.temp === "chill" ? "#4d6a5a" : "#5a4634";
+          ctx.fillRect(x - 10, y - 14, 20, 28);
+        } else if (loc.kind === "reserve") {
+          ctx.fillStyle = "#7a4a28";
+          ctx.fillRect(x - 12, y - 12, 24, 24);
+        } else if (loc.kind === "dock") {
+          ctx.fillStyle = "#c9a227";
+          ctx.fillRect(x - 14, y - 10, 28, 20);
+        } else {
+          ctx.fillStyle = "#8aa4c8";
+          ctx.fillRect(x - 12, y - 10, 24, 20);
+        }
+        ctx.fillStyle = "#efe6d6";
+        ctx.font = "10px ui-monospace, monospace";
+        ctx.fillText(loc.id, x - 12, y + 22);
+      }
+
+      ctx.lineWidth = 2.4;
+      for (const leg of data.legs) {
+        const color = truckColor[leg.truck_id] || "#e0a106";
+        const origin = byId[leg.origin];
+        const pickup = byId[leg.from];
+        const drop = byId[leg.to];
+        if (!origin || !pickup || !drop) continue;
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.35;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(...project(origin, box));
+        ctx.lineTo(...project(pickup, box));
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(...project(pickup, box));
+        ctx.lineTo(...project(drop, box));
+        ctx.stroke();
+        const [dx, dy] = project(drop, box);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const ganttTop = mapH + 16;
+      const ganttH = canvas.height - ganttTop - 20;
+      const trucks = floor.trucks;
+      const rowH = Math.max(28, Math.min(48, ganttH / Math.max(1, trucks.length)));
+      const maxT = Math.max(floor.shift_end_min, ...data.legs.map(l => l.end_min), 1);
+      const gx = 90;
+      const gw = canvas.width - gx - 24;
+      ctx.fillStyle = "#efe6d6";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillText("Gantt", 16, ganttTop - 2);
+      trucks.forEach((truck, i) => {
+        const y = ganttTop + i * rowH;
+        ctx.fillStyle = "#efe6d6";
+        ctx.fillText(truck.id, 16, y + rowH * 0.62);
+        ctx.fillStyle = "rgba(239,230,214,0.08)";
+        ctx.fillRect(gx, y + 6, gw, rowH - 12);
+        data.legs.filter(l => l.truck_id === truck.id).forEach(leg => {
+          const x = gx + (leg.start_min / maxT) * gw;
+          const deadW = (leg.deadhead_min / maxT) * gw;
+          const restW = ((leg.duration_min - leg.deadhead_min) / maxT) * gw;
+          ctx.fillStyle = "rgba(224,161,6,0.35)";
+          ctx.fillRect(x, y + 8, Math.max(1, deadW), rowH - 16);
+          ctx.fillStyle = truckColor[truck.id];
+          ctx.fillRect(x + deadW, y + 8, Math.max(2, restW), rowH - 16);
+          ctx.fillStyle = "#221c16";
+          ctx.font = "10px ui-monospace, monospace";
+          ctx.fillText(leg.task_id, x + deadW + 4, y + rowH * 0.62);
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

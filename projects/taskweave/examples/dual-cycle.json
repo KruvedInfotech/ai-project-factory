@@ -1,0 +1,53 @@
+{
+  "floor": {
+    "preset": "grocery",
+    "trucks": [
+      {
+        "id": "RT-1",
+        "kind": "reach",
+        "start": "D1",
+        "temp": "mixed"
+      }
+    ]
+  },
+  "strategy": "dual",
+  "labor_minutes": 240,
+  "tasks": [
+    {
+      "id": "PUT-11",
+      "kind": "putaway",
+      "from": "D1",
+      "to": "A3-3",
+      "pallets": 1,
+      "weight_kg": 400,
+      "height_mm": 1400,
+      "temp": "dry",
+      "priority": 1,
+      "ready_min": 0
+    },
+    {
+      "id": "PICK-11",
+      "kind": "pick",
+      "from": "A6-6",
+      "to": "S1",
+      "pallets": 1,
+      "weight_kg": 380,
+      "height_mm": 1400,
+      "temp": "dry",
+      "priority": 2,
+      "ready_min": 0
+    },
+    {
+      "id": "REP-11",
+      "kind": "replen",
+      "from": "R1",
+      "to": "A3-4",
+      "pallets": 1,
+      "weight_kg": 410,
+      "height_mm": 1400,
+      "temp": "dry",
+      "priority": 2,
+      "ready_min": 0
+    }
+  ]
+}

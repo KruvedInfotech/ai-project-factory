@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taskweave"
+version = "0.1.0"
+description = "Forklift task-interleaving planner: dual-cycle putaway/pick, deadhead, local floor map."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "forklift", "task-interleaving", "dual-cycle", "logistics"]
+dependencies = []
+
+[project.scripts]
+taskweave = "taskweave.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+taskweave = ["static/*"]

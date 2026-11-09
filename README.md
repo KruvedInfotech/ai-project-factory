@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### TaskWeave — forklift task interleaver
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-09 |
+| **Intended repo** | `https://github.com/KruvedInfotech/taskweave` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/taskweave`](projects/taskweave/) |
+| **What it is** | Dispatch planner for putaway, replen, pick, and relocate. Dual-cycle pairing, deadhead, floor map plus Gantt. |
+
+**How it works (short):** the planner repeatedly claims the best remaining (truck, task) pair. Auto takes hot tickets first, then shortest empty deadhead, then a dual-cycle bonus. After a putaway drop it prefers a nearby outbound pick instead of deadheading back to the dock. Leftovers keep a reason; earlier legs are never pulled.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/taskweave
+PYTHONPATH=src python3 -m taskweave presets
+PYTHONPATH=src python3 -m taskweave weave examples/clear-board.json
+PYTHONPATH=src python3 -m taskweave serve --host 127.0.0.1 --port 8786
+```
+
+Open `http://127.0.0.1:8786`, then **Weave tasks**. Full detail is in the [TaskWeave README](projects/taskweave/README.md).
