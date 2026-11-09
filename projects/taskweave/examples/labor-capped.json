@@ -1,0 +1,31 @@
+{
+  "floor": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_minutes": 5,
+  "tasks": [
+    {
+      "id": "PUT-51",
+      "kind": "putaway",
+      "from": "D1",
+      "to": "A3-3",
+      "pallets": 1,
+      "weight_kg": 400,
+      "height_mm": 1400,
+      "temp": "dry",
+      "priority": 1,
+      "ready_min": 0
+    },
+    {
+      "id": "PUT-52",
+      "kind": "putaway",
+      "from": "D2",
+      "to": "A5-2",
+      "pallets": 1,
+      "weight_kg": 400,
+      "height_mm": 1400,
+      "temp": "dry",
+      "priority": 2,
+      "ready_min": 0
+    }
+  ]
+}
