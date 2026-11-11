@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### CrewCut — warehouse labor staffing
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-11 |
+| **Intended repo** | `https://github.com/KruvedInfotech/crewcut` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/crewcut`](projects/crewcut/) |
+| **What it is** | Hour-by-hour crew seater. Skills, temperature, overtime, breaks, head cap, labor cap. |
+
+**How it works (short):** demand tickets go hottest-first, then shift-hour order. CrewCut claims the best remaining associate who has the skill, matches temp (or is mixed), fits the hour in-window or inside the OT cap, is not on a mandatory break, and still fits the head and dollar caps. Auto prefers in-window over overtime, then someone already on the clock.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/crewcut
+PYTHONPATH=src python3 -m crewcut presets
+PYTHONPATH=src python3 -m crewcut staff examples/clear-board.json
+PYTHONPATH=src python3 -m crewcut serve --host 127.0.0.1 --port 8787
+```
+
+Open `http://127.0.0.1:8787`, then **Staff shift**. Full detail is in the [CrewCut README](projects/crewcut/README.md).

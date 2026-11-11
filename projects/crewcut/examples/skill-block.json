@@ -1,0 +1,52 @@
+{
+  "site": { "preset": "produce" },
+  "strategy": "auto",
+  "demand": [
+    { "hour": 22, "skill": "pick", "heads": 1, "temp": "chill", "priority": 1 },
+    { "hour": 22, "skill": "pick", "heads": 1, "temp": "freeze", "priority": 1 },
+    {
+      "hour": 22,
+      "skill": "forklift",
+      "heads": 1,
+      "temp": "chill",
+      "equipment": "reach",
+      "priority": 2
+    }
+  ],
+  "crew": [
+    {
+      "id": "C-1",
+      "name": "Ng",
+      "kind": "regular",
+      "skills": ["pick"],
+      "rate_per_hour": 20,
+      "available_start": 22,
+      "available_end": 6,
+      "ot_cap_hours": 0,
+      "temp": "chill"
+    },
+    {
+      "id": "C-2",
+      "name": "Brooks",
+      "kind": "regular",
+      "skills": ["pick"],
+      "rate_per_hour": 18,
+      "available_start": 22,
+      "available_end": 6,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    },
+    {
+      "id": "JK-1",
+      "name": "Ibarra",
+      "kind": "regular",
+      "skills": ["forklift"],
+      "rate_per_hour": 24,
+      "available_start": 22,
+      "available_end": 6,
+      "ot_cap_hours": 0,
+      "temp": "chill",
+      "certs": ["jack"]
+    }
+  ]
+}

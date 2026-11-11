@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crewcut"
+version = "0.1.0"
+description = "Warehouse labor and shift staffing planner."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "labor", "staffing", "wfm", "shift"]
+dependencies = []
+
+[project.scripts]
+crewcut = "crewcut.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+crewcut = ["static/*"]
