@@ -1,0 +1,22 @@
+{
+  "site": { "preset": "grocery" },
+  "strategy": "auto",
+  "labor_dollars": 18,
+  "demand": [
+    { "hour": 8, "skill": "pick", "heads": 1, "temp": "dry", "priority": 1 },
+    { "hour": 9, "skill": "pick", "heads": 1, "temp": "dry", "priority": 2 }
+  ],
+  "crew": [
+    {
+      "id": "A-12",
+      "name": "Rivera",
+      "kind": "regular",
+      "skills": ["pick"],
+      "rate_per_hour": 18,
+      "available_start": 8,
+      "available_end": 14,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    }
+  ]
+}

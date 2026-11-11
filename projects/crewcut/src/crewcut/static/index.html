@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CrewCut — labor planner</title>
+  <style>
+    :root {
+      --ink: #1b2a1c;
+      --paper: #dce8d4;
+      --card: #f4f7ec;
+      --tape: #e0a106;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(27, 42, 28, 0.16);
+      --night: #152018;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(27, 42, 28, 0.06), transparent 160px),
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(27,42,28,0.05) 27px 28px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 460px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(244, 247, 236, 0.86);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffef6;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 5px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 3px; min-width: 0; font-size: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffef6;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(224,161,6,0.12), transparent 42%),
+        var(--night);
+    }
+    #coverage { height: 180px; }
+    #gantt { height: 340px; margin-top: 12px; }
+    .unpacked { margin-top: 12px; color: var(--rust); font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    .scroll { max-height: 220px; overflow: auto; margin-top: 6px; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>CrewCut</h1>
+      <p>Seat a warehouse crew onto an hour-by-hour demand curve. Skills, temperature, overtime, breaks, and the labor cap all have to clear.</p>
+    </div>
+    <div class="stamp">Time office · not a live WFM</div>
+  </header>
+  <main>
+    <section>
+      <h2>Board</h2>
+      <label for="preset">Site</label>
+      <select id="preset"></select>
+      <div class="row">
+        <div>
+          <label for="strategy">Strategy</label>
+          <select id="strategy"></select>
+        </div>
+        <div>
+          <label for="example">Load example</label>
+          <select id="example"><option value="">Choose…</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="labor">Labor cap ($)</label>
+          <input id="labor" type="number" min="1" step="1" />
+        </div>
+        <div>
+          <label for="heads">Head cap</label>
+          <input id="heads" type="number" min="1" step="1" />
+        </div>
+      </div>
+      <h2 style="margin-top:18px">Demand</h2>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Hour</th><th>Skill</th><th>Heads</th><th>Temp</th><th>Eq</th>
+            </tr>
+          </thead>
+          <tbody id="demandRows"></tbody>
+        </table>
+      </div>
+      <h2 style="margin-top:18px">Crew</h2>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Id</th><th>Name</th><th>Kind</th><th>Skills</th><th>$</th><th>Start</th><th>End</th><th>OT</th><th>Temp</th>
+            </tr>
+          </thead>
+          <tbody id="crewRows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" class="ghost" id="addDemand">Add demand</button>
+        <button type="button" class="ghost" id="addCrew">Add associate</button>
+        <button type="button" id="staff">Staff shift</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Roster</h2>
+      <div class="stats">
+        <div class="stat" id="statCovered"><span>Covered</span><b>—</b></div>
+        <div class="stat" id="statFill"><span>Fill</span><b>—</b></div>
+        <div class="stat" id="statLabor"><span>Labor</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left behind</span><b>—</b></div>
+      </div>
+      <canvas id="coverage" width="1100" height="220" aria-label="Demand versus coverage"></canvas>
+      <canvas id="gantt" width="1100" height="420" aria-label="Crew Gantt"></canvas>
+      <div class="unpacked" id="unpacked"></div>
+    </section>
+  </main>
+  <script>
+    const skillColors = {
+      pick: "#e0a106",
+      pack: "#7a90b4",
+      receive: "#6f8f72",
+      replen: "#d97b46",
+      forklift: "#c45c4a",
+    };
+    const demandRows = document.getElementById("demandRows");
+    const crewRows = document.getElementById("crewRows");
+    const preset = document.getElementById("preset");
+    const strategy = document.getElementById("strategy");
+    const example = document.getElementById("example");
+    const labor = document.getElementById("labor");
+    const heads = document.getElementById("heads");
+    const error = document.getElementById("error");
+    let sites = [];
+
+    function pad(n) { return String(n).padStart(2, "0") + ":00"; }
+
+    function addDemand(row = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="hour" type="number" min="0" max="23" value="${row.hour ?? 8}" /></td>
+        <td><input data-k="skill" value="${row.skill ?? "pick"}" /></td>
+        <td><input data-k="heads" type="number" min="1" value="${row.heads ?? 1}" /></td>
+        <td><input data-k="temp" value="${row.temp ?? "dry"}" /></td>
+        <td><input data-k="equipment" value="${row.equipment ?? ""}" /></td>`;
+      demandRows.appendChild(tr);
+    }
+
+    function addCrew(row = {}) {
+      const tr = document.createElement("tr");
+      const skills = Array.isArray(row.skills) ? row.skills.join(",") : (row.skills || "pick");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${row.id ?? ""}" /></td>
+        <td><input data-k="name" value="${row.name ?? ""}" /></td>
+        <td><input data-k="kind" value="${row.kind ?? "regular"}" /></td>
+        <td><input data-k="skills" value="${skills}" /></td>
+        <td><input data-k="rate_per_hour" type="number" value="${row.rate_per_hour ?? 18}" /></td>
+        <td><input data-k="available_start" type="number" value="${row.available_start ?? 6}" /></td>
+        <td><input data-k="available_end" type="number" value="${row.available_end ?? 14}" /></td>
+        <td><input data-k="ot_cap_hours" type="number" value="${row.ot_cap_hours ?? 0}" /></td>
+        <td><input data-k="temp" value="${row.temp ?? "dry"}" /></td>
+        <td style="display:none"><input data-k="certs" value="${(row.certs || []).join?.(",") || row.certs || ""}" /></td>`;
+      crewRows.appendChild(tr);
+    }
+
+    function readTable(tbody, keys, cast) {
+      return [...tbody.querySelectorAll("tr")].map(tr => {
+        const row = {};
+        keys.forEach(key => {
+          const el = tr.querySelector(`[data-k="${key}"]`);
+          row[key] = el ? el.value : "";
+        });
+        return cast(row);
+      });
+    }
+
+    function readDemand() {
+      return readTable(demandRows, ["hour","skill","heads","temp","equipment"], row => ({
+        hour: Number(row.hour),
+        skill: row.skill.trim(),
+        heads: Number(row.heads || 1),
+        temp: row.temp.trim() || "dry",
+        equipment: row.equipment.trim(),
+        priority: 2,
+      })).filter(row => row.skill);
+    }
+
+    function readCrew() {
+      return readTable(crewRows, ["id","name","kind","skills","rate_per_hour","available_start","available_end","ot_cap_hours","temp","certs"], row => ({
+        id: row.id.trim(),
+        name: row.name.trim() || row.id.trim(),
+        kind: row.kind.trim() || "regular",
+        skills: row.skills.split(",").map(s => s.trim()).filter(Boolean),
+        rate_per_hour: Number(row.rate_per_hour),
+        available_start: Number(row.available_start),
+        available_end: Number(row.available_end),
+        ot_cap_hours: Number(row.ot_cap_hours || 0),
+        temp: row.temp.trim() || "dry",
+        certs: row.certs.split(",").map(s => s.trim()).filter(Boolean),
+      })).filter(row => row.id);
+    }
+
+    function applySite(id) {
+      const site = sites.find(s => s.id === id);
+      if (!site) return;
+      labor.value = site.labor_dollars;
+      heads.value = site.head_cap;
+    }
+
+    async function boot() {
+      const data = await (await fetch("/api/presets")).json();
+      sites = data.sites || [];
+      sites.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.name} · ${s.shift}`;
+        preset.appendChild(opt);
+      });
+      (data.strategies || ["auto"]).forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        strategy.appendChild(opt);
+      });
+      preset.value = "grocery";
+      applySite("grocery");
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addDemand({ hour: 6, skill: "pick", heads: 2 });
+      addDemand({ hour: 6, skill: "receive", heads: 1 });
+      addDemand({ hour: 7, skill: "pick", heads: 2 });
+      addDemand({ hour: 7, skill: "pack", heads: 1 });
+      addCrew({ id: "A-12", name: "Rivera", skills: ["pick"], available_start: 6, available_end: 14 });
+      addCrew({ id: "A-15", name: "Chen", skills: ["pick"], available_start: 6, available_end: 14 });
+      addCrew({ id: "A-18", name: "Patel", skills: ["pack"], rate_per_hour: 17, available_start: 7, available_end: 14 });
+      addCrew({ id: "A-21", name: "Ortiz", skills: ["receive","pick"], rate_per_hour: 19, available_start: 6, available_end: 10 });
+    }
+
+    preset.addEventListener("change", () => applySite(preset.value));
+    document.getElementById("addDemand").onclick = () => addDemand();
+    document.getElementById("addCrew").onclick = () => addCrew();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      demandRows.innerHTML = "";
+      crewRows.innerHTML = "";
+      (data.demand || []).forEach(addDemand);
+      (data.crew || []).forEach(addCrew);
+      if (data.site?.preset) preset.value = data.site.preset;
+      applySite(preset.value);
+      if (data.labor_dollars) labor.value = data.labor_dollars;
+      if (data.head_cap) heads.value = data.head_cap;
+      if (data.site?.labor_dollars && !data.labor_dollars) labor.value = data.site.labor_dollars;
+      if (data.strategy) strategy.value = data.strategy;
+    });
+
+    document.getElementById("staff").onclick = async () => {
+      error.textContent = "";
+      const body = {
+        site: { preset: preset.value, labor_dollars: Number(labor.value), head_cap: Number(heads.value) },
+        strategy: strategy.value,
+        labor_dollars: Number(labor.value),
+        head_cap: Number(heads.value),
+        demand: readDemand(),
+        crew: readCrew(),
+      };
+      const res = await fetch("/api/staff", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Staff failed";
+        return;
+      }
+      renderStats(data);
+      drawCoverage(data);
+      drawGantt(data);
+    };
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statCovered", `${data.seated_count}/${data.demand_heads}`, "good");
+      set("statFill", Math.round(data.fill_ratio * 100) + "%", data.fill_ratio >= 1 ? "good" : "");
+      set("statLabor", "$" + Math.round(data.labor_used));
+      set("statLeft", String(data.leftover_heads), data.leftover_heads ? "bad" : "good");
+      document.getElementById("unpacked").textContent = (data.leftover || [])
+        .map(u => `${u.heads}× ${pad(u.hour)} ${u.skill}${u.equipment ? " " + u.equipment : ""} — ${u.reason}`)
+        .join(" · ");
+    }
+
+    function drawCoverage(data) {
+      const canvas = document.getElementById("coverage");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const rows = data.coverage || [];
+      if (!rows.length) return;
+      const max = Math.max(1, ...rows.map(r => Math.max(r.demand, r.seated)));
+      const padL = 48, padB = 36, padT = 24, padR = 16;
+      const w = (canvas.width - padL - padR) / rows.length;
+      rows.forEach((row, i) => {
+        const x = padL + i * w;
+        const hDemand = (row.demand / max) * (canvas.height - padT - padB);
+        const hSeated = (row.seated / max) * (canvas.height - padT - padB);
+        ctx.fillStyle = "rgba(244,247,236,0.18)";
+        ctx.fillRect(x + 6, canvas.height - padB - hDemand, w - 18, hDemand);
+        ctx.fillStyle = row.short ? "#c45c4a" : "#e0a106";
+        ctx.fillRect(x + 12, canvas.height - padB - hSeated, w - 24, hSeated);
+        ctx.fillStyle = "#efe6d6";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText(pad(row.hour), x + 4, canvas.height - 14);
+      });
+      ctx.fillStyle = "#efe6d6";
+      ctx.font = "12px ui-monospace, monospace";
+      ctx.fillText("demand vs seated", 16, 18);
+    }
+
+    function drawGantt(data) {
+      const canvas = document.getElementById("gantt");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const hours = (data.site && data.site.hours) || [];
+      const roster = (data.roster || []).filter(r => r.hours.length);
+      if (!hours.length || !roster.length) return;
+      const padL = 120, padT = 28, padB = 16, padR = 16;
+      const rowH = Math.min(48, (canvas.height - padT - padB) / roster.length);
+      const colW = (canvas.width - padL - padR) / hours.length;
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.fillStyle = "#efe6d6";
+      hours.forEach((hour, i) => {
+        ctx.fillText(pad(hour), padL + i * colW + 8, 18);
+      });
+      roster.forEach((person, r) => {
+        const y = padT + r * rowH;
+        ctx.fillStyle = "#efe6d6";
+        ctx.fillText(person.id + " " + person.name, 10, y + rowH * 0.55);
+        hours.forEach((hour, i) => {
+          const seat = (person.seats || []).find(s => s.hour === hour);
+          const x = padL + i * colW;
+          ctx.strokeStyle = "rgba(239,230,214,0.18)";
+          ctx.strokeRect(x + 3, y + 6, colW - 6, rowH - 12);
+          if (!seat) return;
+          ctx.fillStyle = skillColors[seat.skill] || "#e0a106";
+          ctx.fillRect(x + 3, y + 6, colW - 6, rowH - 12);
+          if (seat.ot) {
+            ctx.fillStyle = "rgba(27,42,28,0.35)";
+            for (let s = 0; s < colW; s += 6) {
+              ctx.fillRect(x + 3 + s, y + 6, 3, rowH - 12);
+            }
+          }
+          ctx.fillStyle = "#1b2a1c";
+          ctx.fillText(seat.skill.slice(0, 4), x + 8, y + rowH * 0.58);
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

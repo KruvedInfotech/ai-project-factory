@@ -1,0 +1,60 @@
+{
+  "site": { "preset": "grocery" },
+  "strategy": "auto",
+  "demand": [
+    { "hour": 6, "skill": "pick", "heads": 2, "temp": "dry", "priority": 1 },
+    { "hour": 6, "skill": "receive", "heads": 1, "temp": "dry", "priority": 1 },
+    { "hour": 7, "skill": "pick", "heads": 2, "temp": "dry", "priority": 2 },
+    { "hour": 7, "skill": "pack", "heads": 1, "temp": "dry", "priority": 2 },
+    { "hour": 8, "skill": "pick", "heads": 2, "temp": "dry", "priority": 2 },
+    { "hour": 8, "skill": "pack", "heads": 1, "temp": "dry", "priority": 2 },
+    { "hour": 9, "skill": "pick", "heads": 1, "temp": "dry", "priority": 2 },
+    { "hour": 9, "skill": "pack", "heads": 1, "temp": "dry", "priority": 2 }
+  ],
+  "crew": [
+    {
+      "id": "A-12",
+      "name": "Rivera",
+      "kind": "regular",
+      "skills": ["pick"],
+      "rate_per_hour": 18,
+      "available_start": 6,
+      "available_end": 14,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    },
+    {
+      "id": "A-15",
+      "name": "Chen",
+      "kind": "regular",
+      "skills": ["pick"],
+      "rate_per_hour": 18,
+      "available_start": 6,
+      "available_end": 14,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    },
+    {
+      "id": "A-18",
+      "name": "Patel",
+      "kind": "regular",
+      "skills": ["pack"],
+      "rate_per_hour": 17,
+      "available_start": 7,
+      "available_end": 14,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    },
+    {
+      "id": "A-21",
+      "name": "Ortiz",
+      "kind": "regular",
+      "skills": ["receive", "pick"],
+      "rate_per_hour": 19,
+      "available_start": 6,
+      "available_end": 10,
+      "ot_cap_hours": 0,
+      "temp": "dry"
+    }
+  ]
+}
