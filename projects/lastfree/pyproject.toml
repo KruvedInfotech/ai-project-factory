@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lastfree"
+version = "0.1.0"
+description = "Last-free-day, demurrage, and detention clock for ocean containers."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "ocean", "demurrage", "detention", "container"]
+dependencies = []
+
+[project.scripts]
+lastfree = "lastfree.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+lastfree = ["static/*"]
