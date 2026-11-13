@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### LastFree — last-free-day clock
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-13 |
+| **Intended repo** | `https://github.com/KruvedInfotech/lastfree` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/lastfree`](projects/lastfree/) |
+| **What it is** | Last-free-day, demurrage, and detention clock for one ocean container. Business vs calendar free time, holiday skip, tiered dollars. |
+
+**How it works (short):** free time starts on availability (demurrage) or gate-out (detention). LastFree counts the preset’s free days, skipping weekends and listed holidays when the clock is business. Pickup on last free day is still free. Days after LFD are billed from the tier table until gate-out / empty return, or through “as of” if the box is still sitting.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/lastfree
+PYTHONPATH=src python3 -m lastfree presets
+PYTHONPATH=src python3 -m lastfree clock examples/still-inside.json
+PYTHONPATH=src python3 -m lastfree serve --host 127.0.0.1 --port 8791
+```
+
+Open `http://127.0.0.1:8791`, then **Run clock**. Full detail is in the [LastFree README](projects/lastfree/README.md).

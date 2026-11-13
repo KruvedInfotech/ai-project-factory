@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LastFree — last-free-day clock</title>
+  <style>
+    :root {
+      --ink: #15233a;
+      --paper: #e7dfcf;
+      --board: #d5cbb6;
+      --brass: #c4a35a;
+      --rust: #b33b2b;
+      --sea: #1f6f6a;
+      --ok: #2d6a4f;
+      --line: rgba(21, 35, 58, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(21, 35, 58, 0.06), transparent 200px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(21,35,58,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button, textarea { font: inherit; color: inherit; }
+    select, input[type="date"], input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    textarea { min-height: 64px; resize: vertical; font-family: ui-monospace, monospace; font-size: 13px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--brass);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat b { display: block; font-size: 20px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .stat.sea b { color: var(--sea); }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .cell {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      background: #fffaf0;
+      padding: 6px;
+      font-size: 12px;
+      position: relative;
+    }
+    .cell .d { font-family: ui-monospace, monospace; font-weight: 700; }
+    .cell .w { float: right; opacity: 0.55; }
+    .cell.skip { background: repeating-linear-gradient(135deg, #efe8d8, #efe8d8 6px, #e4dccb 6px 12px); opacity: 0.7; }
+    .cell.holiday { outline: 2px solid #6b4ea0; }
+    .cell.charge-d { background: #f6d4cc; }
+    .cell.charge-t { background: #f7e4b0; }
+    .cell.charge-both { background: linear-gradient(180deg, #f6d4cc 50%, #f7e4b0 50%); }
+    .cell.free-d { background: #d7ebe4; }
+    .cell.free-t { background: #d4e4ee; }
+    .flags { margin-top: 8px; font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .usd { margin-top: 4px; font-family: ui-monospace, monospace; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; font-size: 12px; }
+    .swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid var(--ink); vertical-align: -3px; margin-right: 4px; }
+    .skip-swatch { background: repeating-linear-gradient(135deg, #efe8d8, #efe8d8 4px, #e4dccb 4px 8px); }
+    .note { margin: 12px 0 0; font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .calendar { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>LastFree</h1>
+      <p>Last-free-day clock for one ocean container. Demurrage is terminal storage; detention is equipment on the street. Pickup on LFD is still free.</p>
+    </div>
+    <div class="stamp">Tariff copy · not a line invoice</div>
+  </header>
+  <main>
+    <section>
+      <h2>Container</h2>
+      <label for="example">Load example</label>
+      <select id="example"><option value="">Choose…</option></select>
+      <label for="container">Container</label>
+      <input id="container" type="text" value="MSCU1234567" maxlength="14" />
+      <label for="preset">Free-time clock</label>
+      <select id="preset"></select>
+      <p class="note" id="presetMeta"></p>
+      <label for="size">Size</label>
+      <select id="size">
+        <option value="20">20'</option>
+        <option value="40" selected>40'</option>
+        <option value="40HC">40' HC</option>
+        <option value="45">45'</option>
+      </select>
+      <div class="row">
+        <div>
+          <label for="available">Available</label>
+          <input id="available" type="date" />
+        </div>
+        <div>
+          <label for="asOf">As of</label>
+          <input id="asOf" type="date" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="gateOut">Gate-out (optional)</label>
+          <input id="gateOut" type="date" />
+        </div>
+        <div>
+          <label for="emptyReturn">Empty return (optional)</label>
+          <input id="emptyReturn" type="date" />
+        </div>
+      </div>
+      <label for="holidays">Holidays (one YYYY-MM-DD per line)</label>
+      <textarea id="holidays" placeholder="one per line, e.g. 2026-11-11"></textarea>
+      <div class="actions">
+        <button type="button" class="ghost" id="clearDates">Clear gate dates</button>
+        <button type="button" id="run">Run clock</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Last free day</h2>
+      <div class="stats">
+        <div class="stat" id="statDemLfd"><span>Demurrage LFD</span><b>—</b></div>
+        <div class="stat" id="statDetLfd"><span>Detention LFD</span><b>—</b></div>
+        <div class="stat" id="statDem"><span>Demurrage</span><b>—</b></div>
+        <div class="stat" id="statDet"><span>Detention</span><b>—</b></div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#d7ebe4"></span>free (terminal)</span>
+        <span><span class="swatch" style="background:#f6d4cc"></span>demurrage</span>
+        <span><span class="swatch" style="background:#d4e4ee"></span>free (street)</span>
+        <span><span class="swatch" style="background:#f7e4b0"></span>detention</span>
+        <span><span class="swatch skip-swatch"></span>weekend / holiday skip</span>
+      </div>
+      <div class="calendar" id="calendar"></div>
+      <p class="note" id="note"></p>
+    </section>
+  </main>
+  <script>
+    const money = n => "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const $ = id => document.getElementById(id);
+
+    let presetIndex = {};
+    function describePreset(p) {
+      if (!p) return "";
+      return `${p.demurrage_free_days} ${p.demurrage_day_type} demurrage · ${p.detention_free_days} ${p.detention_day_type} detention`;
+    }
+    function syncPresetMeta() {
+      $("presetMeta").textContent = describePreset(presetIndex[$("preset").value]);
+    }
+
+    async function boot() {
+      const presets = await (await fetch("/api/presets")).json();
+      presets.forEach(p => {
+        presetIndex[p.id] = p;
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        $("preset").appendChild(opt);
+      });
+      $("preset").value = "uswc_port";
+      syncPresetMeta();
+      $("preset").addEventListener("change", syncPresetMeta);
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        $("example").appendChild(opt);
+      });
+      $("available").value = "2026-11-10";
+      $("asOf").value = "2026-11-12";
+    }
+
+    function holidays() {
+      return $("holidays").value.split(/\s+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    function payload() {
+      return {
+        container: $("container").value,
+        preset: $("preset").value,
+        size: $("size").value,
+        available_on: $("available").value,
+        as_of: $("asOf").value,
+        gate_out_on: $("gateOut").value || null,
+        empty_return_on: $("emptyReturn").value || null,
+        holidays: holidays(),
+      };
+    }
+
+    function applyExample(data) {
+      $("container").value = data.container || "";
+      if (data.preset) $("preset").value = data.preset;
+      syncPresetMeta();
+      $("size").value = data.size || "40";
+      $("available").value = data.available_on || "";
+      $("asOf").value = data.as_of || "";
+      $("gateOut").value = data.gate_out_on || "";
+      $("emptyReturn").value = data.empty_return_on || "";
+      $("holidays").value = (data.holidays || []).join("\n");
+    }
+
+    $("example").addEventListener("change", async () => {
+      if (!$("example").value) return;
+      applyExample(await (await fetch("/api/examples/" + $("example").value)).json());
+    });
+    $("clearDates").onclick = () => { $("gateOut").value = ""; $("emptyReturn").value = ""; };
+    $("run").onclick = async () => {
+      $("error").textContent = "";
+      const res = await fetch("/api/clock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        $("error").textContent = data.error || "Clock failed";
+        return;
+      }
+      render(data);
+    };
+
+    function setStat(id, value, cls) {
+      const el = $(id);
+      el.className = "stat " + (cls || "");
+      el.querySelector("b").textContent = value;
+    }
+
+    function cellClass(cell, data) {
+      if (cell.demurrage_usd && cell.detention_usd) return "cell charge-both";
+      if (cell.demurrage_usd) return "cell charge-d";
+      if (cell.detention_usd) return "cell charge-t";
+      const d = cell.date;
+      const gateOut = data.gate_out_on;
+      const detLfd = data.detention_lfd;
+      const demType = data.preset?.demurrage_day_type;
+      const detType = data.preset?.detention_day_type;
+      const onStreetFree = gateOut && detLfd && d >= gateOut && d <= detLfd;
+      const inTerminalFree = d <= data.demurrage_lfd && (!gateOut || d < gateOut);
+      if (onStreetFree) {
+        if (cell.skipped && detType === "business") return "cell skip";
+        return "cell free-t";
+      }
+      if (inTerminalFree) {
+        if (cell.skipped && demType === "business") return "cell skip";
+        return "cell free-d";
+      }
+      if (cell.skipped) return "cell skip";
+      return "cell";
+    }
+
+    function render(data) {
+      const owed = data.projected_usd > 0;
+      setStat("statDemLfd", data.demurrage_lfd, "sea");
+      setStat("statDetLfd", data.detention_lfd || "—", data.detention_lfd ? "sea" : "");
+      setStat("statDem", money(data.demurrage_usd), data.demurrage_usd ? "bad" : "good");
+      setStat("statDet", money(data.detention_usd), data.detention_usd ? "bad" : "good");
+      const cal = $("calendar");
+      cal.innerHTML = "";
+      data.calendar.forEach(cell => {
+        const div = document.createElement("div");
+        div.className = cellClass(cell, data);
+        if (cell.holiday) div.classList.add("holiday");
+        const bits = [];
+        if (cell.demurrage_usd) bits.push("dem " + money(cell.demurrage_usd));
+        if (cell.detention_usd) bits.push("det " + money(cell.detention_usd));
+        const flags = (cell.flags || []).map(f => f.replaceAll("_", " ")).join(" · ");
+        div.innerHTML =
+          `<span class="w">${cell.weekday}</span><div class="d">${cell.date.slice(5)}</div>` +
+          `<div class="flags">${flags}</div>` +
+          `<div class="usd">${bits.join(" / ")}</div>`;
+        cal.appendChild(div);
+      });
+      const parts = [
+        data.status.replaceAll("_", " "),
+        "projected " + money(data.projected_usd),
+        "accrued " + money(data.accrued_usd),
+      ];
+      if (data.days_until_lfd != null) {
+        if (data.days_until_lfd > 0) parts.push(data.days_until_lfd + " calendar day(s) to demurrage LFD");
+        else if (data.days_until_lfd === 0) parts.push("today is demurrage LFD");
+        else parts.push("demurrage LFD has passed");
+      }
+      $("note").textContent = parts.join("  ·  ");
+      $("note").style.color = owed ? "var(--rust)" : "var(--ok)";
+    }
+
+    boot();
+  </script>
+</body>
+</html>
