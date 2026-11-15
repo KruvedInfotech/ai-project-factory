@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### ModePick — freight mode picker
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-15 |
+| **Intended repo** | `https://github.com/KruvedInfotech/modepick` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/modepick`](projects/modepick/) |
+| **What it is** | Parcel vs LTL vs FTL desk. Dim-weight, density class, cube/payload screening, cheapest feasible mode. |
+
+**How it works (short):** pieces are expanded, then quoted three ways. Parcel bills DIM vs actual per piece (30 kg / 120 cm caps). LTL maps density to class, applies CWT × band × discount × fuel, and refuses loads over 8 m³ or 4.5 t. FTL takes the smallest truck that holds 85% cube and payload. Lowest feasible total wins.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/modepick
+PYTHONPATH=src python3 -m modepick cards
+PYTHONPATH=src python3 -m modepick quote examples/small-parcel.json
+PYTHONPATH=src python3 -m modepick serve --host 127.0.0.1 --port 8792
+```
+
+Open `http://127.0.0.1:8792`, then **Quote modes**. Full detail is in the [ModePick README](projects/modepick/README.md).

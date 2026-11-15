@@ -1,0 +1,15 @@
+{
+  "origin": "Ahmedabad DC",
+  "destination": "Mumbai warehouse",
+  "distance_km": 530,
+  "pieces": [
+    {
+      "sku": "BULK-CASE",
+      "length_cm": 80,
+      "width_cm": 60,
+      "height_cm": 50,
+      "weight_kg": 55,
+      "quantity": 40
+    }
+  ]
+}
