@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modepick"
+version = "0.1.0"
+description = "Parcel vs LTL vs FTL freight-mode picker."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "freight", "parcel", "ltl", "ftl", "rating"]
+dependencies = []
+
+[project.scripts]
+modepick = "modepick.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+modepick = ["static/*"]

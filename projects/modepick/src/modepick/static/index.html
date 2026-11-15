@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ModePick — freight mode desk</title>
+  <style>
+    :root {
+      --ink: #1b2430;
+      --paper: #ece4d4;
+      --board: #d9cdb6;
+      --brass: #c9a227;
+      --teal: #1f6f6a;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --parcel: #2c6e9e;
+      --ltl: #b5811a;
+      --ftl: #2f6b4f;
+      --line: rgba(27, 36, 48, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(31, 111, 106, 0.08), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(27,36,48,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 28%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--brass);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat b { display: block; font-size: 20px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    .stat.sea b { color: var(--teal); }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .card {
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 12px;
+      min-height: 210px;
+      position: relative;
+    }
+    .card.winner { outline: 3px solid var(--teal); }
+    .card h3 {
+      margin: 0 0 6px;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .card.parcel h3 { color: var(--parcel); }
+    .card.ltl h3 { color: var(--ltl); }
+    .card.ftl h3 { color: var(--ftl); }
+    .price {
+      font-family: ui-monospace, monospace;
+      font-size: 28px;
+      margin: 8px 0;
+    }
+    .card.closed .price { color: var(--rust); font-size: 16px; }
+    .why { font-size: 13px; min-height: 2.4em; }
+    .lines { margin: 8px 0 0; padding: 0; list-style: none; font-family: ui-monospace, monospace; font-size: 12px; }
+    .lines li { display: flex; justify-content: space-between; gap: 8px; margin: 3px 0; }
+    .win-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 6px;
+      transform: rotate(6deg);
+      font-family: ui-monospace, monospace;
+    }
+    .bars { margin-top: 16px; }
+    .bar-row { display: grid; grid-template-columns: 72px 1fr 72px; gap: 8px; align-items: center; margin: 8px 0; font-size: 13px; }
+    .bar-track { height: 14px; background: #e6dcc8; border: 1px solid var(--line); }
+    .bar-fill { height: 100%; }
+    .bar-fill.parcel { background: var(--parcel); }
+    .bar-fill.ltl { background: var(--ltl); }
+    .bar-fill.ftl { background: var(--ftl); }
+    .bar-fill.closed { background: repeating-linear-gradient(135deg, #c9b9a2, #c9b9a2 4px, #ddcfc0 4px 8px); }
+    .note { margin: 12px 0 0; font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats, .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ModePick</h1>
+      <p>Compare parcel, LTL, and a dedicated truck for one shipment. Dim-weight, density class, and cube/payload screening on typical rate cards.</p>
+    </div>
+    <div class="stamp">Rate copy · not a tariff</div>
+  </header>
+  <main>
+    <section>
+      <h2>Shipment</h2>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <div class="row">
+        <div>
+          <label for="origin">Origin</label>
+          <input id="origin" type="text" value="Ahmedabad DC" />
+        </div>
+        <div>
+          <label for="destination">Destination</label>
+          <input id="destination" type="text" value="Gandhinagar shop" />
+        </div>
+      </div>
+      <label for="distance">Road km</label>
+      <input id="distance" type="number" min="1" step="1" value="32" />
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>L cm</th><th>W cm</th><th>H cm</th><th>kg</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add piece</button>
+        <button type="button" id="quote">Quote modes</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Rate desk</h2>
+      <div class="stats">
+        <div class="stat" id="statWinner"><span>Winner</span><b>—</b></div>
+        <div class="stat" id="statTotal"><span>Total</span><b>—</b></div>
+        <div class="stat" id="statSave"><span>Saves vs next</span><b>—</b></div>
+        <div class="stat" id="statClass"><span>LTL class</span><b>—</b></div>
+      </div>
+      <div class="cards" id="cards">
+        <article class="card parcel"><h3>Parcel</h3><div class="price">—</div><div class="why">Quote the shipment to compare.</div></article>
+        <article class="card ltl"><h3>LTL</h3><div class="price">—</div><div class="why"></div></article>
+        <article class="card ftl"><h3>FTL</h3><div class="price">—</div><div class="why"></div></article>
+      </div>
+      <div class="bars" id="bars"></div>
+      <p class="note" id="note"></p>
+    </section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const money = n => n == null ? "—" : "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const rows = $("rows");
+
+    function addRow(piece = {}) {
+      const tr = document.createElement("tr");
+      ["sku","length_cm","width_cm","height_cm","weight_kg","quantity"].forEach((key, i) => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.dataset.k = key;
+        const fallback = i === 0 ? "" : i === 5 ? 1 : "";
+        input.value = piece[key] ?? fallback;
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+      rows.appendChild(tr);
+    }
+
+    function readPieces() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          sku: get("sku").trim(),
+          length_cm: Number(get("length_cm")),
+          width_cm: Number(get("width_cm")),
+          height_cm: Number(get("height_cm")),
+          weight_kg: Number(get("weight_kg")),
+          quantity: Number(get("quantity") || 1),
+        };
+      }).filter(p => p.sku);
+    }
+
+    function payload() {
+      return {
+        origin: $("origin").value,
+        destination: $("destination").value,
+        distance_km: Number($("distance").value),
+        pieces: readPieces(),
+      };
+    }
+
+    function applyExample(data) {
+      $("origin").value = typeof data.origin === "string" ? data.origin : (data.origin?.name || "");
+      $("destination").value = typeof data.destination === "string" ? data.destination : (data.destination?.name || "");
+      $("distance").value = data.distance_km || "";
+      rows.innerHTML = "";
+      (data.pieces || []).forEach(addRow);
+    }
+
+    async function boot() {
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        $("example").appendChild(opt);
+      });
+      addRow({ sku: "SPARE-KIT", length_cm: 32, width_cm: 22, height_cm: 12, weight_kg: 0.8, quantity: 4 });
+    }
+
+    $("addRow").onclick = () => addRow();
+    $("example").addEventListener("change", async () => {
+      if (!$("example").value) return;
+      applyExample(await (await fetch("/api/examples/" + $("example").value)).json());
+    });
+    $("quote").onclick = async () => {
+      $("error").textContent = "";
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        $("error").textContent = data.error || "Quote failed";
+        return;
+      }
+      render(data);
+    };
+
+    function setStat(id, value, cls) {
+      const el = $(id);
+      el.className = "stat " + (cls || "");
+      el.querySelector("b").textContent = value;
+    }
+
+    function render(data) {
+      const winner = data.quotes.find(q => q.mode === data.winner);
+      setStat("statWinner", data.winner ? data.winner.toUpperCase() : "NONE", data.winner ? "good" : "bad");
+      setStat("statTotal", money(data.winner_usd), data.winner ? "sea" : "bad");
+      setStat("statSave", money(data.savings_usd), data.savings_usd ? "good" : "");
+      setStat("statClass", String(data.stats.freight_class), "");
+      const max = Math.max(1, ...data.quotes.map(q => q.total_usd || 0));
+      $("cards").innerHTML = "";
+      $("bars").innerHTML = "";
+      data.quotes.forEach(q => {
+        const card = document.createElement("article");
+        card.className = "card " + q.mode + (q.mode === data.winner ? " winner" : "") + (q.feasible ? "" : " closed");
+        const h = document.createElement("h3");
+        h.textContent = q.name;
+        const price = document.createElement("div");
+        price.className = "price";
+        price.textContent = q.feasible ? money(q.total_usd) : "No-go";
+        const why = document.createElement("div");
+        why.className = "why";
+        why.textContent = q.feasible ? detail(q) : (q.reason || "");
+        const ul = document.createElement("ul");
+        ul.className = "lines";
+        (q.lines || []).forEach(line => {
+          const li = document.createElement("li");
+          const a = document.createElement("span");
+          a.textContent = line.label;
+          const b = document.createElement("span");
+          b.textContent = money(line.amount_usd);
+          li.append(a, b);
+          ul.appendChild(li);
+        });
+        card.append(h, price, why, ul);
+        if (q.mode === data.winner) {
+          const tag = document.createElement("div");
+          tag.className = "win-tag";
+          tag.textContent = "Cheapest";
+          card.appendChild(tag);
+        }
+        $("cards").appendChild(card);
+
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        const label = document.createElement("div");
+        label.textContent = q.name;
+        const track = document.createElement("div");
+        track.className = "bar-track";
+        const fill = document.createElement("div");
+        fill.className = "bar-fill " + q.mode + (q.feasible ? "" : " closed");
+        fill.style.width = q.feasible ? Math.max(6, (q.total_usd / max) * 100) + "%" : "100%";
+        track.appendChild(fill);
+        const amt = document.createElement("div");
+        amt.textContent = q.feasible ? money(q.total_usd) : "n/a";
+        row.append(label, track, amt);
+        $("bars").appendChild(row);
+      });
+      const s = data.stats;
+      const parts = [
+        s.piece_count + " piece(s)",
+        s.weight_kg + " kg",
+        s.cube_m3 + " m³",
+        s.pcf + " lb/ft³",
+        data.distance_km + " km",
+      ];
+      if (winner?.detail?.billable_kg) parts.push("parcel billable " + winner.detail.billable_kg + " kg");
+      if (winner?.detail?.truck_name) parts.push(winner.detail.truck_name);
+      $("note").textContent = parts.join(" · ");
+    }
+
+    function detail(q) {
+      const d = q.detail || {};
+      if (q.mode === "parcel") return `Zone ${d.zone} · billable ${d.billable_kg} kg (DIM ${d.dim_divisor})`;
+      if (q.mode === "ltl") return `Class ${d.freight_class} · ${d.band} band · ${d.cwt} cwt`;
+      if (q.mode === "ftl") return `${d.truck_name} · cube ${(d.cube_utilization * 100).toFixed(1)}% · weight ${(d.weight_utilization * 100).toFixed(1)}%`;
+      return "";
+    }
+
+    boot();
+  </script>
+</body>
+</html>

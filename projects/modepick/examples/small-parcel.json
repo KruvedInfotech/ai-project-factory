@@ -1,0 +1,15 @@
+{
+  "origin": "Ahmedabad DC",
+  "destination": "Gandhinagar shop",
+  "distance_km": 32,
+  "pieces": [
+    {
+      "sku": "SPARE-KIT",
+      "length_cm": 32,
+      "width_cm": 22,
+      "height_cm": 12,
+      "weight_kg": 0.8,
+      "quantity": 4
+    }
+  ]
+}
