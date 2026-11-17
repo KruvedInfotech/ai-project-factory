@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShipCut — carrier cutoff clock</title>
+  <style>
+    :root {
+      --ink: #1a1f2b;
+      --paper: #efe6d4;
+      --board: #dccbb0;
+      --brass: #c9a227;
+      --navy: #1e3a5f;
+      --punch: #c0392b;
+      --ok: #2f6b4f;
+      --line: rgba(26, 31, 43, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(30, 58, 95, 0.10), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(26,31,43,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--punch);
+      color: var(--punch);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"], input[type="datetime-local"], input[type="date"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 28%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--brass);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat b { display: block; font-size: 20px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--punch); }
+    .stat.good b { color: var(--ok); }
+    .stat.navy b { color: var(--navy); }
+    canvas {
+      width: 100%;
+      height: 160px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 20% 30%, rgba(201,162,39,0.12), transparent 45%),
+        #1a1f2b;
+    }
+    .cards { display: grid; gap: 10px; margin-top: 14px; }
+    .card {
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr 0.9fr 1.6fr;
+      gap: 8px;
+      align-items: start;
+      position: relative;
+    }
+    .card.winner { outline: 3px solid var(--ok); }
+    .card h3 {
+      margin: 0 0 4px;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .card .meta { font-size: 12px; font-family: ui-monospace, monospace; }
+    .chip {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      padding: 2px 6px;
+    }
+    .chip.makes_sla { color: var(--ok); border-color: var(--ok); }
+    .chip.missed_cutoff, .chip.late, .chip.oversize, .chip.zone_blocked, .chip.no_pickup {
+      color: var(--punch); border-color: var(--punch);
+    }
+    .why { font-size: 13px; }
+    .win-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: 2px solid var(--ok);
+      color: var(--ok);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 6px;
+      transform: rotate(6deg);
+      font-family: ui-monospace, monospace;
+    }
+    .note { margin: 12px 0 0; font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--punch); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 1100px) {
+      .card { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .card { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ShipCut</h1>
+      <p>Which carrier still picks up, and still makes the customer promise. Local warehouse cutoffs, transit days, weekend roll.</p>
+    </div>
+    <div class="stamp">Dock clock · not a live carrier</div>
+  </header>
+  <main>
+    <section>
+      <h2>Order</h2>
+      <div class="row">
+        <div>
+          <label for="origin">Origin</label>
+          <input id="origin" type="text" value="Ahmedabad DC" />
+        </div>
+        <div>
+          <label for="destination">Destination</label>
+          <input id="destination" type="text" value="Satellite" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="ready">Ready to ship</label>
+          <input id="ready" type="datetime-local" />
+        </div>
+        <div>
+          <label for="promised">Promised on</label>
+          <input id="promised" type="date" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="zone">Zone</label>
+          <select id="zone"></select>
+        </div>
+        <div>
+          <label for="km">Road km (optional)</label>
+          <input id="km" type="number" min="0" step="1" placeholder="sets zone if filled" />
+        </div>
+      </div>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>L</th><th>W</th><th>H</th><th>kg</th><th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add piece</button>
+        <button type="button" class="ghost" id="useNow">Use now</button>
+        <button type="button" id="check">Check cutoffs</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Cutoff board</h2>
+      <div class="stats">
+        <div class="stat" id="statWinner"><span>Winner</span><b>—</b></div>
+        <div class="stat" id="statClock"><span>Minutes left</span><b>—</b></div>
+        <div class="stat" id="statMakes"><span>Make SLA</span><b>—</b></div>
+        <div class="stat" id="statZone"><span>Zone</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="200" aria-label="Today cutoff timeline"></canvas>
+      <div class="cards" id="cards"></div>
+      <p class="note" id="note"></p>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const zone = document.getElementById("zone");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+
+    function pad(n) { return String(n).padStart(2, "0"); }
+    function toLocalInput(iso) {
+      const d = iso ? new Date(iso) : new Date();
+      if (Number.isNaN(d.getTime()) && iso) {
+        return iso.slice(0, 16);
+      }
+      const local = iso && !iso.endsWith("Z") && iso.includes("T")
+        ? iso.slice(0, 16)
+        : `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return local;
+    }
+
+    function addRow(box = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = ["sku","length_cm","width_cm","height_cm","weight_kg","quantity"].map((key, i) => {
+        const val = box[key] ?? (i === 0 ? "" : i === 5 ? 1 : "");
+        return `<td><input data-k="${key}" value="${val}" /></td>`;
+      }).join("");
+      rows.appendChild(tr);
+    }
+
+    function readPieces() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          sku: get("sku").trim(),
+          length_cm: Number(get("length_cm")),
+          width_cm: Number(get("width_cm")),
+          height_cm: Number(get("height_cm")),
+          weight_kg: Number(get("weight_kg")),
+          quantity: Number(get("quantity") || 1),
+        };
+      }).filter(b => b.sku);
+    }
+
+    function payload() {
+      const body = {
+        origin: document.getElementById("origin").value,
+        destination: document.getElementById("destination").value,
+        ready_at: document.getElementById("ready").value,
+        promised_on: document.getElementById("promised").value,
+        pieces: readPieces(),
+      };
+      const km = document.getElementById("km").value;
+      if (km !== "") body.distance_km = Number(km);
+      else body.zone = zone.value;
+      return body;
+    }
+
+    async function boot() {
+      const cards = await (await fetch("/api/cards")).json();
+      (cards.zones || []).forEach(z => {
+        const opt = document.createElement("option");
+        opt.value = z.id;
+        const cap = z.max_km == null ? "∞" : "≤ " + z.max_km + " km";
+        opt.textContent = `${z.id} · ${z.name} (${cap})`;
+        zone.appendChild(opt);
+      });
+      zone.value = "Z1";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      document.getElementById("ready").value = "2026-11-17T10:30";
+      document.getElementById("promised").value = "2026-11-17";
+      addRow({ sku: "KIT-A", length_cm: 30, width_cm: 20, height_cm: 12, weight_kg: 1.4, quantity: 2 });
+    }
+
+    zone.addEventListener("change", () => { document.getElementById("km").value = ""; });
+    document.getElementById("addRow").onclick = () => addRow();
+    document.getElementById("useNow").onclick = () => {
+      document.getElementById("ready").value = toLocalInput();
+    };
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      document.getElementById("origin").value = data.origin || "";
+      document.getElementById("destination").value = data.destination || "";
+      document.getElementById("ready").value = toLocalInput(data.ready_at);
+      document.getElementById("promised").value = (data.promised_on || "").slice(0, 10);
+      document.getElementById("km").value = data.distance_km ?? "";
+      if (data.zone) zone.value = data.zone;
+      rows.innerHTML = "";
+      (data.pieces || []).forEach(addRow);
+    });
+
+    document.getElementById("check").onclick = async () => {
+      error.textContent = "";
+      const res = await fetch("/api/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Check failed";
+        return;
+      }
+      render(data);
+    };
+
+    function render(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statWinner", data.winner_name || "none", data.winner ? "good" : "bad");
+      set(
+        "statClock",
+        data.soonest_cutoff_minutes == null ? "—" : String(data.soonest_cutoff_minutes),
+        data.soonest_cutoff_minutes == null ? "bad" : data.soonest_cutoff_minutes < 60 ? "bad" : "navy"
+      );
+      set("statMakes", String(data.makes_sla_count), data.makes_sla_count ? "good" : "bad");
+      set("statZone", data.zone, "navy");
+      if (data.zone) zone.value = data.zone;
+      document.getElementById("note").textContent =
+        `${data.piece_count} piece(s) · ${data.weight_kg} kg · longest ${data.longest_cm} cm · promised ${data.promised_on}`;
+      draw(data);
+      const box = document.getElementById("cards");
+      box.innerHTML = "";
+      data.plans.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "card" + (item.carrier === data.winner ? " winner" : "");
+        const pickup = item.pickup_at ? item.pickup_at.replace("T", " ") : "—";
+        const delivers = item.delivery_on || "—";
+        const mins = item.minutes_remaining == null ? "" : `${item.minutes_remaining} min left`;
+        el.innerHTML = `
+          ${item.carrier === data.winner ? '<span class="win-tag">Take this</span>' : ""}
+          <div>
+            <h3>${item.name}</h3>
+            <div class="meta">${item.pickup_label} · cutoff ${item.cutoff}</div>
+          </div>
+          <div>
+            <span class="chip ${item.status}">${item.status.replace("_", " ")}</span>
+            <div class="meta" style="margin-top:6px">${mins}</div>
+          </div>
+          <div class="meta">Pickup<br><b>${pickup}</b></div>
+          <div>
+            <div class="meta">Delivers <b>${delivers}</b></div>
+            <div class="why">${item.reason || ""}</div>
+          </div>
+        `;
+        box.appendChild(el);
+      });
+    }
+
+    function minutesOf(iso) {
+      const t = (iso.split("T")[1] || "00:00").split(":");
+      return Number(t[0]) * 60 + Number(t[1]);
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const start = 6 * 60, end = 22 * 60, span = end - start;
+      const xOf = mins => 48 + ((mins - start) / span) * (w - 80);
+      ctx.fillStyle = "#efe6d4";
+      ctx.font = "12px ui-monospace, monospace";
+      for (let hour = 6; hour <= 22; hour += 2) {
+        const x = xOf(hour * 60);
+        ctx.strokeStyle = "rgba(239,230,212,0.18)";
+        ctx.beginPath(); ctx.moveTo(x, 28); ctx.lineTo(x, h - 28); ctx.stroke();
+        ctx.fillText(String(hour).padStart(2, "0") + ":00", x - 16, h - 10);
+      }
+      ctx.strokeStyle = "rgba(239,230,212,0.45)";
+      ctx.beginPath(); ctx.moveTo(48, h - 28); ctx.lineTo(w - 32, h - 28); ctx.stroke();
+      const readyMin = minutesOf(data.ready_at);
+      const rx = xOf(Math.min(end, Math.max(start, readyMin)));
+      ctx.strokeStyle = "#c9a227";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(rx, 20); ctx.lineTo(rx, h - 28); ctx.stroke();
+      ctx.fillStyle = "#c9a227";
+      ctx.fillText("ready", rx + 6, 22);
+      const day = data.ready_at.slice(0, 10);
+      (data.plans || []).forEach((item, i) => {
+        const hhmm = item.cutoff.split(":").map(Number);
+        const mins = hhmm[0] * 60 + hhmm[1];
+        const x = xOf(mins);
+        const open = item.minutes_remaining != null;
+        ctx.fillStyle = open ? "#3d9b6a" : "#c0392b";
+        ctx.beginPath(); ctx.arc(x, 44 + (i % 5) * 10, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#efe6d4";
+        ctx.font = "11px ui-monospace, monospace";
+        if (i < 5) ctx.fillText(item.cutoff, x - 14, 36);
+      });
+      ctx.fillStyle = "rgba(239,230,212,0.7)";
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.fillText("today " + day + "  ·  green = still open for a same-day pickup", 48, 18);
+    }
+
+    boot();
+  </script>
+</body>
+</html>

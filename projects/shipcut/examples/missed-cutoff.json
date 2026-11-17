@@ -1,0 +1,17 @@
+{
+  "origin": "Ahmedabad DC",
+  "destination": "Vadodara",
+  "ready_at": "2026-11-17T17:10:00",
+  "promised_on": "2026-11-18",
+  "distance_km": 110,
+  "pieces": [
+    {
+      "sku": "CARTON-B",
+      "length_cm": 50,
+      "width_cm": 40,
+      "height_cm": 30,
+      "weight_kg": 8,
+      "quantity": 3
+    }
+  ]
+}
