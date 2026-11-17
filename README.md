@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### ShipCut — carrier cutoff clock
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-17 |
+| **Intended repo** | `https://github.com/KruvedInfotech/shipcut` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/shipcut`](projects/shipcut/) |
+| **What it is** | Dock-side cutoff clock. Next pickup per carrier, who still makes the promise, minutes left on today’s window. |
+
+**How it works (short):** ready-to-ship is compared to each carrier’s local cutoff and pickup weekdays. Transit is calendar days for the destination zone, then Sunday (and some Saturday) rolls. Piece kg/side caps and unserved zones are no-gos. Earliest delivery that still makes the SLA wins.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/shipcut
+PYTHONPATH=src python3 -m shipcut cards
+PYTHONPATH=src python3 -m shipcut check examples/same-day.json
+PYTHONPATH=src python3 -m shipcut serve --host 127.0.0.1 --port 8793
+```
+
+Open `http://127.0.0.1:8793`, then **Check cutoffs**. Full detail is in the [ShipCut README](projects/shipcut/README.md).

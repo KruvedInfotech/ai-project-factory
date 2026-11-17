@@ -1,0 +1,17 @@
+{
+  "origin": "Ahmedabad DC",
+  "destination": "Satellite",
+  "ready_at": "2026-11-17T10:30:00",
+  "promised_on": "2026-11-17",
+  "zone": "Z1",
+  "pieces": [
+    {
+      "sku": "KIT-A",
+      "length_cm": 30,
+      "width_cm": 20,
+      "height_cm": 12,
+      "weight_kg": 1.4,
+      "quantity": 2
+    }
+  ]
+}

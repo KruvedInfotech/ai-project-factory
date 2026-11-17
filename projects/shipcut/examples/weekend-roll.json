@@ -1,0 +1,17 @@
+{
+  "origin": "Ahmedabad DC",
+  "destination": "Pune hub",
+  "ready_at": "2026-11-20T19:30:00",
+  "promised_on": "2026-11-23",
+  "distance_km": 620,
+  "pieces": [
+    {
+      "sku": "CASE-C",
+      "length_cm": 60,
+      "width_cm": 40,
+      "height_cm": 35,
+      "weight_kg": 12,
+      "quantity": 4
+    }
+  ]
+}
