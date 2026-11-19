@@ -1,0 +1,21 @@
+{
+  "receipt": "ASN-4420",
+  "supplier": "Northline Cartons",
+  "dock": "Bay 4",
+  "level": "II",
+  "severity": "normal",
+  "seed": "ASN-4420",
+  "classes": {
+    "critical": 0.65,
+    "major": 2.5,
+    "minor": 6.5
+  },
+  "lots": [
+    {
+      "sku": "CARTON-A",
+      "description": "12-pack bottles",
+      "lot_size": 500,
+      "found": { "critical": 0, "major": 4, "minor": 2 }
+    }
+  ]
+}
