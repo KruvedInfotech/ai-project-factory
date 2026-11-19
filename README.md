@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### AqlDraw — inbound AQL sampling desk
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-19 |
+| **Intended repo** | `https://github.com/KruvedInfotech/aqldraw` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/aqldraw`](projects/aqldraw/) |
+| **What it is** | Receiving QC desk. Sample-size letter, which cartons to open, accept/reject per defect class, switching hint. |
+
+**How it works (short):** lot size maps to a letter (level and tightness slide it). Sample n follows the letter, capped at the lot. Accept number is a Poisson 95% screen on n × AQL / 100; any class that fails fails the lot. Carton numbers are a seeded shuffle, then sorted. Two rejects in five lots recommends tightening next time.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/aqldraw
+PYTHONPATH=src python3 -m aqldraw cards
+PYTHONPATH=src python3 -m aqldraw draw examples/inbound-pass.json
+PYTHONPATH=src python3 -m aqldraw serve --host 127.0.0.1 --port 8794
+```
+
+Open `http://127.0.0.1:8794`, then **Draw sample**. Full detail is in the [AqlDraw README](projects/aqldraw/README.md).

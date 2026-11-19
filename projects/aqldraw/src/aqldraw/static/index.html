@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AqlDraw — inbound QC desk</title>
+  <style>
+    :root {
+      --ink: #1c2418;
+      --paper: #e7ead6;
+      --board: #d3d6b8;
+      --brass: #c4a35a;
+      --lamp: #2f6b4f;
+      --punch: #a33b2b;
+      --ok: #2f6b4f;
+      --line: rgba(28, 36, 24, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(47, 107, 79, 0.10), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(28,36,24,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--punch);
+      color: var(--punch);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(3deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 22%; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--brass);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat b { display: block; font-size: 20px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--punch); }
+    .stat.good b { color: var(--ok); }
+    .stat.navy b { color: var(--lamp); }
+    canvas {
+      width: 100%;
+      height: 280px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 20% 30%, rgba(196,163,90,0.14), transparent 45%),
+        #1c2418;
+    }
+    .cards { display: grid; gap: 10px; margin-top: 14px; }
+    .card {
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 12px 14px;
+      position: relative;
+    }
+    .card.reject { outline: 3px solid var(--punch); }
+    .card.accept { outline: 3px solid var(--ok); }
+    .card h3 {
+      margin: 0 0 4px;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .card .meta { font-size: 12px; font-family: ui-monospace, monospace; }
+    .chip {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      padding: 2px 6px;
+    }
+    .chip.accept { color: var(--ok); border-color: var(--ok); }
+    .chip.reject { color: var(--punch); border-color: var(--punch); }
+    .chip.pending { color: var(--ink); }
+    .classes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .cls {
+      border: 1px solid var(--line);
+      padding: 8px;
+      font-size: 12px;
+    }
+    .cls b { display: block; font-family: ui-monospace, monospace; font-size: 16px; }
+    .draw-list {
+      margin-top: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .note { margin: 12px 0 0; font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--punch); min-height: 1.2em; margin: 8px 0 0; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .classes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AqlDraw</h1>
+      <p>How many inbound cartons to open, which ones, and at what defect count the lot fails. Screening sample, not a live QMS.</p>
+    </div>
+    <div class="stamp">QC desk · not ISO 2859</div>
+  </header>
+  <main>
+    <section>
+      <h2>Receipt</h2>
+      <div class="row">
+        <div>
+          <label for="receipt">ASN / receipt</label>
+          <input id="receipt" type="text" value="ASN-4418" />
+        </div>
+        <div>
+          <label for="supplier">Supplier</label>
+          <input id="supplier" type="text" value="Northline Cartons" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="dock">Dock</label>
+          <input id="dock" type="text" value="Bay 4" />
+        </div>
+        <div>
+          <label for="seed">Draw seed</label>
+          <input id="seed" type="text" value="ASN-4418" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="level">Inspection level</label>
+          <select id="level"></select>
+        </div>
+        <div>
+          <label for="severity">Severity</label>
+          <select id="severity"></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div>
+          <label for="aqlCrit">Critical AQL %</label>
+          <input id="aqlCrit" type="number" min="0" max="100" step="0.01" value="0.65" />
+        </div>
+        <div>
+          <label for="aqlMaj">Major AQL %</label>
+          <input id="aqlMaj" type="number" min="0" max="100" step="0.01" value="2.5" />
+        </div>
+        <div>
+          <label for="aqlMin">Minor AQL %</label>
+          <input id="aqlMin" type="number" min="0" max="100" step="0.01" value="6.5" />
+        </div>
+      </div>
+      <label for="history">Prior lots (accept/reject, newest last)</label>
+      <input id="history" type="text" value="accept, accept, accept, accept, accept" />
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>N</th><th>crit</th><th>maj</th><th>min</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addRow">Add lot</button>
+        <button type="button" id="draw">Draw sample</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Sample board</h2>
+      <div class="stats">
+        <div class="stat" id="statVerdict"><span>Receipt</span><b>—</b></div>
+        <div class="stat" id="statSample"><span>Open</span><b>—</b></div>
+        <div class="stat" id="statLetter"><span>Letter</span><b>—</b></div>
+        <div class="stat" id="statSwitch"><span>Next</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="360" aria-label="Carton sample map"></canvas>
+      <div class="cards" id="cards"></div>
+      <p class="note" id="note"></p>
+    </section>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+    let lastResult = null;
+
+    function addRow(lot = {}) {
+      const tr = document.createElement("tr");
+      const found = lot.found || {};
+      const cells = [
+        ["sku", lot.sku ?? ""],
+        ["lot_size", lot.lot_size ?? ""],
+        ["critical", found.critical ?? ""],
+        ["major", found.major ?? ""],
+        ["minor", found.minor ?? ""],
+      ];
+      tr.innerHTML = cells.map(([key, val]) => `<td><input data-k="${key}" value="${val}" /></td>`).join("");
+      rows.appendChild(tr);
+    }
+
+    function readLots() {
+      return [...rows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        const sku = get("sku").trim();
+        const lot = { sku, lot_size: Number(get("lot_size")) };
+        const crit = get("critical"), maj = get("major"), mino = get("minor");
+        if (crit !== "" || maj !== "" || mino !== "") {
+          lot.found = {
+            critical: Number(crit || 0),
+            major: Number(maj || 0),
+            minor: Number(mino || 0),
+          };
+        }
+        return lot;
+      }).filter(l => l.sku);
+    }
+
+    function readHistory() {
+      return document.getElementById("history").value
+        .split(/[,\s]+/)
+        .map(s => s.trim().toLowerCase())
+        .filter(s => s === "accept" || s === "reject");
+    }
+
+    function payload() {
+      return {
+        receipt: document.getElementById("receipt").value,
+        supplier: document.getElementById("supplier").value,
+        dock: document.getElementById("dock").value,
+        seed: document.getElementById("seed").value,
+        level: document.getElementById("level").value,
+        severity: document.getElementById("severity").value,
+        classes: {
+          critical: Number(document.getElementById("aqlCrit").value),
+          major: Number(document.getElementById("aqlMaj").value),
+          minor: Number(document.getElementById("aqlMin").value),
+        },
+        history: readHistory(),
+        lots: readLots(),
+      };
+    }
+
+    function fillForm(data) {
+      document.getElementById("receipt").value = data.receipt || "";
+      document.getElementById("supplier").value = data.supplier || "";
+      document.getElementById("dock").value = data.dock || "";
+      document.getElementById("seed").value = data.seed || data.receipt || "";
+      if (data.level) document.getElementById("level").value = data.level;
+      if (data.severity) document.getElementById("severity").value = data.severity;
+      const cls = data.classes || {};
+      if (cls.critical != null) document.getElementById("aqlCrit").value = cls.critical;
+      if (cls.major != null) document.getElementById("aqlMaj").value = cls.major;
+      if (cls.minor != null) document.getElementById("aqlMin").value = cls.minor;
+      document.getElementById("history").value = (data.history || []).join(", ");
+      rows.innerHTML = "";
+      (data.lots || []).forEach(addRow);
+    }
+
+    async function boot() {
+      const cards = await (await fetch("/api/cards")).json();
+      (cards.levels || []).forEach(z => {
+        const opt = document.createElement("option");
+        opt.value = z.id;
+        opt.textContent = `${z.id} · ${z.name}`;
+        document.getElementById("level").appendChild(opt);
+      });
+      document.getElementById("level").value = "II";
+      (cards.severities || []).forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        document.getElementById("severity").appendChild(opt);
+      });
+      document.getElementById("severity").value = "normal";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addRow({ sku: "CARTON-A", lot_size: 500, found: { critical: 0, major: 1, minor: 3 } });
+      addRow({ sku: "TAPE-9", lot_size: 90, found: { critical: 0, major: 0, minor: 1 } });
+    }
+
+    document.getElementById("addRow").onclick = () => addRow();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillForm(data);
+    });
+
+    document.getElementById("draw").onclick = async () => {
+      error.textContent = "";
+      const res = await fetch("/api/draw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Draw failed";
+        return;
+      }
+      lastResult = data;
+      render(data);
+    };
+
+    function receiptVerdict(data) {
+      if (data.reject_count) return "reject";
+      if (data.pending_count) return "pending";
+      return "accept";
+    }
+
+    function render(data) {
+      const verdict = receiptVerdict(data);
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statVerdict", verdict, verdict === "accept" ? "good" : verdict === "reject" ? "bad" : "");
+      set("statSample", String(data.sample_total), "navy");
+      set("statLetter", (data.lots[0] && data.lots[0].letter) || "—", "navy");
+      set("statSwitch", data.switching.replaceAll("_", " "), data.switching === "tighten" ? "bad" : "navy");
+      document.getElementById("note").textContent =
+        `${data.receipt} · ${data.supplier} · ${data.dock} · level ${data.level} · ${data.severity}`;
+      drawMap(data);
+      const box = document.getElementById("cards");
+      box.innerHTML = "";
+      data.lots.forEach(lot => {
+        const el = document.createElement("div");
+        el.className = "card " + lot.verdict;
+        const cls = (lot.classes || []).map(c => {
+          const found = c.found == null ? "—" : c.found;
+          return `<div class="cls">
+            <span class="chip ${c.verdict}">${c.name}</span>
+            <b>Ac ${c.ac} / Re ${c.re}</b>
+            found ${found} · AQL ${c.aql}%
+          </div>`;
+        }).join("");
+        const shown = lot.draw.slice(0, 40).join(", ") + (lot.draw.length > 40 ? " …" : "");
+        el.innerHTML = `
+          <h3>${lot.sku}</h3>
+          <div class="meta">${lot.description || ""} · N ${lot.lot_size} · letter ${lot.letter} · n ${lot.sample_size}${lot.hundred_percent ? " · 100%" : ""}</div>
+          <span class="chip ${lot.verdict}" style="margin-top:8px">${lot.verdict}</span>
+          <div class="classes">${cls}</div>
+          <div class="draw-list">Open cartons: ${shown}</div>
+        `;
+        box.appendChild(el);
+      });
+    }
+
+    function drawMap(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const lot = data.lots[0];
+      if (!lot) return;
+      const n = lot.lot_size;
+      const sampled = new Set(lot.draw);
+      const maxCells = 400;
+      const show = Math.min(n, maxCells);
+      const cols = Math.ceil(Math.sqrt(show * 1.6));
+      const rowsN = Math.ceil(show / cols);
+      const pad = 24, gap = 3;
+      const cellW = (w - pad * 2) / cols - gap;
+      const cellH = (h - 56) / rowsN - gap;
+      ctx.fillStyle = "#e7ead6";
+      ctx.font = "13px ui-monospace, monospace";
+      ctx.fillText(
+        `${lot.sku}  ·  ${lot.sample_size} of ${lot.lot_size}  ·  brass = open this carton` +
+        (n > maxCells ? `  ·  first ${maxCells} shown` : ""),
+        pad, 22
+      );
+      for (let i = 0; i < show; i++) {
+        const carton = i + 1;
+        const c = i % cols, r = Math.floor(i / cols);
+        const x = pad + c * (cellW + gap);
+        const y = 36 + r * (cellH + gap);
+        ctx.fillStyle = sampled.has(carton) ? "#c4a35a" : "rgba(231,234,214,0.18)";
+        ctx.fillRect(x, y, cellW, cellH);
+        if (sampled.has(carton) && cellW > 16) {
+          ctx.fillStyle = "#1c2418";
+          ctx.font = Math.max(8, Math.min(11, cellW - 2)) + "px ui-monospace, monospace";
+          ctx.fillText(String(carton), x + 2, y + Math.min(cellH - 2, 12));
+        }
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "receipt": "ASN-4488",
+  "supplier": "Northline Cartons",
+  "dock": "Bay 2",
+  "level": "II",
+  "severity": "normal",
+  "seed": "ASN-4488",
+  "classes": {
+    "critical": 0.65,
+    "major": 2.5,
+    "minor": 6.5
+  },
+  "history": ["accept", "accept", "reject", "accept"],
+  "lots": [
+    {
+      "sku": "CARTON-B",
+      "description": "24-pack cans",
+      "lot_size": 500,
+      "found": { "critical": 0, "major": 4, "minor": 1 }
+    }
+  ]
+}

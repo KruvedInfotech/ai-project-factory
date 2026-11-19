@@ -1,0 +1,21 @@
+{
+  "receipt": "ASN-12",
+  "supplier": "Local Fill Co",
+  "dock": "Bay 1",
+  "level": "II",
+  "severity": "normal",
+  "seed": "ASN-12",
+  "classes": {
+    "critical": 0.65,
+    "major": 2.5,
+    "minor": 6.5
+  },
+  "lots": [
+    {
+      "sku": "KIT-MINI",
+      "description": "promo kit",
+      "lot_size": 12,
+      "found": { "critical": 1, "major": 0, "minor": 0 }
+    }
+  ]
+}
