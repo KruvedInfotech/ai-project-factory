@@ -1,0 +1,74 @@
+{
+  "wave": "WAVE-22",
+  "dc": "DC-North",
+  "policy": "fair_share",
+  "holdback_pct": 0,
+  "break_case": false,
+  "skus": [
+    {
+      "sku": "TEE-NAVY",
+      "description": "Navy crew tee",
+      "case_pack": 12,
+      "inner_pack": 6,
+      "dc_on_hand": 120
+    }
+  ],
+  "stores": [
+    {
+      "store_id": "ST-01",
+      "name": "Downtown",
+      "grade": "A",
+      "books": [
+        {
+          "sku": "TEE-NAVY",
+          "on_hand": 0,
+          "forecast": 96,
+          "min_face": 24,
+          "max_cap": 180
+        }
+      ]
+    },
+    {
+      "store_id": "ST-04",
+      "name": "Mall",
+      "grade": "B",
+      "books": [
+        {
+          "sku": "TEE-NAVY",
+          "on_hand": 0,
+          "forecast": 60,
+          "min_face": 12,
+          "max_cap": 120
+        }
+      ]
+    },
+    {
+      "store_id": "ST-09",
+      "name": "Suburb",
+      "grade": "C",
+      "books": [
+        {
+          "sku": "TEE-NAVY",
+          "on_hand": 0,
+          "forecast": 48,
+          "min_face": 12,
+          "max_cap": 96
+        }
+      ]
+    },
+    {
+      "store_id": "ST-12",
+      "name": "Airport",
+      "grade": "A",
+      "books": [
+        {
+          "sku": "TEE-NAVY",
+          "on_hand": 12,
+          "forecast": 72,
+          "min_face": 24,
+          "max_cap": 144
+        }
+      ]
+    }
+  ]
+}
