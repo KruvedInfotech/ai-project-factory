@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### AllocPush — DC-to-store push allocator
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-21 |
+| **Intended repo** | `https://github.com/KruvedInfotech/allocpush` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/allocpush`](projects/allocpush/) |
+| **What it is** | Replenishment desk. Pushes DC cases to stores by need, grade, and case pack; fair-share when the building is short. |
+
+**How it works (short):** need is `min(max_cap, max(min_face, forecast)) − on_hand`, rounded up to whole cases and clipped at capacity. Holdback stays at the DC. Long stock fills every store; short stock uses fair-share (Hamilton, A=3/B=2/C=1), need-fill, or grade-first.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/allocpush
+PYTHONPATH=src python3 -m allocpush policies
+PYTHONPATH=src python3 -m allocpush push examples/balanced-push.json
+PYTHONPATH=src python3 -m allocpush serve --host 127.0.0.1 --port 8795
+```
+
+Open `http://127.0.0.1:8795`, then **Push wave**. Full detail is in the [AllocPush README](projects/allocpush/README.md).

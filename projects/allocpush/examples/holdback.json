@@ -1,0 +1,60 @@
+{
+  "wave": "WAVE-31",
+  "dc": "DC-North",
+  "policy": "fair_share",
+  "holdback_pct": 20,
+  "break_case": false,
+  "skus": [
+    {
+      "sku": "SOCK-WHT",
+      "description": "White ankle sock 3-pack",
+      "case_pack": 24,
+      "inner_pack": 6,
+      "dc_on_hand": 240
+    }
+  ],
+  "stores": [
+    {
+      "store_id": "ST-01",
+      "name": "Downtown",
+      "grade": "A",
+      "books": [
+        {
+          "sku": "SOCK-WHT",
+          "on_hand": 0,
+          "forecast": 96,
+          "min_face": 24,
+          "max_cap": 200
+        }
+      ]
+    },
+    {
+      "store_id": "ST-04",
+      "name": "Mall",
+      "grade": "B",
+      "books": [
+        {
+          "sku": "SOCK-WHT",
+          "on_hand": 24,
+          "forecast": 72,
+          "min_face": 24,
+          "max_cap": 120
+        }
+      ]
+    },
+    {
+      "store_id": "ST-09",
+      "name": "Suburb",
+      "grade": "C",
+      "books": [
+        {
+          "sku": "SOCK-WHT",
+          "on_hand": 0,
+          "forecast": 48,
+          "min_face": 24,
+          "max_cap": 96
+        }
+      ]
+    }
+  ]
+}

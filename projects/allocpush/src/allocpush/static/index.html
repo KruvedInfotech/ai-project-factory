@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AllocPush — DC-to-store desk</title>
+  <style>
+    :root {
+      --ink: #1a2433;
+      --paper: #e4e8ef;
+      --board: #c5cedb;
+      --ticket: #d4a017;
+      --navy: #1e4d7b;
+      --short: #a33b2b;
+      --ok: #2f6b4f;
+      --line: rgba(26, 36, 51, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(30, 77, 123, 0.12), transparent 180px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(26,36,51,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--navy);
+      color: var(--navy);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 460px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.72);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 4px 2px; text-align: left; }
+    td input { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--ticket);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #fffaf0;
+    }
+    .stat span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .stat b { display: block; font-size: 20px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--short); }
+    .stat.good b { color: var(--ok); }
+    .stat.navy b { color: var(--navy); }
+    canvas {
+      width: 100%;
+      height: 280px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 80% 20%, rgba(212,160,23,0.16), transparent 45%),
+        #1a2433;
+    }
+    .cards { display: grid; gap: 10px; margin-top: 14px; }
+    .card {
+      border: 1px solid var(--ink);
+      background: #fffaf0;
+      padding: 12px 14px;
+    }
+    .card.short { outline: 3px solid var(--short); }
+    .card.filled { outline: 3px solid var(--ok); }
+    .card h3 {
+      margin: 0 0 4px;
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .card .meta { font-size: 12px; font-family: ui-monospace, monospace; }
+    .chip {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      padding: 2px 6px;
+    }
+    .chip.filled { color: var(--ok); border-color: var(--ok); }
+    .chip.short { color: var(--short); border-color: var(--short); }
+    .chip.grade-a { color: var(--navy); border-color: var(--navy); }
+    .stores {
+      display: grid;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .srow {
+      display: grid;
+      grid-template-columns: 72px 28px 1fr 90px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+    }
+    .bar {
+      height: 14px;
+      background: rgba(26,36,51,0.12);
+      position: relative;
+    }
+    .bar i, .bar em {
+      display: block;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .bar i { background: var(--ticket); }
+    .bar em { background: repeating-linear-gradient(90deg, var(--short) 0 6px, #7a2a1f 6px 8px); }
+    .note { margin: 12px 0 0; font-family: ui-monospace, monospace; font-size: 13px; }
+    .error { color: var(--short); min-height: 1.2em; margin: 8px 0 0; }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 4px;
+      font-size: 13px;
+    }
+    .check input { width: auto; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .srow { grid-template-columns: 64px 24px 1fr; }
+      .srow span:last-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AllocPush</h1>
+      <p>Who gets the next case from the DC. Fair-share, grade-first, or hungriest-store fill — not a live replenishment system.</p>
+    </div>
+    <div class="stamp">Push desk · not live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Wave</h2>
+      <div class="row">
+        <div>
+          <label for="wave">Wave</label>
+          <input id="wave" type="text" value="WAVE-18" />
+        </div>
+        <div>
+          <label for="dc">DC</label>
+          <input id="dc" type="text" value="DC-North" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="policy">Policy</label>
+          <select id="policy"></select>
+        </div>
+        <div>
+          <label for="holdback">Holdback %</label>
+          <input id="holdback" type="number" min="0" max="100" step="1" value="0" />
+        </div>
+      </div>
+      <label class="check"><input id="breakCase" type="checkbox" /> Break cases (ship inner packs)</label>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <h2 style="margin-top:16px">SKUs</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>case</th><th>inner</th><th>DC</th>
+          </tr>
+        </thead>
+        <tbody id="skuRows"></tbody>
+      </table>
+      <h2 style="margin-top:16px">Store books</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>store</th><th>grd</th><th>sku</th><th>onh</th><th>fcst</th><th>min</th><th>max</th>
+          </tr>
+        </thead>
+        <tbody id="bookRows"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addSku">Add SKU</button>
+        <button type="button" class="ghost" id="addBook">Add book</button>
+        <button type="button" id="push">Push wave</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Allocation board</h2>
+      <div class="stats">
+        <div class="stat" id="statFill"><span>Fill</span><b>—</b></div>
+        <div class="stat" id="statPush"><span>Push</span><b>—</b></div>
+        <div class="stat" id="statShort"><span>Short</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>DC left</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="360" aria-label="Store allocation bars"></canvas>
+      <div class="cards" id="cards"></div>
+      <p class="note" id="note"></p>
+    </section>
+  </main>
+  <script>
+    const skuRows = document.getElementById("skuRows");
+    const bookRows = document.getElementById("bookRows");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+    let names = {};
+
+    function addSku(item = {}) {
+      const tr = document.createElement("tr");
+      const cells = [
+        ["sku", item.sku ?? ""],
+        ["case_pack", item.case_pack ?? ""],
+        ["inner_pack", item.inner_pack ?? ""],
+        ["dc_on_hand", item.dc_on_hand ?? ""],
+      ];
+      tr.innerHTML = cells.map(([key, val]) => `<td><input data-k="${key}" value="${val}" /></td>`).join("");
+      if (item.description) tr.dataset.description = item.description;
+      skuRows.appendChild(tr);
+    }
+
+    function addBook(store = {}, book = {}) {
+      const tr = document.createElement("tr");
+      const cells = [
+        ["store_id", store.store_id ?? ""],
+        ["grade", store.grade ?? "B"],
+        ["sku", book.sku ?? ""],
+        ["on_hand", book.on_hand ?? ""],
+        ["forecast", book.forecast ?? ""],
+        ["min_face", book.min_face ?? ""],
+        ["max_cap", book.max_cap ?? ""],
+      ];
+      tr.innerHTML = cells.map(([key, val]) => `<td><input data-k="${key}" value="${val}" /></td>`).join("");
+      if (store.name) tr.dataset.name = store.name;
+      bookRows.appendChild(tr);
+    }
+
+    function readSkus() {
+      return [...skuRows.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        const sku = get("sku").trim();
+        if (!sku) return null;
+        const inner = get("inner_pack");
+        const item = {
+          sku,
+          case_pack: Number(get("case_pack")),
+          dc_on_hand: Number(get("dc_on_hand")),
+        };
+        if (inner !== "") item.inner_pack = Number(inner);
+        if (tr.dataset.description) item.description = tr.dataset.description;
+        return item;
+      }).filter(Boolean);
+    }
+
+    function readStores() {
+      const map = new Map();
+      [...bookRows.querySelectorAll("tr")].forEach(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        const storeId = get("store_id").trim();
+        const sku = get("sku").trim();
+        if (!storeId || !sku) return;
+        if (!map.has(storeId)) {
+          map.set(storeId, {
+            store_id: storeId,
+            name: names[storeId] || tr.dataset.name || storeId,
+            grade: (get("grade") || "B").toUpperCase(),
+            books: [],
+          });
+        }
+        map.get(storeId).books.push({
+          sku,
+          on_hand: Number(get("on_hand") || 0),
+          forecast: Number(get("forecast") || 0),
+          min_face: Number(get("min_face") || 0),
+          max_cap: Number(get("max_cap")),
+        });
+      });
+      return [...map.values()];
+    }
+
+    function payload() {
+      return {
+        wave: document.getElementById("wave").value,
+        dc: document.getElementById("dc").value,
+        policy: document.getElementById("policy").value,
+        holdback_pct: Number(document.getElementById("holdback").value || 0),
+        break_case: document.getElementById("breakCase").checked,
+        skus: readSkus(),
+        stores: readStores(),
+      };
+    }
+
+    function fillForm(data) {
+      document.getElementById("wave").value = data.wave || "";
+      document.getElementById("dc").value = data.dc || "";
+      if (data.policy) document.getElementById("policy").value = data.policy;
+      document.getElementById("holdback").value = data.holdback_pct ?? 0;
+      document.getElementById("breakCase").checked = !!data.break_case;
+      skuRows.innerHTML = "";
+      bookRows.innerHTML = "";
+      names = {};
+      (data.skus || []).forEach(addSku);
+      (data.stores || []).forEach(store => {
+        names[store.store_id] = store.name || store.store_id;
+        (store.books || []).forEach(book => addBook(store, book));
+      });
+    }
+
+    async function boot() {
+      const cards = await (await fetch("/api/policies")).json();
+      (cards.policies || []).forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.id.replaceAll("_", " ");
+        document.getElementById("policy").appendChild(opt);
+      });
+      document.getElementById("policy").value = cards.default_policy || "fair_share";
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      addSku({ sku: "TEE-NAVY", case_pack: 12, inner_pack: 6, dc_on_hand: 480 });
+      addBook(
+        { store_id: "ST-01", name: "Downtown", grade: "A" },
+        { sku: "TEE-NAVY", on_hand: 24, forecast: 96, min_face: 24, max_cap: 180 }
+      );
+      addBook(
+        { store_id: "ST-04", name: "Mall", grade: "B" },
+        { sku: "TEE-NAVY", on_hand: 12, forecast: 60, min_face: 12, max_cap: 120 }
+      );
+      addBook(
+        { store_id: "ST-09", name: "Suburb", grade: "C" },
+        { sku: "TEE-NAVY", on_hand: 36, forecast: 48, min_face: 12, max_cap: 96 }
+      );
+      names = { "ST-01": "Downtown", "ST-04": "Mall", "ST-09": "Suburb" };
+    }
+
+    document.getElementById("addSku").onclick = () => addSku();
+    document.getElementById("addBook").onclick = () => addBook();
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillForm(data);
+    });
+
+    document.getElementById("push").onclick = async () => {
+      error.textContent = "";
+      const res = await fetch("/api/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Push failed";
+        return;
+      }
+      render(data);
+    };
+
+    function render(data) {
+      const fill = data.push_units + data.short_units === 0
+        ? 1
+        : data.push_units / Math.max(1, data.push_units + data.short_units);
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statFill", Math.round(fill * 100) + "%", data.all_filled ? "good" : "bad");
+      set("statPush", String(data.push_units), "navy");
+      set("statShort", String(data.short_units), data.short_units ? "bad" : "good");
+      set("statLeft", String(data.dc_remaining), "navy");
+      document.getElementById("note").textContent =
+        `${data.wave} · ${data.dc} · ${data.policy.replaceAll("_", " ")} · holdback ${data.holdback_pct}%`;
+      drawMap(data);
+      const box = document.getElementById("cards");
+      box.innerHTML = "";
+      data.skus.forEach(sku => {
+        const el = document.createElement("div");
+        el.className = "card " + (sku.short_units ? "short" : "filled");
+        const rows = (sku.lines || []).map(line => {
+          const max = Math.max(line.need_units, line.push_units, 1);
+          const pushPct = Math.min(100, (line.push_units / max) * 100);
+          const shortPct = Math.min(100, ((line.push_units + line.short_units) / max) * 100);
+          return `<div class="srow">
+            <span>${line.store_id}</span>
+            <span class="chip grade-a">${line.grade}</span>
+            <div class="bar">
+              <em style="width:${shortPct}%"></em>
+              <i style="width:${pushPct}%"></i>
+            </div>
+            <span>${line.push_units} / ${line.need_units}</span>
+          </div>`;
+        }).join("");
+        el.innerHTML = `
+          <h3>${sku.sku}</h3>
+          <div class="meta">${sku.description || ""} · pack ${sku.pack} · DC ${sku.dc_on_hand} → left ${sku.dc_remaining}</div>
+          <span class="chip ${sku.short_units ? "short" : "filled"}">${sku.short_units ? "short " + sku.short_units : "filled"}</span>
+          <div class="stores">${rows}</div>
+        `;
+        box.appendChild(el);
+      });
+    }
+
+    function drawMap(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const sku = data.skus[0];
+      if (!sku) return;
+      const lines = sku.lines || [];
+      ctx.fillStyle = "#e4e8ef";
+      ctx.font = "13px ui-monospace, monospace";
+      ctx.fillText(
+        `${sku.sku}  ·  amber = pushed  ·  rust = still short  ·  ${sku.push_packs} / ${sku.need_packs} cases`,
+        24, 22
+      );
+      const max = Math.max(1, ...lines.map(l => Math.max(l.need_units, l.push_units)));
+      const rowH = Math.min(48, (h - 48) / Math.max(lines.length, 1));
+      lines.forEach((line, i) => {
+        const y = 40 + i * rowH;
+        const barX = 120, barW = w - 280;
+        ctx.fillStyle = "#e4e8ef";
+        ctx.font = "13px ui-monospace, monospace";
+        ctx.fillText(line.store_id, 24, y + 18);
+        ctx.fillStyle = line.grade === "A" ? "#d4a017" : line.grade === "B" ? "#8aa0b8" : "#6b7380";
+        ctx.fillText(line.grade, 96, y + 18);
+        ctx.fillStyle = "rgba(228,232,239,0.16)";
+        ctx.fillRect(barX, y + 4, barW, 22);
+        const needW = barW * (line.need_units / max);
+        const pushW = barW * (line.push_units / max);
+        const shortW = barW * (line.short_units / max);
+        ctx.fillStyle = "#a33b2b";
+        ctx.fillRect(barX + pushW, y + 4, shortW, 22);
+        ctx.fillStyle = "#d4a017";
+        ctx.fillRect(barX, y + 4, pushW, 22);
+        if (needW > pushW + shortW) {
+          ctx.strokeStyle = "rgba(228,232,239,0.45)";
+          ctx.strokeRect(barX, y + 4, needW, 22);
+        }
+        ctx.fillStyle = "#e4e8ef";
+        ctx.fillText(`${line.push_units}  short ${line.short_units}`, barX + barW + 12, y + 20);
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

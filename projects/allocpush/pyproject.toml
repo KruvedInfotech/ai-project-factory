@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "allocpush"
+version = "0.1.0"
+description = "DC-to-store push allocator: fair-share cases, store grades, and a holdback for the next wave."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "warehouse", "allocation", "replenishment", "retail"]
+dependencies = []
+
+[project.scripts]
+allocpush = "allocpush.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+allocpush = ["static/*"]
