@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### HazPad — hazmat segregation desk
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-23 |
+| **Intended repo** | `https://github.com/KruvedInfotech/hazpad` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/hazpad`](projects/hazpad/) |
+| **What it is** | Dock screen for mixing dangerous goods on a pad or trailer. Compatible / away / partition / forbidden, then a bay map. |
+
+**How it works (short):** each lot has a UN class (or FOOD). Pairs look up C / A / S / X. Heaviest lot takes the first bay that honours spacing and partitions; X pairs leave the lighter lot for the next trailer. Limited-quantity 3 / 4.1 / 5.1 / 6.1 / 8 / 9 eases X→S and S→A.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/hazpad
+PYTHONPATH=src python3 -m hazpad classes
+PYTHONPATH=src python3 -m hazpad check examples/compatible-mix.json
+PYTHONPATH=src python3 -m hazpad serve --host 127.0.0.1 --port 8796
+```
+
+Open `http://127.0.0.1:8796`, then **Check pad**. Full detail is in the [HazPad README](projects/hazpad/README.md).

@@ -1,0 +1,28 @@
+{
+  "pad": {
+    "id": "PAD-LQ",
+    "bays": 6,
+    "compartments": 1,
+    "away_bays": 1,
+    "empty_as_partition": true
+  },
+  "allow_limited_qty_ease": true,
+  "lots": [
+    {
+      "lot": "PAINT-LQ",
+      "un": "1263",
+      "class": "3",
+      "description": "Paint, limited quantity",
+      "kg": 50,
+      "limited_qty": true
+    },
+    {
+      "lot": "OX-LQ",
+      "un": "2014",
+      "class": "5.1",
+      "description": "Hydrogen peroxide, limited quantity",
+      "kg": 40,
+      "limited_qty": true
+    }
+  ]
+}

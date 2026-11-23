@@ -1,0 +1,33 @@
+{
+  "pad": {
+    "id": "TRAILER-14",
+    "bays": 6,
+    "compartments": 1,
+    "away_bays": 1,
+    "empty_as_partition": true
+  },
+  "allow_limited_qty_ease": true,
+  "lots": [
+    {
+      "lot": "GAS-02",
+      "un": "1203",
+      "class": "3",
+      "description": "Gasoline",
+      "kg": 1000
+    },
+    {
+      "lot": "H2O2-A",
+      "un": "2014",
+      "class": "5.1",
+      "description": "Hydrogen peroxide 20–60%",
+      "kg": 500
+    },
+    {
+      "lot": "EH-SOLID",
+      "un": "3077",
+      "class": "9",
+      "description": "Environmentally hazardous solid",
+      "kg": 200
+    }
+  ]
+}
