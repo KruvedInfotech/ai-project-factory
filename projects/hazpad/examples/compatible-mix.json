@@ -1,0 +1,33 @@
+{
+  "pad": {
+    "id": "PAD-A",
+    "bays": 8,
+    "compartments": 1,
+    "away_bays": 1,
+    "empty_as_partition": true
+  },
+  "allow_limited_qty_ease": true,
+  "lots": [
+    {
+      "lot": "GAS-01",
+      "un": "1203",
+      "class": "3",
+      "description": "Gasoline",
+      "kg": 800
+    },
+    {
+      "lot": "LI-BATT",
+      "un": "3480",
+      "class": "9",
+      "description": "Lithium ion batteries",
+      "kg": 400
+    },
+    {
+      "lot": "N2-DEWAR",
+      "un": "1977",
+      "class": "2.2",
+      "description": "Nitrogen, refrigerated liquid",
+      "kg": 200
+    }
+  ]
+}

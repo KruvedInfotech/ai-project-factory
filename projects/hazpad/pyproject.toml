@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hazpad"
+version = "0.1.0"
+description = "Hazmat segregation desk for warehouse pads and trailers."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "hazmat", "dangerous-goods", "warehouse", "segregation"]
+dependencies = []
+
+[project.scripts]
+hazpad = "hazpad.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+hazpad = ["static/*"]

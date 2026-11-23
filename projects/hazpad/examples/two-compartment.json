@@ -1,0 +1,26 @@
+{
+  "pad": {
+    "id": "VAN-SPLIT",
+    "bays": 6,
+    "compartments": 2,
+    "away_bays": 1,
+    "empty_as_partition": false
+  },
+  "allow_limited_qty_ease": true,
+  "lots": [
+    {
+      "lot": "AERO-01",
+      "un": "1950",
+      "class": "2.1",
+      "description": "Aerosols, flammable",
+      "kg": 400
+    },
+    {
+      "lot": "TOXGAS-1",
+      "un": "",
+      "class": "2.3",
+      "description": "Toxic gas cylinders",
+      "kg": 350
+    }
+  ]
+}
