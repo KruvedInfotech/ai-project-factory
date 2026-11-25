@@ -1,0 +1,75 @@
+{
+  "benches": [
+    {
+      "id": "B1",
+      "name": "Label bench",
+      "skills": ["relabel", "ticket", "insert"],
+      "shift_min": 480
+    },
+    {
+      "id": "B2",
+      "name": "Kit bench",
+      "skills": ["kit", "shrink", "insert"],
+      "shift_min": 480
+    },
+    {
+      "id": "B3",
+      "name": "Pack bench",
+      "skills": ["wrap", "inspect", "rework", "shrink"],
+      "shift_min": 480
+    }
+  ],
+  "jobs": [
+    {
+      "id": "ORD-101",
+      "sku": "STORE-TEE",
+      "units": 40,
+      "due_min": 60,
+      "priority": 2,
+      "family": "STORE",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    },
+    {
+      "id": "ORD-102",
+      "sku": "PROMO-KIT",
+      "units": 12,
+      "due_min": 120,
+      "priority": 2,
+      "family": "KIT",
+      "steps": [
+        { "op": "kit", "seconds_per_unit": 25, "setup_seconds": 180 },
+        { "op": "shrink", "seconds_per_unit": 15, "setup_seconds": 150 }
+      ]
+    },
+    {
+      "id": "ORD-103",
+      "sku": "COUPON-IN",
+      "units": 80,
+      "due_min": 90,
+      "priority": 3,
+      "family": "INSERT",
+      "steps": [{ "op": "insert", "seconds_per_unit": 6, "setup_seconds": 60 }]
+    },
+    {
+      "id": "ORD-104",
+      "sku": "GIFT-BOX",
+      "units": 6,
+      "due_min": 180,
+      "priority": 2,
+      "family": "GIFT",
+      "steps": [
+        { "op": "wrap", "seconds_per_unit": 40, "setup_seconds": 120 },
+        { "op": "ticket", "seconds_per_unit": 5, "setup_seconds": 75 }
+      ]
+    },
+    {
+      "id": "ORD-105",
+      "sku": "INBOUND-QA",
+      "units": 20,
+      "due_min": 240,
+      "priority": 3,
+      "family": "QA",
+      "steps": [{ "op": "inspect", "seconds_per_unit": 12, "setup_seconds": 45 }]
+    }
+  ]
+}

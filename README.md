@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### VasLine — VAS workbench scheduler
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-25 |
+| **Intended repo** | `https://github.com/KruvedInfotech/vasline` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/vasline`](projects/vasline/) |
+| **What it is** | Pack-desk planner for relabel, kit, wrap, and inspect work. Rush/due list, setup on family change, leftover if a job cannot finish. |
+
+**How it works (short):** jobs sort rush-first then earliest due. Each step takes the skilled bench that can finish soonest. Steps of one job stay serial; benches run in parallel. A family change pays setup. A job that cannot land every step before shift end is leftover — nothing is left half-kitted.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/vasline
+PYTHONPATH=src python3 -m vasline ops
+PYTHONPATH=src python3 -m vasline plan examples/balanced-shift.json
+PYTHONPATH=src python3 -m vasline serve --host 127.0.0.1 --port 8797
+```
+
+Open `http://127.0.0.1:8797`, then **Plan shift**. Full detail is in the [VasLine README](projects/vasline/README.md).

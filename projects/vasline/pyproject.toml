@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vasline"
+version = "0.1.0"
+description = "Value-added services workbench scheduler for warehouse packing stations."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["logistics", "warehouse", "vas", "kitting", "scheduling"]
+dependencies = []
+
+[project.scripts]
+vasline = "vasline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+vasline = ["static/*"]
