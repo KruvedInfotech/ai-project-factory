@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VasLine — VAS workbench</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232f9a74'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #1c2420;
+      --paper: #e4eee6;
+      --board: #c8d7cc;
+      --tape: #2f9a74;
+      --tape-dark: #1f6e53;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(28, 36, 32, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(47, 154, 116, 0.08), transparent 160px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(28,36,32,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 52ch; }
+    .stamp {
+      border: 2px solid var(--tape-dark);
+      color: var(--tape-dark);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.78);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button, textarea { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f7fbf8;
+      padding: 8px;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      color: #f4fff9;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; color: inherit; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f7fbf8;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(47,154,116,0.14), transparent 42%),
+        #1a221e;
+    }
+    .notes { margin-top: 12px; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.45; }
+    .notes div { margin: 8px 0; }
+    .notes .bad { color: var(--rust); }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    .job-block { border: 1px dashed var(--line); padding: 8px; margin: 8px 0; background: #fffef8; overflow: hidden; }
+    .job-head { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .job-head label { margin: 0; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .job-head input { width: 100%; min-width: 0; }
+    .steps { margin-top: 6px; }
+    .hint { font-size: 12px; opacity: 0.72; margin: 0 0 8px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 0 0 10px; font-size: 12px; font-family: ui-monospace, monospace; }
+    .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>VasLine</h1>
+      <p>Schedule relabel, kit, wrap, and inspect work across packing benches. Jobs stay serial; benches run in parallel. A family change pays setup. A job that cannot finish is leftover, not half-kitted.</p>
+    </div>
+    <div class="stamp">Pack desk · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Shift board</h2>
+      <p class="hint">Load an example or edit benches and jobs. Times are minutes from shift start.</p>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <h2 style="margin-top:18px">Benches</h2>
+      <table>
+        <thead>
+          <tr><th>Id</th><th>Name</th><th>Skills</th><th>Shift min</th></tr>
+        </thead>
+        <tbody id="benches"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addBench">Add bench</button>
+      </div>
+      <h2 style="margin-top:18px">Jobs</h2>
+      <div id="jobs"></div>
+      <div class="actions">
+        <button type="button" class="ghost" id="addJob">Add job</button>
+        <button type="button" id="plan">Plan shift</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Bench chart</h2>
+      <div class="stats">
+        <div class="stat" id="statJobs"><span>Scheduled</span><b>—</b></div>
+        <div class="stat" id="statSpan"><span>Makespan</span><b>—</b></div>
+        <div class="stat" id="statUse"><span>Bench use</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Left / tardy</span><b>—</b></div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <canvas id="view" width="1100" height="520" aria-label="VAS bench Gantt"></canvas>
+      <div class="notes" id="notes"></div>
+    </section>
+  </main>
+  <script>
+    const opColors = {
+      relabel: "#2f9a74", kit: "#d9a441", insert: "#6f8f72", wrap: "#c45c8a",
+      inspect: "#7a90b4", shrink: "#b08968", ticket: "#d6c25b", rework: "#c45c4a"
+    };
+    const benchesEl = document.getElementById("benches");
+    const jobsEl = document.getElementById("jobs");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+    let opIds = ["relabel","kit","insert","wrap","inspect","shrink","ticket","rework"];
+
+    function addBench(row = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input data-k="id" value="${row.id || ""}" /></td>
+        <td><input data-k="name" value="${row.name || ""}" /></td>
+        <td><input data-k="skills" value="${(row.skills || []).join(", ")}" /></td>
+        <td><input data-k="shift_min" type="number" min="1" value="${row.shift_min ?? 480}" /></td>`;
+      benchesEl.appendChild(tr);
+    }
+
+    function addJob(job = {}) {
+      const wrap = document.createElement("div");
+      wrap.className = "job-block";
+      const steps = (job.steps && job.steps.length) ? job.steps : [{ op: "relabel" }];
+      wrap.innerHTML = `
+        <div class="job-head">
+          <label>Job <input data-k="id" placeholder="ORD-101" value="${job.id || ""}" /></label>
+          <label>SKU <input data-k="sku" placeholder="STORE-TEE" value="${job.sku || ""}" /></label>
+          <label>Units <input data-k="units" type="number" min="1" placeholder="1" value="${job.units ?? 1}" /></label>
+          <label>Due min <input data-k="due_min" type="number" min="0" placeholder="optional" value="${job.due_min ?? ""}" /></label>
+          <label>Priority <input data-k="priority" type="number" min="1" max="5" placeholder="3" value="${job.priority ?? 3}" /></label>
+          <label>Family <input data-k="family" placeholder="STORE" value="${job.family || ""}" /></label>
+        </div>
+        <div class="steps"></div>
+        <button type="button" class="ghost add-step">Add step</button>`;
+      const stepsEl = wrap.querySelector(".steps");
+      steps.forEach(step => addStep(stepsEl, step));
+      wrap.querySelector(".add-step").onclick = () => addStep(stepsEl, { op: opIds[0] });
+      jobsEl.appendChild(wrap);
+    }
+
+    function addStep(parent, step = {}) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.marginTop = "6px";
+      const opts = opIds.map(op => `<option value="${op}" ${op === (step.op || "relabel") ? "selected" : ""}>${op}</option>`).join("");
+      row.innerHTML = `
+        <select data-k="op">${opts}</select>
+        <input data-k="seconds_per_unit" type="number" min="0.1" step="0.1" placeholder="s/unit" value="${step.seconds_per_unit ?? ""}" />
+        <input data-k="setup_seconds" type="number" min="0" placeholder="setup s" value="${step.setup_seconds ?? ""}" />`;
+      parent.appendChild(row);
+    }
+
+    function readBenches() {
+      return [...benchesEl.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        return {
+          id: get("id").trim(),
+          name: get("name").trim(),
+          skills: get("skills").split(",").map(s => s.trim()).filter(Boolean),
+          shift_min: Number(get("shift_min") || 480),
+        };
+      }).filter(b => b.id);
+    }
+
+    function readJobs() {
+      return [...jobsEl.querySelectorAll(".job-block")].map(block => {
+        const get = k => block.querySelector(`.job-head [data-k="${k}"]`).value;
+        const due = get("due_min");
+        const steps = [...block.querySelectorAll(".steps .row")].map(row => {
+          const op = row.querySelector("[data-k=op]").value;
+          const rate = row.querySelector("[data-k=seconds_per_unit]").value;
+          const setup = row.querySelector("[data-k=setup_seconds]").value;
+          const step = { op };
+          if (rate !== "") step.seconds_per_unit = Number(rate);
+          if (setup !== "") step.setup_seconds = Number(setup);
+          return step;
+        });
+        const job = {
+          id: get("id").trim(),
+          sku: get("sku").trim(),
+          units: Number(get("units") || 1),
+          priority: Number(get("priority") || 3),
+          family: get("family").trim(),
+          steps,
+        };
+        if (due !== "") job.due_min = Number(due);
+        return job;
+      }).filter(j => j.id);
+    }
+
+    function fillWorkbook(data) {
+      benchesEl.innerHTML = "";
+      jobsEl.innerHTML = "";
+      (data.benches || []).forEach(addBench);
+      (data.jobs || []).forEach(addJob);
+    }
+
+    async function boot() {
+      const ops = await (await fetch("/api/ops")).json();
+      opIds = ops.ops.map(o => o.id);
+      document.getElementById("legend").innerHTML = ops.ops.map(o =>
+        `<span><i style="background:${opColors[o.id] || "#2f9a74"}"></i>${o.id}</span>`
+      ).join("");
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      example.value = "balanced-shift.json";
+      const first = await (await fetch("/api/examples/balanced-shift.json")).json();
+      fillWorkbook(first);
+      await runPlan();
+    }
+
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      const data = await (await fetch("/api/examples/" + example.value)).json();
+      fillWorkbook(data);
+      await runPlan();
+    });
+    document.getElementById("addBench").onclick = () => addBench({ id: "", name: "", skills: ["relabel"], shift_min: 480 });
+    document.getElementById("addJob").onclick = () => addJob({ id: "", sku: "", units: 1, priority: 3, family: "", steps: [{ op: "relabel" }] });
+    document.getElementById("plan").onclick = () => runPlan();
+
+    async function runPlan() {
+      error.textContent = "";
+      const body = { benches: readBenches(), jobs: readJobs() };
+      const res = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+    }
+
+    function clock(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h) return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      return `${m}:${String(s).padStart(2,"0")}`;
+    }
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statJobs", String(data.scheduled_count), "good");
+      set("statSpan", clock(data.makespan_sec));
+      set("statUse", Math.round(data.bench_utilization * 100) + "%");
+      const miss = data.leftover_count + data.tardy_count;
+      set("statLeft", `${data.leftover_count} / ${data.tardy_count}`, miss ? "bad" : "good");
+      const leftover = (data.leftover || []).map(u => `${u.job} — ${u.reason}`).join(" · ");
+      const tardy = (data.scheduled || []).filter(j => j.tardy).map(j => `${j.job} tardy +${clock(j.tardy_sec)}`).join(" · ");
+      document.getElementById("notes").innerHTML =
+        (leftover ? `<div class="bad">${leftover}</div>` : "") +
+        (tardy ? `<div class="bad">${tardy}</div>` : "") +
+        (!miss ? "Every job staged on time." : "");
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const lanes = data.benches || [];
+      const span = Math.max(Math.ceil((data.makespan_sec || 0) * 1.2), 60);
+      const left = 128, top = 36, right = 28, bottom = 40;
+      const width = canvas.width - left - right;
+      const height = canvas.height - top - bottom;
+      const rowH = height / Math.max(lanes.length, 1);
+      ctx.strokeStyle = "rgba(244,255,249,0.12)";
+      ctx.fillStyle = "rgba(244,255,249,0.55)";
+      ctx.font = "12px ui-monospace, monospace";
+      const ticks = 8;
+      for (let i = 0; i <= ticks; i++) {
+        const x = left + (width * i) / ticks;
+        const t = Math.round((span * i) / ticks);
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + height); ctx.stroke();
+        ctx.fillText(clock(t), x - 10, canvas.height - 16);
+      }
+      lanes.forEach((bench, i) => {
+        const y = top + i * rowH + 22;
+        const h = rowH - 34;
+        ctx.fillStyle = "rgba(244,255,249,0.78)";
+        ctx.fillText(bench.id + "  " + (bench.name || ""), 16, y + h * 0.55);
+        ctx.fillStyle = "rgba(244,255,249,0.06)";
+        ctx.fillRect(left, y, width, h);
+        const drawn = [];
+        (bench.tasks || []).forEach(task => {
+          const x = left + (task.start_sec / span) * width;
+          const w = Math.max(3, ((task.finish_sec - task.start_sec) / span) * width);
+          if (task.setup_sec) {
+            const sx = left + (task.setup_start_sec / span) * width;
+            const sw = Math.max(2, (task.setup_sec / span) * width);
+            ctx.fillStyle = "rgba(244,255,249,0.18)";
+            ctx.fillRect(sx, y, sw, h);
+          }
+          ctx.fillStyle = opColors[task.op] || "#2f9a74";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "#0e1612";
+          ctx.strokeRect(x, y, w, h);
+          drawn.push({ x, w, label: task.job + " " + task.op });
+        });
+        drawn.forEach(item => {
+          const inside = item.w > 84;
+          const tx = inside ? item.x + 6 : item.x;
+          const ty = inside ? y + h * 0.62 : y - 6;
+          ctx.font = "12px ui-monospace, monospace";
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "rgba(14,22,18,0.9)";
+          ctx.strokeText(item.label, tx, ty);
+          ctx.fillStyle = inside ? "#f4fff9" : "rgba(244,255,249,0.95)";
+          ctx.fillText(item.label, tx, ty);
+        });
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>

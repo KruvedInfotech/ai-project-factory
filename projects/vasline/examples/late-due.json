@@ -1,0 +1,30 @@
+{
+  "benches": [
+    {
+      "id": "B1",
+      "name": "Label bench",
+      "skills": ["relabel"],
+      "shift_min": 30
+    }
+  ],
+  "jobs": [
+    {
+      "id": "RUSH-A",
+      "sku": "STORE-TEE",
+      "units": 100,
+      "due_min": 10,
+      "priority": 2,
+      "family": "STORE",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    },
+    {
+      "id": "BULK-B",
+      "sku": "STORE-TEE",
+      "units": 200,
+      "due_min": 30,
+      "priority": 2,
+      "family": "STORE",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    }
+  ]
+}

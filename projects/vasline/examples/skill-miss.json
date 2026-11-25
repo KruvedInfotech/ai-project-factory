@@ -1,0 +1,36 @@
+{
+  "benches": [
+    {
+      "id": "B1",
+      "name": "Label bench",
+      "skills": ["relabel", "ticket"],
+      "shift_min": 480
+    },
+    {
+      "id": "B2",
+      "name": "Kit bench",
+      "skills": ["kit", "shrink"],
+      "shift_min": 480
+    }
+  ],
+  "jobs": [
+    {
+      "id": "ORD-201",
+      "sku": "STORE-TEE",
+      "units": 20,
+      "due_min": 60,
+      "priority": 2,
+      "family": "STORE",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    },
+    {
+      "id": "ORD-202",
+      "sku": "GIFT-BOX",
+      "units": 8,
+      "due_min": 90,
+      "priority": 2,
+      "family": "GIFT",
+      "steps": [{ "op": "wrap", "seconds_per_unit": 40, "setup_seconds": 120 }]
+    }
+  ]
+}

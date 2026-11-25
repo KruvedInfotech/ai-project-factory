@@ -1,0 +1,30 @@
+{
+  "benches": [
+    {
+      "id": "B1",
+      "name": "Label bench",
+      "skills": ["relabel"],
+      "shift_min": 480
+    }
+  ],
+  "jobs": [
+    {
+      "id": "STORE-40",
+      "sku": "STORE-TEE",
+      "units": 40,
+      "due_min": 30,
+      "priority": 2,
+      "family": "STORE",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    },
+    {
+      "id": "DTC-40",
+      "sku": "DTC-TEE",
+      "units": 40,
+      "due_min": 40,
+      "priority": 2,
+      "family": "DTC",
+      "steps": [{ "op": "relabel", "seconds_per_unit": 8, "setup_seconds": 90 }]
+    }
+  ]
+}
