@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "totehome"
+version = "0.1.0"
+description = "Empty-tote milk-run planner for pick, pack, and returns stations."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kruved Infotech" }]
+keywords = ["warehouse", "logistics", "totes", "milk-run"]
+dependencies = []
+
+[project.scripts]
+totehome = "totehome.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+totehome = ["static/*"]

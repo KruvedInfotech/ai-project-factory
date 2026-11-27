@@ -56,3 +56,25 @@ PYTHONPATH=src python3 -m loadfit serve --host 127.0.0.1 --port 8765
 ```
 
 Open `http://127.0.0.1:8765`, then **Pack load**. Full detail is in the [LoadFit README](projects/loadfit/README.md).
+
+### ToteHome — empty tote return planner
+
+| | |
+| --- | --- |
+| **Date** | 2026-11-27 |
+| **Intended repo** | `https://github.com/KruvedInfotech/totehome` (create this repo, then publish from the staged folder) |
+| **Staged source** | [`projects/totehome`](projects/totehome/) |
+| **What it is** | Milk-run planner for empty totes at pick, pack, and returns. Overflow first, one type per trip, nested stacks back to induction / wash / buffer. |
+
+**How it works (short):** stations at/over threshold are due; over cap is overflow. The earliest-free cart seeds on the most urgent pile, then nearest-neighbour fills with the same tote type (including below-threshold neighbours). A trip that cannot get home before shift end is leftover.
+
+**How to run (from the staged folder):**
+
+```bash
+cd projects/totehome
+PYTHONPATH=src python3 -m totehome totes
+PYTHONPATH=src python3 -m totehome plan examples/quiet-aisle.json
+PYTHONPATH=src python3 -m totehome serve --host 127.0.0.1 --port 8798
+```
+
+Open `http://127.0.0.1:8798`, then **Plan runs**. Full detail is in the [ToteHome README](projects/totehome/README.md).
