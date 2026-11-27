@@ -1,0 +1,47 @@
+{
+  "homes": [
+    {
+      "id": "IND-1",
+      "name": "Induction",
+      "kind": "induction",
+      "x_m": 0,
+      "y_m": 0,
+      "accepts": ["std"],
+      "drop_sec_per_stack": 10
+    }
+  ],
+  "carts": [
+    {
+      "id": "C1",
+      "name": "Slow cart",
+      "stack_cap": 4,
+      "speed_m_per_min": 30,
+      "load_sec_per_stack": 10,
+      "shift_min": 2
+    }
+  ],
+  "stations": [
+    {
+      "id": "NEAR",
+      "name": "Near pack",
+      "kind": "pack",
+      "x_m": 10,
+      "y_m": 0,
+      "threshold": 8,
+      "cap": 24,
+      "minutes_since_pickup": 10,
+      "piles": [{ "tote": "std", "count": 10 }]
+    },
+    {
+      "id": "FAR",
+      "name": "Far pick",
+      "kind": "pick",
+      "x_m": 100,
+      "y_m": 0,
+      "threshold": 8,
+      "cap": 24,
+      "minutes_since_pickup": 20,
+      "piles": [{ "tote": "std", "count": 20 }]
+    }
+  ]
+}

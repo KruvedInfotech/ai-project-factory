@@ -1,0 +1,48 @@
+{
+  "homes": [
+    {
+      "id": "IND-1",
+      "name": "Induction",
+      "kind": "induction",
+      "x_m": 0,
+      "y_m": 0,
+      "accepts": ["std"],
+      "drop_sec_per_stack": 10
+    },
+    {
+      "id": "WASH-1",
+      "name": "Tote wash",
+      "kind": "wash",
+      "x_m": 0,
+      "y_m": 40,
+      "accepts": ["cold"],
+      "drop_sec_per_stack": 12
+    }
+  ],
+  "carts": [
+    {
+      "id": "C1",
+      "name": "Cart 1",
+      "stack_cap": 4,
+      "speed_m_per_min": 60,
+      "load_sec_per_stack": 10,
+      "shift_min": 30
+    }
+  ],
+  "stations": [
+    {
+      "id": "PACK-A",
+      "name": "Pack A",
+      "kind": "pack",
+      "x_m": 20,
+      "y_m": 0,
+      "threshold": 8,
+      "cap": 40,
+      "minutes_since_pickup": 15,
+      "piles": [
+        { "tote": "std", "count": 16 },
+        { "tote": "cold", "count": 12 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ToteHome — empty tote returns</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%232a7d8c'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #1b2428;
+      --paper: #e4eef0;
+      --board: #c5d5d9;
+      --tape: #2a7d8c;
+      --tape-dark: #1c5863;
+      --rust: #b3401a;
+      --ok: #2f6b4f;
+      --line: rgba(27, 36, 40, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(42, 125, 140, 0.10), transparent 160px),
+        repeating-linear-gradient(90deg, transparent 0 47px, rgba(27,36,40,0.04) 47px 48px),
+        var(--paper);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      padding: 28px 32px 18px;
+      border-bottom: 3px solid var(--ink);
+    }
+    header h1 {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 28px;
+      margin: 0;
+    }
+    header p { margin: 6px 0 0; max-width: 54ch; }
+    .stamp {
+      border: 2px solid var(--tape-dark);
+      color: var(--tape-dark);
+      padding: 8px 12px;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      transform: rotate(-2deg);
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 460px) 1fr;
+      gap: 24px;
+      padding: 24px 32px 48px;
+    }
+    section {
+      background: rgba(255, 252, 245, 0.78);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    h2 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    label { display: block; font-size: 13px; margin: 10px 0 4px; }
+    select, input, button, textarea { font: inherit; color: inherit; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--ink);
+      background: #f4fbfc;
+      padding: 8px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    th, td { border-bottom: 1px solid var(--line); padding: 6px 3px; text-align: left; }
+    td input, td select { width: 100%; padding: 4px; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button {
+      border: 2px solid var(--ink);
+      background: var(--tape);
+      color: #f4fffe;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.ghost { background: transparent; color: inherit; }
+    button:hover { filter: brightness(1.05); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      padding: 10px;
+      background: #f4fbfc;
+    }
+    .stat b { display: block; font-size: 22px; font-family: ui-monospace, monospace; }
+    .stat.bad b { color: var(--rust); }
+    .stat.good b { color: var(--ok); }
+    canvas {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(42,125,140,0.14), transparent 42%),
+        #1d2a2e;
+    }
+    .trips { margin-top: 12px; font-family: ui-monospace, monospace; font-size: 12px; }
+    .trips div { margin: 4px 0; }
+    .error { color: var(--rust); min-height: 1.2em; margin: 8px 0 0; }
+    .hint { font-size: 12px; opacity: 0.72; margin: 0 0 8px; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      header { padding: 20px 16px; flex-direction: column; align-items: start; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>ToteHome</h1>
+      <p>Plan empty-tote milk runs. Overflow stations first, one tote type per trip, nested stacks back to induction, wash, or buffer.</p>
+    </div>
+    <div class="stamp">Dock copy · not a live WMS</div>
+  </header>
+  <main>
+    <section>
+      <h2>Floor</h2>
+      <label for="example">Load example</label>
+      <select id="example">
+        <option value="">Choose…</option>
+      </select>
+      <p class="hint">Piles are <code>std:12, cold:4</code>. Carts start at induction.</p>
+      <h2>Homes</h2>
+      <table>
+        <thead>
+          <tr><th>Id</th><th>Kind</th><th>X</th><th>Y</th><th>Accepts</th></tr>
+        </thead>
+        <tbody id="homes"></tbody>
+      </table>
+      <h2>Carts</h2>
+      <table>
+        <thead>
+          <tr><th>Id</th><th>Stacks</th><th>m/min</th><th>Load s</th><th>Shift</th></tr>
+        </thead>
+        <tbody id="carts"></tbody>
+      </table>
+      <h2>Stations</h2>
+      <table>
+        <thead>
+          <tr><th>Id</th><th>Kind</th><th>X</th><th>Y</th><th>Thr</th><th>Cap</th><th>Piles</th></tr>
+        </thead>
+        <tbody id="stations"></tbody>
+      </table>
+      <div class="actions">
+        <button type="button" class="ghost" id="addStation">Add station</button>
+        <button type="button" id="plan">Plan runs</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+    <section>
+      <h2>Milk runs</h2>
+      <div class="stats">
+        <div class="stat" id="statTrips"><span>Trips</span><b>—</b></div>
+        <div class="stat" id="statCollected"><span>Collected</span><b>—</b></div>
+        <div class="stat" id="statLeft"><span>Leftover</span><b>—</b></div>
+        <div class="stat" id="statSpan"><span>Makespan</span><b>—</b></div>
+      </div>
+      <canvas id="view" width="1100" height="620" aria-label="Warehouse floor map"></canvas>
+      <div class="trips" id="trips"></div>
+    </section>
+  </main>
+  <script>
+    const cartColors = ["#5ec8d8", "#e0a106", "#d97b46", "#7a90b4", "#2f9a74"];
+    const homesBody = document.getElementById("homes");
+    const cartsBody = document.getElementById("carts");
+    const stationsBody = document.getElementById("stations");
+    const example = document.getElementById("example");
+    const error = document.getElementById("error");
+
+    function addHome(h = {}) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = [
+        ["id", h.id || ""],
+        ["kind", h.kind || "induction"],
+        ["x_m", h.x_m ?? ""],
+        ["y_m", h.y_m ?? ""],
+        ["accepts", (h.accepts || []).join(", ")],
+      ].map(([k, v]) => `<td><input data-k="${k}" value="${v}" /></td>`).join("");
+      homesBody.appendChild(tr);
+    }
+
+    function addCart(c = {}) {
+      const tr = document.createElement("tr");
+      const vals = [
+        ["id", c.id || ""],
+        ["stack_cap", c.stack_cap ?? 4],
+        ["speed_m_per_min", c.speed_m_per_min ?? 60],
+        ["load_sec_per_stack", c.load_sec_per_stack ?? 10],
+        ["shift_min", c.shift_min ?? 30],
+      ];
+      tr.innerHTML = vals.map(([k, v]) => `<td><input data-k="${k}" value="${v}" /></td>`).join("");
+      cartsBody.appendChild(tr);
+    }
+
+    function pilesText(piles) {
+      return (piles || []).map(p => `${p.tote}:${p.count}`).join(", ");
+    }
+
+    function parsePiles(text) {
+      return text.split(/[,;]+/).map(bit => bit.trim()).filter(Boolean).map(bit => {
+        const [tote, count] = bit.split(":").map(s => s.trim());
+        return { tote, count: Number(count) };
+      });
+    }
+
+    function addStation(s = {}) {
+      const tr = document.createElement("tr");
+      const vals = [
+        ["id", s.id || ""],
+        ["kind", s.kind || "pack"],
+        ["x_m", s.x_m ?? ""],
+        ["y_m", s.y_m ?? ""],
+        ["threshold", s.threshold ?? 8],
+        ["cap", s.cap ?? 24],
+        ["piles", pilesText(s.piles)],
+      ];
+      tr.innerHTML = vals.map(([k, v]) => `<td><input data-k="${k}" value="${v}" /></td>`).join("");
+      if (s.minutes_since_pickup != null) tr.dataset.age = String(s.minutes_since_pickup);
+      stationsBody.appendChild(tr);
+    }
+
+    function readRows(tbody, keys) {
+      return [...tbody.querySelectorAll("tr")].map(tr => {
+        const get = k => tr.querySelector(`[data-k="${k}"]`).value;
+        const row = {};
+        keys.forEach(k => { row[k] = get(k); });
+        if (tr.dataset.age) row.minutes_since_pickup = Number(tr.dataset.age);
+        return row;
+      }).filter(row => row.id && row.id.trim());
+    }
+
+    function readFloor() {
+      const homes = readRows(homesBody, ["id", "kind", "x_m", "y_m", "accepts"]).map(h => ({
+        id: h.id.trim(),
+        kind: h.kind.trim(),
+        x_m: Number(h.x_m),
+        y_m: Number(h.y_m),
+        accepts: h.accepts.split(/[, ]+/).map(s => s.trim()).filter(Boolean),
+      }));
+      const carts = readRows(cartsBody, ["id", "stack_cap", "speed_m_per_min", "load_sec_per_stack", "shift_min"]).map(c => ({
+        id: c.id.trim(),
+        stack_cap: Number(c.stack_cap),
+        speed_m_per_min: Number(c.speed_m_per_min),
+        load_sec_per_stack: Number(c.load_sec_per_stack),
+        shift_min: Number(c.shift_min),
+      }));
+      const stations = readRows(stationsBody, ["id", "kind", "x_m", "y_m", "threshold", "cap", "piles"]).map(s => ({
+        id: s.id.trim(),
+        kind: s.kind.trim(),
+        x_m: Number(s.x_m),
+        y_m: Number(s.y_m),
+        threshold: Number(s.threshold),
+        cap: Number(s.cap),
+        minutes_since_pickup: s.minutes_since_pickup || 0,
+        piles: parsePiles(s.piles),
+      }));
+      return { homes, carts, stations };
+    }
+
+    function fillFloor(data) {
+      homesBody.innerHTML = "";
+      cartsBody.innerHTML = "";
+      stationsBody.innerHTML = "";
+      (data.homes || []).forEach(addHome);
+      (data.carts || []).forEach(addCart);
+      (data.stations || []).forEach(addStation);
+    }
+
+    async function boot() {
+      const examples = await (await fetch("/api/examples")).json();
+      examples.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name.replace(".json", "").replaceAll("-", " ");
+        example.appendChild(opt);
+      });
+      const first = examples.includes("quiet-aisle.json") ? "quiet-aisle.json" : examples[0];
+      if (first) {
+        example.value = first;
+        await loadExample(first);
+      }
+    }
+
+    async function loadExample(name) {
+      fillFloor(await (await fetch("/api/examples/" + name)).json());
+      await planFloor();
+    }
+
+    example.addEventListener("change", async () => {
+      if (!example.value) return;
+      await loadExample(example.value);
+    });
+    document.getElementById("addStation").onclick = () => addStation();
+    document.getElementById("plan").onclick = () => planFloor();
+
+    async function planFloor() {
+      error.textContent = "";
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(readFloor()),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        error.textContent = data.error || "Plan failed";
+        return;
+      }
+      renderStats(data);
+      draw(data);
+      renderTrips(data);
+    }
+
+    function clock(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return m + ":" + String(s).padStart(2, "0");
+    }
+
+    function renderStats(data) {
+      const set = (id, value, cls) => {
+        const el = document.getElementById(id);
+        el.className = "stat " + (cls || "");
+        el.querySelector("b").textContent = value;
+      };
+      set("statTrips", String(data.trip_count), "good");
+      set("statCollected", String(data.collected), "good");
+      set("statLeft", String(data.leftover_count), data.leftover_count ? "bad" : "good");
+      set("statSpan", clock(data.makespan_sec));
+    }
+
+    function renderTrips(data) {
+      const el = document.getElementById("trips");
+      const lines = (data.trips || []).map(t =>
+        `${t.cart}  ${t.tote} → ${t.home}  ${clock(t.start_sec)}–${clock(t.finish_sec)}  ${t.collected} totes  ${t.stops.map(s => s.station).join(" → ")}`
+      );
+      (data.leftover || []).forEach(item => {
+        lines.push(`LEFT  ${item.station}  ${item.remaining}× ${item.tote}  — ${item.reason}`);
+      });
+      el.innerHTML = lines.map(line => `<div>${line}</div>`).join("");
+    }
+
+    function project(x, y, box) {
+      const pad = 48;
+      const sx = (box.maxX - box.minX) || 1;
+      const sy = (box.maxY - box.minY) || 1;
+      const w = 1100 - pad * 2;
+      const h = 620 - pad * 2;
+      const s = Math.min(w / sx, h / sy);
+      const ox = pad + (w - sx * s) / 2;
+      const oy = pad + (h - sy * s) / 2;
+      return [
+        ox + (x - box.minX) * s,
+        620 - oy - (y - box.minY) * s,
+      ];
+    }
+
+    function draw(data) {
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const points = [
+        ...(data.homes || []).map(h => [h.x_m, h.y_m]),
+        ...(data.stations || []).map(s => [s.x_m, s.y_m]),
+      ];
+      const xs = points.map(p => p[0]);
+      const ys = points.map(p => p[1]);
+      const box = {
+        minX: Math.min(...xs) - 4,
+        maxX: Math.max(...xs) + 4,
+        minY: Math.min(...ys) - 4,
+        maxY: Math.max(...ys) + 4,
+      };
+
+      ctx.strokeStyle = "rgba(94,200,216,0.18)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 8; i++) {
+        const x = box.minX + (box.maxX - box.minX) * i / 8;
+        const y = box.minY + (box.maxY - box.minY) * i / 8;
+        const a = project(x, box.minY, box);
+        const b = project(x, box.maxY, box);
+        const c = project(box.minX, y, box);
+        const d = project(box.maxX, y, box);
+        ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...c); ctx.lineTo(...d); ctx.stroke();
+      }
+
+      (data.trips || []).forEach((trip, i) => {
+        const color = cartColors[i % cartColors.length];
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(...project(trip.start_x_m, trip.start_y_m, box));
+        trip.stops.forEach(stop => ctx.lineTo(...project(stop.x_m, stop.y_m, box)));
+        ctx.lineTo(...project(trip.home_x_m, trip.home_y_m, box));
+        ctx.stroke();
+      });
+
+      (data.homes || []).forEach(home => {
+        const [x, y] = project(home.x_m, home.y_m, box);
+        ctx.fillStyle = "#e0a106";
+        ctx.strokeStyle = "#f4fffe";
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(x - 12, y - 12, 24, 24);
+        ctx.strokeRect(x - 12, y - 12, 24, 24);
+        ctx.fillStyle = "#f4fffe";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText(home.id, x + 14, y + 4);
+      });
+
+      (data.stations || []).forEach(station => {
+        const [x, y] = project(station.x_m, station.y_m, box);
+        const fill = station.cap ? Math.min(1, (station.remaining || 0) / station.cap) : 0;
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.fillStyle = station.over_cap ? "#b3401a" : (station.due ? "#d97b46" : "#2f6b4f");
+        ctx.fill();
+        ctx.strokeStyle = "#f4fffe";
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = "#f4fffe";
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText(station.id, x + 16, y + 4);
+      });
+    }
+
+    boot();
+  </script>
+</body>
+</html>
